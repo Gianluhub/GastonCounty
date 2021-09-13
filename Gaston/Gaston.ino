@@ -3,12 +3,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include "Pines.h"
 #include "setup.h"
-#include "funciones.h"
-
-
-// Constantes
-
+#include "procesos.h"
 
 
 

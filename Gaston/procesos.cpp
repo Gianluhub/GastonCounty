@@ -1,9 +1,11 @@
-/*Programa de llenado del tanque
-*/
 #include <Arduino.h>
+#include "Pines.h"
+#include "procesos.h"
 
 
 
+
+/* Llena el tanque dependiendo del nivel deseado, nivel 1 es el nivel bajo y nivel 2 el alto */
 
 void llenado(int Nivel){
 //flags de valvulas
