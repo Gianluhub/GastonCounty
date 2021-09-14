@@ -39,9 +39,9 @@
 #define LC102  CONTROLLINO_A5 // Sensor de vaciado (No implementado)
 
 // Alarmas
-#define LLAMADO_OP CONTROLLINO_A6 // Llamado de operador 
-#define TOMA_MUESTRA CONTROLLINO_A7 // Tomar muestra
-#define PRESURIZADO CONTROLLINO_A8 // Aviso de inicio de presurizacion
+#define LLAMADO_OP 45 // Llamado de operador 
+#define TOMA_MUESTRA 46 // Tomar muestra
+#define PRESURIZADO 47 // Aviso de inicio de presurizacion
 
 
 

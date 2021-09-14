@@ -44,5 +44,7 @@ void setup()
     pinMode(FV214,OUTPUT);
 
 //  Alarmas
-    
+    pinMode(LLAMADO_OP,OUTPUT);
+    pinMode(TOMA_MUESTRA,OUTPUT);
+    pinMode(PRESURIZADO,OUTPUT);
 }
