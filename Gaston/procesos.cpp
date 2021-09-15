@@ -60,7 +60,7 @@ void Llamado_op(){
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
     digitalWrite(LLAMADO_OP,HIGH);
-     if (Ok == true)
+     if (ok == true)
     {
         digitalWrite(LLAMADO_OP,LOW);
     }
@@ -83,6 +83,7 @@ void Adicion_rapida(int tiempo){
 
 /*
 Adicion lenta
+Los parametros de entradas deben estar dados en segundos
 */
 void Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
 
@@ -99,35 +100,37 @@ void Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
     int add_flujo = 0;  // adicion de flujo interno FV205
     int add_agua = 0;   // adicion de agua al tanque de quimicos FV207
 
-   
-    //MODIFICAR ESTA PARTEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-    
-    while(t_actual - t_inicio < tiempo_ms)
+    // Mientras que no haya pasado el tiempo se seguiran abriendo la valvulas     
+    if (!timer1(tiempo_ms))
     {
         /* Abre valvula de adicion cada cierto tiempo */
         digitalWrite(FV206,HIGH);
         delay(t_abierto);
         digitalWrite(FV206,LOW);
         delay(t_cerrado);
-        t_actual = millis();
     }
-
-
-}
-
-// Convierte un tiempo de segundos a milisegundos
-unsigned long To_millis(int tiempo){
-
-    return tiempo*1000;
-
 }
 
 
+// Es la misma funcion de timer 
 
-void Circulacion (int tiempo){
+int Circulacion(unsigned long interval){
 
-    unsigned long tiempo_ms = To_millis(tiempo);
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
 
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
 
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
 
 }
