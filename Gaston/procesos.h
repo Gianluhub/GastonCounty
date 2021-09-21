@@ -4,7 +4,7 @@
 
 
 
-// prototipos
+// Prototipos
 
 // Procesos.cpp
 int Llenado(int Nivel);
@@ -30,6 +30,11 @@ int timer5(unsigned long interval);
 
 //Recetas.cpp
 int Poliester(int temperatura);
+int Algodon(int temperatura);
+int Suavizado();
+int Preblanqueo_quimico();
+int Preblanqueo_jabon();
+int Saponizado();
 
 
 #endif
