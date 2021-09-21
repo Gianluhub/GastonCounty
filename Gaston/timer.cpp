@@ -66,12 +66,74 @@ int timer2(unsigned long interval){
 
 }
 
+int timer3(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
+
+int timer4(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
+
+int timer5(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
 
 
 // Funcion auxiliar
-//Convierte el tiempo de segundos a milisegundos
+//Convierte el tiempo de MINUTOS a milisegundos
 unsigned long To_millis(int tiempo){
 
-    return tiempo*1000;
+    return tiempo*60*1000;
 
 }

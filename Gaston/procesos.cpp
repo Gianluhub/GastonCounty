@@ -11,7 +11,7 @@ Llena el tanque dependiendo del nivel deseado
 nivel 1 es el nivel bajo y nivel 2 el alto 
 */
 // FALTA AVERIGUAR SOBRE EL ENCENDIDO DEL PLEGADOR
-void Llenado(int Nivel){
+int Llenado(int Nivel){
 //flags de valvulas (no se estan usando hasta ahora)
     int Bomba  = 0; // Bomba
     int jet   = 0; // jet
@@ -22,6 +22,7 @@ void Llenado(int Nivel){
     int lvl1 = 0; //Sensor de Nivel 1 (Nivel Bajo) LC100
     int lvl2 = 0; // Sensor de Nivel 2 (Nivel Alto) LC101
     
+    int lleno = 0; // Flag de confirmacion de llenado
     // Abre valvula para llenar el tanque y asegura que la de reflujo este abierta
     digitalWrite(FV200,HIGH);
     digitalWrite(FV204,HIGH);
@@ -36,8 +37,10 @@ void Llenado(int Nivel){
                digitalWrite(FV200,LOW);
                digitalWrite(pump,HIGH); 
                digitalWrite(plegador_1,HIGH);
-               digitalWrite(plegador_2,HIGH);
+               //digitalWrite(plegador_2,HIGH);
+               return true;
             }
+            else return false;
         break;
 
         // Llenado a nivel 2
@@ -47,10 +50,13 @@ void Llenado(int Nivel){
                 digitalWrite(FV201,LOW);
                 digitalWrite(pump,HIGH);
                 digitalWrite(plegador_1,HIGH);
-                digitalWrite(plegador_2,HIGH);
+                //digitalWrite(plegador_2,HIGH);
+                return true;
             }
+            else return false;
         break;
     }
+
 }
     
 
@@ -59,16 +65,18 @@ Llamado de operador
 Alarma que indica al operador que debe estar presente
 No avanza al siguiente paso hasta que atienda el llamado
 */
-void Llamado_op(){
+int Llamado_op(){
     int ok; // flag que debe ser recibido por el operador
 
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
     digitalWrite(LLAMADO_OP,HIGH);
-     if (ok == true)
+    if (digitalRead(Op_ok) >= HIGH)
     {
         digitalWrite(LLAMADO_OP,LOW);
+        return true;
     }
+    else return false;
 
 }
 
@@ -78,26 +86,25 @@ void Llamado_op(){
 Adicion rapida
 */
 
-// La variable tiempo estara dada en segundos, hay que convertirla en millisegundos
-void Adicion_rapida(int tiempo){
+// La variable tiempo estara dada en minutos, hay que convertirla en millisegundos
+int Adicion_rapida(int tiempo){
 
-    unsigned long tiempo_ms = To_millis(tiempo); // Pasa el tiempo de segundos a milisegundos 
-    delay(tiempo_ms); // Provicional hasta entender bien el flujo del programa 
+    unsigned long tiempo_ms = To_millis(tiempo); // Pasa el tiempo de minutos a milisegundos 
+    if (timer1(tiempo_ms)) return true;
+    else return false;
 }
 
 
 /*
 Adicion lenta
-Los parametros de entradas deben estar dados en segundos
+El parametro tiempo debe ser en minutos y los de t_abierto y t_cerrado en segundos
 */
-void Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
+int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
 
-    // Pasa el tiempo de segundos a milisegundos
+    // Pasa el tiempo a milisegundos
     unsigned long tiempo_ms = To_millis(tiempo);
-    unsigned long t_ams = To_millis(t_abierto);
-    unsigned long t_cms = To_millis(t_cerrado);
-    unsigned long t_inicio = millis();
-    unsigned long t_actual = millis();
+    unsigned long t_ams = t_abierto*1000;
+    unsigned long t_cms = t_cerrado*1000;
 
     // Variables (No se estan usando)
     int call_op = 0;  // llamado op 
@@ -106,14 +113,16 @@ void Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
     int add_agua = 0;   // adicion de agua al tanque de quimicos FV207
 
     // Mientras que no haya pasado el tiempo se seguiran abriendo la valvulas     
-    while (!timer1(tiempo_ms))
+    if (!timer1(tiempo_ms))
     {
         /* Abre valvula de adicion cada cierto tiempo */
         digitalWrite(FV206,HIGH);
         delay(t_abierto);
         digitalWrite(FV206,LOW);
         delay(t_cerrado);
+        return false;
     }
+    else return true;
 }
 
 
@@ -122,8 +131,8 @@ void Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
  Es la misma funcion timer, debe recibir el tiempo en milisegundos.
 */
 
-int Circulacion(unsigned long interval){
-
+int Circulacion(int interval){
+  unsigned long interval_ms = To_millis(interval);
   unsigned long currentTime = millis();
   static unsigned long previousTime = millis();
   static int start = 0;
@@ -134,7 +143,7 @@ int Circulacion(unsigned long interval){
     start = 0;
   }
 
-  if (currentTime - previousTime >= interval)
+  if (currentTime - previousTime >= interval_ms)
   {
     start = 1;
     return true;
@@ -154,43 +163,49 @@ int Circulacion(unsigned long interval){
 */
 
 
-void Lavado_rebose(int tiempo){
+int Lavado_rebose(int tiempo){
 
     // Variables usadas
     int rebose; // Valvula FV210 salida por rebose
     int agua;   // Valvula de agua FV200
     int lvl1;   // Sensor de nivel 1 LC100
     int lvl2;   // Sensor de nivel 2 LC101
+
+    // Pasamos el tiempo de minutos a milisegundos
     unsigned long tiempo_ms = To_millis(tiempo);
-    // Se abre valvula de vaciado FV210
+    // Se abre valvula de lavado por revose FV210
     digitalWrite(FV210,HIGH);
 
     /*
      Mientras que el temporizador esta contando, se va 
      realizando el lavado por rebose
     */
-    while (!timer1(tiempo_ms))
+    if (!timer1(tiempo_ms))
     {   
 
         // Si el sensor de nivel 2 esta en HIGH
         // Abre la valvula de vaciado y cierra la de llenado
-        if (digitalRead(LC101) >= HIGH)
+        if (digitalRead(LC101) >= HIGH && digitalRead(LC100) >= HIGH)
         {
             digitalWrite(FV210,HIGH);
             digitalWrite(FV200,LOW);
         }
         // Si el sensor de nivel 1 esta en LOW
         // Abre la valvula de llenado y cierra la de vaciado
-        if (digitalRead(LC100) <= LOW)
+        if (digitalRead(LC100) <= LOW && digitalRead(LC101) <= LOW)
         {
             digitalWrite(FV210,LOW);
             digitalWrite(FV200,HIGH);
         }
+    return false;
     }
-
+    else
+    {
     // Al finalizar el tiempo se asegura que las valvulas esten cerradas
     digitalWrite(FV210,LOW);
     digitalWrite(FV200,LOW);
+    return true;
+    }
 }
 
 
@@ -202,19 +217,22 @@ void Lavado_rebose(int tiempo){
 */
 
 // NO ESTA CLARO SI EL PLEGADOR SE INICIA CON LA FUNCION digitalwrite
-void vaciado(){
+int Vaciado(){
 
     const unsigned long tiempo_vaciado = 1000;  // Falta poner el tiempo
     // Se abre la valvula de vaciado y se apaga la bomba y el plegador
     digitalWrite(pump,LOW);
     digitalWrite(plegador_1,LOW);
-    digitalWrite(plegador_2,LOW);
+    //digitalWrite(plegador_2,LOW);
     digitalWrite(FV211,HIGH);
     // Espera el tiempo necesario donde se sabe que el tanque esta vacio
     // y luego cierra la valvula
-    delay(tiempo_vaciado);
+    if(timer1(!tiempo_vaciado))
+    {
     digitalWrite(FV211,LOW);
-
+    return false;
+    }
+    else return true;
 }
 
 
@@ -229,7 +247,7 @@ void vaciado(){
 
 // NO ESTA CLARO AUN SI LAS VALVULAS DE TRAMPA Y PURGA DEBEN ESTAR CERRADAS DURANTE PRESURIZACION
 
-void Calentamiento(int temp, int grad, int tiempo){
+void Calentamiento(int temp, float grad){
 
 
     // Valvulas usadas
@@ -244,11 +262,12 @@ void Calentamiento(int temp, int grad, int tiempo){
     // Variables de utilidad
     unsigned long t_abierto;
     unsigned long t_cerrado;
+    static int estado = true;
+    int T_actual;
 
-    // FALTA REALIZAR UNA RELACION ENTRE EL GRADIENTE Y LOS TIEMPOS
-    //  Y CUANDO ENTRA EN PRESURIZACION
+   //FALTA IMPLEMENTAR EL MAPEO DE TEMPERATURA
 
-    while (digitalRead(TC100) <= temp)
+    if (Temp_actual() < temp)
     {   
         // Si no se requiere gradiente deja las valvulas abiertas siempre
         // No esta claro si en este caso tambien hay que dejar SIEMPRE abiertas
@@ -262,23 +281,38 @@ void Calentamiento(int temp, int grad, int tiempo){
         else
         {
             // AQUI FALTA IMPLEMENTAR LOS TIEMPOS CON EL GRADIENTE
-            // Como esta dentro de un while no se esta considerando aun  la presurizacion
-            digitalWrite(FV202,HIGH);
-            digitalWrite(FV208,HIGH);
-            digitalWrite(FV209,HIGH);
-            delay(t_abierto);
-            digitalWrite(FV202,LOW);
-            digitalWrite(FV208,LOW);
-            digitalWrite(FV209,LOW);
-            delay(t_cerrado);
+            if (estado)
+            {
+                // Abre las valvulas de vapor, purga y trampa
+                digitalWrite(FV202,HIGH);
+                digitalWrite(FV208,HIGH);
+                digitalWrite(FV209,HIGH);
+                // Espera un tiempo abierto
+                delay(t_abierto);
+                estado = false;
 
+            }
+            if (!timer2(t_cerrado))
+            {
+                // Cierra las valvulas
+                digitalWrite(FV202,LOW);
+                digitalWrite(FV208,LOW);
+                digitalWrite(FV209,LOW);    
+            }
+            else estado = true;
         }
     }
-
+    else 
+    {
     // Asegurar que las valvulas estan cerradas
     digitalWrite(FV202,LOW);
     digitalWrite(FV208,LOW);
     digitalWrite(FV209,LOW);
+    
+    }
+  
+ 
+   
 }
 
 
@@ -295,7 +329,7 @@ void Calentamiento(int temp, int grad, int tiempo){
 
 // NO ESTA CLARO AUN SI LAS VALVULAS DE TRAMPA Y PURGA DEBEN ESTAR CERRADAS DURANTE PRESURIZACION
 
-void Enfriamiento(int temp, int grad, int tiempo){
+void Enfriamiento(int temp, float grad){
 
 
     // Valvulas usadas
@@ -309,11 +343,13 @@ void Enfriamiento(int temp, int grad, int tiempo){
     // Variables de utilidad
     unsigned long t_abierto;
     unsigned long t_cerrado;
+    static int estado = true;
+    int T_actual;
 
-    // FALTA REALIZAR UNA RELACION ENTRE EL GRADIENTE Y LOS TIEMPOS
-    //  Y CUANDO ENTRA EN PRESURIZACION
+    // FALTA IMPLEMENTAR EL MAPEO DE LA TEMPERATURA
 
-    while (digitalRead(TC100) <= temp)
+
+    if (Temp_actual() > temp)
     {   
         // Si no se requiere gradiente deja las valvulas abiertas siempre
     
@@ -327,19 +363,31 @@ void Enfriamiento(int temp, int grad, int tiempo){
         {
             // AQUI FALTA IMPLEMENTAR LOS TIEMPOS CON EL GRADIENTE
             // Como esta dentro de un while no se esta considerando aun  la presurizacion
-            digitalWrite(FV201,HIGH);
-            digitalWrite(FV203,HIGH);
-            delay(t_abierto);
-            digitalWrite(FV201,LOW);
-            digitalWrite(FV203,LOW);
-            delay(t_cerrado);
+            if (estado)
+            {
+                digitalWrite(FV201,HIGH);
+                digitalWrite(FV203,HIGH);
+                delay(t_abierto);
+                estado = false;
+            }
 
+            if (!timer3(t_cerrado))
+            {
+                digitalWrite(FV201,LOW);
+                digitalWrite(FV203,LOW);
+                delay(t_cerrado);
+            }
+            else estado = true;
         }
     }
-
+    else
+    {
     // Asegurar que las valvulas estan cerradas
     digitalWrite(FV201,LOW);
     digitalWrite(FV203,LOW);
+
+    }
+
 }
 
 
@@ -355,14 +403,31 @@ void Presurizado(){
 
     // Valvulas
     int aire; // valvula de presurizacion FV212
-    int vapor; // Valvula de vapor FV202 
+    int vapor; // Valvula de vapor FV202  
     int master; // Cerrar todas las valvulas sobretodo la de reflujo FV204
 
     // Sensores
     int temp; // Sensor de temperatura TC100
     int Phi; // Sensor de presion alta PCH100
-    
 
+    const int presion = 150; // Presion maxima, aun no se sabe cuanto vale
+
+    // Si la temperatura es mayor a 80 y no se tiene el maximo de presion
+    if (Temp_actual() >= 80 && digitalRead(PCH100) <= LOW)
+    {
+        // Comienza el presurizado
+        digitalWrite(FV204,LOW); // Cierra valvula de reflujo (deberian ser todas)
+        digitalWrite(FV212,HIGH); // Se abre valvula de presurizado (entradad de aire)
+        delay(1500); // tiempo que permanece abierta la valvula de aire, aun a determinar
+        digitalWrite(FV212,LOW);
+        // NO SE ESTA CLARO SI LA VALVULA DE AIRE QUEDA SIEMPRE ABIERTA
+
+    }
+    else
+    {
+        // Si se llega a la max presion se cierra la valvula de aire
+        digitalWrite(FV212,LOW);
+    }
 
 }
 
@@ -377,6 +442,20 @@ void Despresurizado(){
     int Plo; // Sensore de presion baja PCL100
     int temp; // Sensore de temperatura TC100
 
-
-    
+    // Si la temperatura es menor a 80 y se tiene baja presion
+    // Comienza el despresurizado
+    // NO SE ESTA CLARO DE COMO SE TOMAN LAS LECTURAS DE LOS SENSORES DE PRESION
+    if (Temp_actual() <= 80)
+    {
+   
+        digitalWrite(FV213,HIGH); // Abre valvula de despresurizado
+        delay(5000); // Se mantiene abierta por 5 seg
+        digitalWrite(FV213,LOW); // Cierra valvula de despresurizado
+        delay(5000); // Se mantiene cerrada por 5 seg
+    }
+    if (digitalRead(PCL100) >= HIGH)
+    {
+        digitalWrite(FV204,HIGH); // Se abre la valvula de reflujo
+    }
+  
 }
