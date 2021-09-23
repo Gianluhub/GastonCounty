@@ -24,7 +24,7 @@ int Poliester(int temperatura){
 			if(Llamado_op()) estado = 3;
 		break;
 
-		// 3. Adicion rapida
+		// 3. Adicion rapida 4 min
 		case 3:
 			if(Adicion_rapida(4)) estado = 4;
 		break;
@@ -57,9 +57,9 @@ int Poliester(int temperatura){
 			// Luego sube a 130° a 1.5°/min
 			if (temperatura == 130)
 			{
-				if (Temp_actual() < 89) Calentamiento(90,2);
+				if (Temp_actual() < 90) Calentamiento(90,2);
 
-				else if ( Temp_actual() >= 88) Calentamiento(130,1.5);
+				else if ( Temp_actual() >= 90) Calentamiento(130,1.5);
 				
 			}
 			else Calentamiento(temperatura,2);
@@ -108,8 +108,13 @@ int Poliester(int temperatura){
 			if (Vaciado()) estado = 16;
 		break;
 
-		// 16. Fin
+		// 44. Suavizado
 		case 16:
+			if(Suavizado()) estado = 17;
+		break;
+
+		// 16. Fin
+		case 17:
 			estado = 1;
 			return true;
 		break;	
@@ -337,7 +342,7 @@ int Algodon(int temperatura){
 			if(Llamado_op()) estado = 41;
 		break;	
 
-		// 41. Adicion rapida
+		// 41. Adicion rapida 5 min
 		case 41:
 			if(Adicion_rapida(5)) estado = 42;
 		break;
@@ -348,7 +353,7 @@ int Algodon(int temperatura){
 		break; 
 
 		// Parte nueva añadida (el suavizado debe ser opcional)
-		// 43. preguntar si se desa suvizado de tela (Suavizado es opcional)
+		// 43. preguntar si se desea suvizado de tela (Suavizado es opcional)
 		case 43:
 			if(preguntar()) estado = 44;
 			else estado = 45;

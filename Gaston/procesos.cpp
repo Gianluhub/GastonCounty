@@ -2,9 +2,6 @@
 #include "Pines.h"
 #include "procesos.h"
 
-
-
-
 /* 
 Llenado de tanque
 Llena el tanque dependiendo del nivel deseado 
@@ -473,10 +470,14 @@ void Despresurizado(){
 */
 
 int Suavizado(){
-    static int estado = 1;
+    static int estado = 0;
 
     switch(estado)
     {   
+        // 0. Realiza el llenado a nivel 1 si hace falta
+        case 0:
+            if(Llenado(1)) estado = 1;
+        break;
         // 1. Llamado a operador para preparacion de tanque
         case 1:
             if(Llamado_op()) estado = 2;
@@ -494,7 +495,7 @@ int Suavizado(){
 
         // 4. Fin
         case 4:
-            estado = 1;
+            estado = 0;
             return true;
         break;
     }

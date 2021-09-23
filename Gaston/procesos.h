@@ -37,4 +37,8 @@ int Preblanqueo_jabon();
 int Saponizado();
 
 
+	
+
+
+
 #endif
