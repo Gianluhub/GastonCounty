@@ -108,13 +108,20 @@ int Poliester(int temperatura){
 			if (Vaciado()) estado = 16;
 		break;
 
-		// 44. Suavizado
+		// Parte nueva añadida (el suavizado debe ser opcional)
+		// 16. Preguntar por suavizado
 		case 16:
-			if(Suavizado()) estado = 17;
+			if(preguntar()) estado = 17;
+			else estado = 18;
 		break;
 
-		// 16. Fin
+		// 17. Suavizado
 		case 17:
+			if(Suavizado()) estado = 18;
+		break;
+
+		// 18. Fin
+		case 18:
 			estado = 1;
 			return true;
 		break;	
@@ -278,7 +285,7 @@ int Algodon(int temperatura){
 
 		// 28. Subir temperatura a 65°
 		case 28:
-			Calentamiento(65,0);
+			Calentamiento(65,2);
 			if ( Temp_actual() >= 61) estado = 29;
 		break;
 

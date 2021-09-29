@@ -212,8 +212,6 @@ int Lavado_rebose(int tiempo){
  Se hace por tiempo, hay que estimar el tiempo en que tarda en vaciar el tanque
  no requiere ningun parametro de entrada.
 */
-
-// NO ESTA CLARO SI EL PLEGADOR SE INICIA CON LA FUNCION digitalwrite
 int Vaciado(){
 
     const unsigned long tiempo_vaciado = 1000;  // Falta poner el tiempo
