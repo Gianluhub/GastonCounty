@@ -31,7 +31,7 @@
 #define FV214 44  // Valvula de regadera
 
 // Sensores
-#define TC100 CONTROLLINO_A0  // PT100
+#define TC100 CONTROLLINO_A0  // Sensor de temperatura
 #define LC100 CONTROLLINO_A1 // Sensor de Nivel 1 (Nivel Bajo)
 #define LC101 CONTROLLINO_A2  // Sensor de Nivel 2 (Nivel Alto)
 #define PCH100 CONTROLLINO_A3 // Sensor de presion alto
