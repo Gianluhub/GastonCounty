@@ -36,6 +36,10 @@ int Preblanqueo_quimico();
 int Preblanqueo_jabon();
 int Saponizado();
 
+// Gaston.ino
+void bNextCallback(void*ptr);
+void send_msj(char msj[],int dato);
+void Nextion_display(int Temp, int TempA, int Grad, int Tiempo, int Paso, int Aper, int Cierre);
 
 	
 

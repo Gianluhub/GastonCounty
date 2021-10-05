@@ -1,13 +1,21 @@
 #include <Arduino.h>
+#include <Nextion.h>
 #include "Pines.h"
 #include "setup.h"
+#include "procesos.h"
+
+// Variables del nextion a inicializar
+extern NexButton bNext;
+extern NexTouch *nex_listen_list[];
 
 
 
 void setup() 
 {
+//  Baud rate
+    Serial2.begin(9600);
+
 //  Entradas
-//  Falta declarar las entradas analogicas como digitales????
 //  Sensores
     pinMode(TC100,INPUT);
     pinMode(LC100,INPUT);
@@ -47,4 +55,14 @@ void setup()
     pinMode(LLAMADO_OP,OUTPUT);
     pinMode(TOMA_MUESTRA,OUTPUT);
     pinMode(PRESURIZADO,OUTPUT);
+
+// Interrupcione y entradas externas
+    pinMode(Op_ok, OUTPUT);
+    pinMode(Start,OUTPUT);
+    pinMode(Stop,OUTPUT);
+
+//  Inicio de parametros del Nextion   
+    nexInit();
+    bNext.attachPop(bNextCallback,&bNext);
+
 }

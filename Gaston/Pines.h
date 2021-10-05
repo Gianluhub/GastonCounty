@@ -37,13 +37,16 @@
 #define PCH100 CONTROLLINO_A3 // Sensor de presion alto
 #define PCL100 CONTROLLINO_A4 // Sensor de presion bajo
 #define LC102  CONTROLLINO_A5 // Sensor de vaciado (No implementado)
-#define Op_ok CONTROLLINO_A6 // Interruptor de llamado de operador
+
 
 // Alarmas
-#define LLAMADO_OP 28 // Llamado de operador 
+#define LLAMADO_OP 28   // Llamado de operador 
 #define TOMA_MUESTRA 28 // Tomar muestra
-#define PRESURIZADO 30 // Aviso de inicio de presurizacion
+#define PRESURIZADO 30  // Aviso de inicio de presurizacion
 
-
+// Interrupciones y entradas externas
+#define Op_ok CONTROLLINO_A6 // Interruptor de llamado de operador
+#define Start CONTROLLINO_A7 // Interruptor de inicio de proceso
+#define Stop  38			 // Interrupcion para stop del proceso
 
 #endif

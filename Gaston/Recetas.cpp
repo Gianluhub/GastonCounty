@@ -7,7 +7,7 @@ int preguntar();
 
 
 
-int Poliester(int temperatura){
+int Poliester(int temperatura, int tiempo){
 
 	static int estado = 1;
 	//int Temp_actual;
@@ -71,7 +71,7 @@ int Poliester(int temperatura){
 
 		// 9. Circulacion por 1 hora y se asegura de mantener la temperatura deseada
 		case 9:
-			if (Circulacion(60)) estado = 10;
+			if (Circulacion(tiempo)) estado = 10;
 			Calentamiento(temperatura,2);
 			Presurizado();	
 		break;
@@ -132,7 +132,7 @@ int Poliester(int temperatura){
 
 
 // VERIFICAR LINEA 272 SI NO LLEVA GRADIENTE
-int Algodon(int temperatura){
+int Algodon(int temperatura, int tiempo){
 
 	static int estado = 1;
 	int suave; // indicador de suavizado
@@ -171,218 +171,224 @@ int Algodon(int temperatura){
 
 		// 7. Subir temperatura (puede ser a 60 o 80) no presuriza
 		case 7:
-			Calentamiento(temperatura,1.5);
-			if ( Temp_actual() >= temperatura - 2) estado = 8;
+			Calentamiento(temperatura,2);
+			if (Temp_actual() >= temperatura - 1) estado = 8;
 		break;
 
-		// 8. Llamado a operador
+		// 8. Circulacion
 		case 8:
-			if(Llamado_op()) estado = 9;
+			if(Circulacion(tiempo)) estado = 9;
+			Calentamiento(temperatura,2);
 		break;
 
-		// 9. Adicion lenta (Alkali) de 5 min cada 10 seg por 2 seg
+		// 9. Llamado a operador
 		case 9:
-			if(Adicion_lenta(5,10,2)) estado = 10;
+			if(Llamado_op()) estado = 10;
 		break;
 
-		// 10. Adicion lenta (Alkali) de 25 min cada 10 seg por 3 seg
+		// 10. Adicion lenta (Alkali) de 5 min cada 10 seg por 2 seg
 		case 10:
-			if(Adicion_lenta(25,10,3)) estado = 11;
+			if(Adicion_lenta(5,10,2)) estado = 11;
 		break;
 
-		// 11. Adicion lenta (Alkali) 15 min cada 15 seg por 3 seg
+		// 11. Adicion lenta (Alkali) de 25 min cada 10 seg por 3 seg
 		case 11:
-			if(Adicion_lenta(15,15,3)) estado = 12;
+			if(Adicion_lenta(25,10,3)) estado = 12;
 		break;
 
-		// 12. Circulacion por 1 hora y manterner en 60°
+		// 12. Adicion lenta (Alkali) 15 min cada 15 seg por 3 seg
 		case 12:
-			if (Circulacion(60)) estado = 13;
+			if(Adicion_lenta(15,15,3)) estado = 13;
+		break;
+
+		// 13. Circulacion por 1 hora y manterner en 60°
+		case 13:
+			if (Circulacion(60)) estado = 14;
 			Calentamiento(temperatura,1.5);
 		break;
 
-		// 13. Llamado a operador (Tomar muestra)
-		case 13:
-			if(Llamado_op()) estado = 14;
-		break;
-
-		// 14. Lavado por rebose de 10 min
+		// 14. Llamado a operador (Tomar muestra)
 		case 14:
-			if(Lavado_rebose(10)) estado = 15;
+			if(Llamado_op()) estado = 15;
 		break;
 
-		// 15. Vaciado de tanque
+		// 15. Lavado por rebose de 10 min
 		case 15:
-			if(Vaciado()) estado = 16;
+			if(Lavado_rebose(10)) estado = 16;
 		break;
 
-		//16. Llenado a nivel 1
+		// 16. Vaciado de tanque
 		case 16:
-			if(Llenado(1)) estado = 17;
+			if(Vaciado()) estado = 17;
 		break;
 
-		// 17. Circulacion por 10 min
+		//17. Llenado a nivel 1
 		case 17:
-			if(Circulacion(10))	estado = 18;
+			if(Llenado(1)) estado = 18;
 		break;
 
-		// 18. Vaciado de tanque
+		// 18. Circulacion por 10 min
 		case 18:
-			if(Vaciado()) estado = 19;
+			if(Circulacion(10))	estado = 19;
+		break;
+
+		// 19. Vaciado de tanque
+		case 19:
+			if(Vaciado()) estado = 20;
 		break; 
 
-		// 19. Llenado a nivel 1
-		case 19:
-			if(Llenado(1)) estado = 20;
-		break;
-
-		// 20. Llamado a operador
+		// 20. Llenado a nivel 1
 		case 20:
-			if(Llamado_op()) estado = 21;
+			if(Llenado(1)) estado = 21;
 		break;
 
-		// 21. Adicion rapida de 3 min
+		// 21. Llamado a operador
 		case 21:
-			if(Adicion_rapida(3)) estado = 22;
+			if(Llamado_op()) estado = 22;
 		break;
 
-		// 22. Circulacion por 5 min
+		// 22. Adicion rapida de 3 min
 		case 22:
-			if(Circulacion(5)) estado = 23;
+			if(Adicion_rapida(3)) estado = 23;
+		break;
+
+		// 23. Circulacion por 5 min
+		case 23:
+			if(Circulacion(5)) estado = 24;
 		break;
 
 		// Enjabonado en caliente
-		// 23. Subir temperatura a 90° a 2°/min
-		case 23:
-			Calentamiento(90,2);
-			Presurizado();
-			if ( Temp_actual() >= 90) estado = 24;
-		break;
-
-		// 24. Circulacion por 20 min
+		// 24. Subir temperatura a 90° a 2°/min
 		case 24:
-			if(Circulacion(20)) estado = 25;
+			Calentamiento(90,2);
+			Presurizado();
+			if (Temp_actual() >= 90) estado = 25;
+		break;
+
+		// 25. Circulacion por 20 min
+		case 25:
+			if(Circulacion(20)) estado = 26;
 			Calentamiento(90,2);
 			Presurizado();
 		break;
 
-		// 25. Enfriamiento a 60° a 2°/min
-		case 25:
+		// 26. Enfriamiento a 60° a 2°/min
+		case 26:
 			Enfriamiento(60,2);
 			Despresurizado();
-			if (Temp_actual() <= 60) estado = 26;
+			if (Temp_actual() <= 60) estado = 27;
 		break;
 
-		// 26. Vaciado de tanque
-		case 26:
-			if(Vaciado()) estado = 27;
-		break;
-
-		// 27. Llenado a nivel 1
+		// 27. Vaciado de tanque
 		case 27:
-			if(Llenado(1)) estado = 28;
+			if(Vaciado()) estado = 28;
 		break;
 
-		// 28. Subir temperatura a 65°
+		// 28. Llenado a nivel 1
 		case 28:
-			Calentamiento(65,2);
-			if ( Temp_actual() >= 61) estado = 29;
+			if(Llenado(1)) estado = 29;
 		break;
 
-		// 29. Circulacion por 10 min
+		// 29. Subir temperatura a 65°
 		case 29:
-			if(Circulacion(10)) estado = 30;
+			Calentamiento(65,2);
+			if ( Temp_actual() >= 61) estado = 30;
 		break;
 
-		// 30. Vaciado de tanque
+		// 30. Circulacion por 10 min
 		case 30:
-			if(Vaciado()) estado = 31;
+			if(Circulacion(10)) estado = 31;
 		break;
 
-		//  31. Llenado a nivel 1
+		// 31. Vaciado de tanque
 		case 31:
-			if(Llenado(1)) estado = 32;
-		break; 
+			if(Vaciado()) estado = 32;
+		break;
 
-		// 32. Circulacion por 10 min
+		//  32. Llenado a nivel 1
 		case 32:
-			if(Circulacion(10)) estado = 33;
-		break;
-
-		// 33. Vaciado de tanque
-		case 33:
-			if(Vaciado()) estado = 34;
-		break;
-
-		// 34. Llenado a nivel 1
-		case 34:
-			if(Llenado(1)) estado = 35;
-		break;
-
-		// 35. Lavado por rebose de 15 min
-		case 35:
-			if(Lavado_rebose(15)) estado = 36;
+			if(Llenado(1)) estado = 33;
 		break; 
 
-		// 36. Vaciado de tanque
+		// 33. Circulacion por 10 min
+		case 33:
+			if(Circulacion(10)) estado = 34;
+		break;
+
+		// 34. Vaciado de tanque
+		case 34:
+			if(Vaciado()) estado = 35;
+		break;
+
+		// 35. Llenado a nivel 1
+		case 35:
+			if(Llenado(1)) estado = 36;
+		break;
+
+		// 36. Lavado por rebose de 15 min
 		case 36:
-			if(Vaciado()) estado = 37;
+			if(Lavado_rebose(15)) estado = 37;
+		break; 
+
+		// 37. Vaciado de tanque
+		case 37:
+			if(Vaciado()) estado = 38;
 		break;
 
 		// 37. Llenado a nivel 1
-		case 37:
-			if(Llenado(1)) estado = 38;
-		break;
-
-		// 38. Llamado a operador
 		case 38:
-			if(Llamado_op()) estado = 39;
-		break;	
+			if(Llenado(1)) estado = 39;
+		break;
 
-		// 39. Adicion rapida
+		// 39. Llamado a operador
 		case 39:
-			if(Adicion_rapida(5)) estado = 40;
-		break;
-
-		// 40. Llamado a operador
-		case 40:
-			if(Llamado_op()) estado = 41;
+			if(Llamado_op()) estado = 40;
 		break;	
 
-		// 41. Adicion rapida 5 min
-		case 41:
-			if(Adicion_rapida(5)) estado = 42;
+		// 40. Adicion rapida
+		case 40:
+			if(Adicion_rapida(5)) estado = 41;
 		break;
 
-		// 42. Circulacion por 20 min
+		// 41. Llamado a operador
+		case 41:
+			if(Llamado_op()) estado = 42;
+		break;	
+
+		// 42. Adicion rapida 5 min
 		case 42:
-			if(Circulacion(20)) estado = 43;
+			if(Adicion_rapida(5)) estado = 43;
+		break;
+
+		// 43. Circulacion por 20 min
+		case 43:
+			if(Circulacion(20)) estado = 44;
 		break; 
 
 		// Parte nueva añadida (el suavizado debe ser opcional)
-		// 43. preguntar si se desea suvizado de tela (Suavizado es opcional)
-		case 43:
-			if(preguntar()) estado = 44;
-			else estado = 45;
-		break;
-
-		// 44. Suavizado
+		// 44. preguntar si se desea suvizado de tela (Suavizado es opcional)
 		case 44:
-			if(Suavizado()) estado = 45;
+			if(preguntar()) estado = 45;
+			else estado = 46;
 		break;
 
-		// 45. Llamado de operador (Toma de muestra)
+		// 45. Suavizado
 		case 45:
-			if(Llamado_op()) estado = 46;
+			if(Suavizado()) estado = 46;
 		break;
 
-		// 46. Vaciado de tanque
+		// 46. Llamado de operador (Toma de muestra)
 		case 46:
-			if(Vaciado()) estado = 47;
+			if(Llamado_op()) estado = 47;
 		break;
 
-		// 47. Fin
+		// 47. Vaciado de tanque
 		case 47:
+			if(Vaciado()) estado = 48;
+		break;
+
+		// 48. Fin
+		case 48:
 			estado = 1;
 			return true;
 		break;

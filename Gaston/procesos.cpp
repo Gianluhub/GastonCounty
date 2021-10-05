@@ -9,17 +9,9 @@ nivel 1 es el nivel bajo y nivel 2 el alto
 */
 // FALTA AVERIGUAR SOBRE EL ENCENDIDO DEL PLEGADOR
 int Llenado(int Nivel){
-//flags de valvulas (no se estan usando hasta ahora)
-    int Bomba  = 0; // Bomba
-    int jet   = 0; // jet
-    int agua = 0; // Valvula de Agua FV200 
-    int reflujo = 0; // Valvula de Reflujo FV204
 
-// Sensores
-    int lvl1 = 0; //Sensor de Nivel 1 (Nivel Bajo) LC100
-    int lvl2 = 0; // Sensor de Nivel 2 (Nivel Alto) LC101
-    
-    int lleno = 0; // Flag de confirmacion de llenado
+    Serial.println("Llenado a nivel "+ Nivel);
+    Nextion_display(42,0,0,0,0,0,1);
     // Abre valvula para llenar el tanque y asegura que la de reflujo este abierta
     digitalWrite(FV200,HIGH);
     digitalWrite(FV204,HIGH);
@@ -63,8 +55,9 @@ Alarma que indica al operador que debe estar presente
 No avanza al siguiente paso hasta que atienda el llamado
 */
 int Llamado_op(){
-    int ok; // flag que debe ser recibido por el operador
 
+    Serial.println("Llamado_op");
+    Nextion_display(34,0,0,0,0,0,0);
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
     digitalWrite(LLAMADO_OP,HIGH);
@@ -86,8 +79,19 @@ Adicion rapida
 // La variable tiempo estara dada en minutos, hay que convertirla en millisegundos
 int Adicion_rapida(int tiempo){
 
+    Serial.println("Adicion_rapida " + String(tiempo) + " min");
+    Nextion_display(89,0,0,0,tiempo,0,0);
     unsigned long tiempo_ms = To_millis(tiempo); // Pasa el tiempo de minutos a milisegundos 
-    if (timer1(tiempo_ms)) return true;
+    
+    // Actualiza el contador cada minuto
+    if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
+    
+
+    if (timer1(tiempo_ms))
+    {   
+        timer4(1);
+        return true;
+    }
     else return false;
 }
 
@@ -98,17 +102,16 @@ El parametro tiempo debe ser en minutos y los de t_abierto y t_cerrado en segund
 */
 int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
 
+    Serial.println("Adicion_lenta " + String(tiempo)+" min");
+    Nextion_display(88,0,0,0,tiempo,t_abierto,t_cerrado);
     // Pasa el tiempo a milisegundos
     unsigned long tiempo_ms = To_millis(tiempo);
     unsigned long t_ams = t_abierto*1000;
     unsigned long t_cms = t_cerrado*1000;
 
-    // Variables (No se estan usando)
-    int call_op = 0;  // llamado op 
-    int add_quimico = 0; // adicion de quimico FV206
-    int add_flujo = 0;  // adicion de flujo interno FV205
-    int add_agua = 0;   // adicion de agua al tanque de quimicos FV207
-
+    // Actualiza el contador cada minuto
+    if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
+    
     // Mientras que no haya pasado el tiempo se seguiran abriendo la valvulas     
     if (!timer1(tiempo_ms))
     {
@@ -119,7 +122,11 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
         delay(t_cerrado);
         return false;
     }
-    else return true;
+    else 
+    {
+        timer4(1);
+        return true;
+    }
 }
 
 
@@ -129,10 +136,18 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
 */
 
 int Circulacion(int interval){
+
+  Serial.println("Circulacion "+ String(interval));
+  Nextion_display(1,0,0,0,interval,0,0);
+
   unsigned long interval_ms = To_millis(interval);
   unsigned long currentTime = millis();
   static unsigned long previousTime = millis();
   static int start = 0;
+
+  // Actualiza el contador cada minuto
+  if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
+  
 
   if (start == 1)
   { 
@@ -143,6 +158,7 @@ int Circulacion(int interval){
   if (currentTime - previousTime >= interval_ms)
   {
     start = 1;
+    timer4(1);
     return true;
   }
   else return false;
@@ -162,16 +178,15 @@ int Circulacion(int interval){
 
 int Lavado_rebose(int tiempo){
 
-    // Variables usadas
-    int rebose; // Valvula FV210 salida por rebose
-    int agua;   // Valvula de agua FV200
-    int lvl1;   // Sensor de nivel 1 LC100
-    int lvl2;   // Sensor de nivel 2 LC101
-
+    Serial.println("Lavado rebose "+ String(tiempo) + " min");
+    Nextion_display(50,0,0,0,tiempo,0,0);
     // Pasamos el tiempo de minutos a milisegundos
     unsigned long tiempo_ms = To_millis(tiempo);
     // Se abre valvula de lavado por revose FV210
     digitalWrite(FV210,HIGH);
+
+    // Actualiza el contador cada minuto
+    if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
 
     /*
      Mientras que el temporizador esta contando, se va 
@@ -179,7 +194,6 @@ int Lavado_rebose(int tiempo){
     */
     if (!timer1(tiempo_ms))
     {   
-
         // Si el sensor de nivel 2 esta en HIGH
         // Abre la valvula de vaciado y cierra la de llenado
         if (digitalRead(LC101) >= HIGH && digitalRead(LC100) >= HIGH)
@@ -201,6 +215,7 @@ int Lavado_rebose(int tiempo){
     // Al finalizar el tiempo se asegura que las valvulas esten cerradas
     digitalWrite(FV210,LOW);
     digitalWrite(FV200,LOW);
+    timer4(1);
     return true;
     }
 }
@@ -214,6 +229,9 @@ int Lavado_rebose(int tiempo){
 */
 int Vaciado(){
 
+    Serial.println("Vaciado");
+    Nextion_display(62,0,0,0,0,0,0);
+
     const unsigned long tiempo_vaciado = 1000;  // Falta poner el tiempo
     // Se abre la valvula de vaciado y se apaga la bomba y el plegador
     digitalWrite(pump,LOW);
@@ -222,7 +240,7 @@ int Vaciado(){
     digitalWrite(FV211,HIGH);
     // Espera el tiempo necesario donde se sabe que el tanque esta vacio
     // y luego cierra la valvula
-    if(timer1(!tiempo_vaciado))
+    if(!timer1(tiempo_vaciado))
     {
     digitalWrite(FV211,LOW);
     return false;
@@ -244,21 +262,13 @@ int Vaciado(){
 
 void Calentamiento(int temp, float grad){
 
-
-    // Valvulas usadas
-    int vapor; // Valvula de vapor FV202
-    int trampa; // Valvula de trampa FV208
-    int purga; // Valvula de purga FV209
-
-
-    // Sensores
-    int sensor_tem; // Sensor PT100 - TC100
-
     // Variables de utilidad
     unsigned long t_abierto;
     unsigned long t_cerrado;
     static int estado = true;
-    int T_actual;
+
+    // Actualiza la temperatura actual cada minuto
+    if(timer5(10000)) send_msj("nTempA.val=",Temp_actual());
 
    //FALTA IMPLEMENTAR EL MAPEO DE TEMPERATURA
 
@@ -303,15 +313,12 @@ void Calentamiento(int temp, float grad){
     digitalWrite(FV202,LOW);
     digitalWrite(FV208,LOW);
     digitalWrite(FV209,LOW);
-    
+    timer5(1);
     }
   
  
    
 }
-
-
-
 
 
 
@@ -327,22 +334,13 @@ void Calentamiento(int temp, float grad){
 void Enfriamiento(int temp, float grad){
 
 
-    // Valvulas usadas
-    int add_agua; // Valvula de agua FV201
-    int retorno; // Valvula de retorno de enfriamiento FV203
-
-
-    // Sensores
-    int sensor_tem; // Sensor PT100 - TC100
-
     // Variables de utilidad
     unsigned long t_abierto;
     unsigned long t_cerrado;
     static int estado = true;
-    int T_actual;
-
-    // FALTA IMPLEMENTAR EL MAPEO DE LA TEMPERATURA
-
+    
+    // Actualiza la temperatura actual cada minuto
+    if(timer5(10000)) send_msj("nTempA.val=",Temp_actual());
 
     if (Temp_actual() > temp)
     {   
@@ -380,7 +378,7 @@ void Enfriamiento(int temp, float grad){
     // Asegurar que las valvulas estan cerradas
     digitalWrite(FV201,LOW);
     digitalWrite(FV203,LOW);
-
+    timer5(1);
     }
 
 }
@@ -454,6 +452,20 @@ void Despresurizado(){
     }
   
 }
+
+// Toma lectura del sensor de temperatura y lo traduce a 
+// El valor maximo recibido por el transmisor es de 10V que por serial es 350
+int Temp_actual(){
+    int Temp_actual;
+    Temp_actual = map(analogRead(TC100),0,350,0,400);
+    
+    return Temp_actual;
+
+
+}
+
+
+
 
 
 /*
