@@ -29,8 +29,8 @@ int timer4(unsigned long interval);
 int timer5(unsigned long interval);
 
 //Recetas.cpp
-int Poliester(int temperatura);
-int Algodon(int temperatura);
+int Poliester(int temperatura, int tiempo);
+int Algodon(int temperatura, int tiempo);
 int Suavizado();
 int Preblanqueo_quimico();
 int Preblanqueo_jabon();

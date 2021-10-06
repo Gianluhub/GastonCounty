@@ -3,7 +3,7 @@
 #include "procesos.h"
 
 // Prototipo de funcion que pregunta si se desea suavizado o no mediante el hmi
-int preguntar(); 
+int preguntar(){return false;}
 
 
 
@@ -11,6 +11,7 @@ int Poliester(int temperatura, int tiempo){
 
 	static int estado = 1;
 	//int Temp_actual;
+	if(digitalRead(Start)>=HIGH) estado+=1;
 
 	switch (estado)
 	{
@@ -136,6 +137,7 @@ int Algodon(int temperatura, int tiempo){
 
 	static int estado = 1;
 	int suave; // indicador de suavizado
+	if(digitalRead(Start)>=HIGH) estado+=1;
 	switch(estado){
 
 
@@ -402,7 +404,7 @@ int Algodon(int temperatura, int tiempo){
 int Preblanqueo_quimico(){
 
 	static int estado = 1;
-
+	if(digitalRead(Start)>=HIGH) estado+=1;
 	switch(estado)
 	{
 

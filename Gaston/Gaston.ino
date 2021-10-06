@@ -17,15 +17,15 @@
   * temperatura : Almacena la temperatura que alcanzara el tanque al iniciar el proceso de teñido.
   				  Para el poliester la temepratura se almacena en el indice 0 y para el algodon en el 1.
 */ 
-char buffer[20] = {0};		
-char trama[18] = {0};		
+char buffer[50] = {0};		
+char trama[20] = {0};		
 int temperatura[2] = {0};	
 int tiempo[2] = {0};
 
 
 
 // Declaracion de objeto que representa los botones del Nextion
-NexButton bNext=NexButton(6,1,"bNext");
+NexButton bNext=NexButton(7,1,"bNext");
 
 
 
@@ -65,9 +65,6 @@ void bNextCallback(void*ptr){
 void desentramado(char trama[],int temperatura[], int tiempo[]){
   int i = 0;  // Indice del buffer
   int j = 0;  // Indice de trama
-  int k = 0;  // Indice de aux
-  char aux[4] = {0};  // Array auxiliar para las temperaturas
-  char aux2 = 0;
 
   // Limpia los arrays
   memset(trama, 0, sizeof(trama)); 
@@ -155,73 +152,127 @@ void Nextion_display(int Cod, int Temp, int TempA, int Grad, int Tiempo, int Ape
 
 
 
+// Maquinas de estados
+
+
+
+
 
 void loop(){
 
 	static int estado = 0;   // Esta variable recorrera los estados del switch segun lo contenido en el array trama
 	nexLoop(nex_listen_list); // Verifica si se reciben datos del HMI
-  
-  Serial.println("Temperatura ");
-  Serial.println(Temp_actual());
-  Serial.println("Lectura ");
-  Serial.println(analogRead(TC100));
+
+    //if(digitalRead(Start)>=HIGH) estado+=1;
+    switch (estado) {
+        case 0:
+          Serial.println("case 0");
+          if(digitalRead(Start)>=HIGH) estado++;  
+        break;
+
+        case 1:
+          if(Llenado(1)) estado++;
+        break;
+
+        case 2:
+          if(Llenado(2)) estado++;
+        break;
+
+        case 3:
+          if(Llamado_op()) estado++;
+        break;
+
+        case 4:
+          if(Adicion_rapida(1)) estado++;
+        break;
+
+        case 5:
+          if(Adicion_lenta(1,2000,2000)) estado++;
+        break;
+
+        case 6:
+          if(Circulacion(1)) estado++;
+        break;
+
+        case 7:
+          if(Lavado_rebose(2)) estado++;
+        break;
+
+        case 8:
+          if(Vaciado()) estado++;
+        break;
+
+        case 9:
+          Calentamiento(130,2);
+          Presurizado();
+          Serial.println(Temp_actual());
+          if(Temp_actual() >= 130) estado++;
+        break;
+
+        case 10:
+          Enfriamiento(60,2);
+          Despresurizado();
+          Serial.println(Temp_actual());
+          if(Temp_actual() <= 60) estado++;
+        break;
+
+        case 11:
+          Serial.println("Fin de programa");
+          estado = 0;
+        break;
+
+
+       
+    }
+
+
+
+//  Serial.println("Temperatura ");
+//  Serial.println(Temp_actual());
+//  Serial.println("Lectura ");
+//  Serial.println(analogRead(TC100));
  // Temp_actual();
-  delay(2000);
-  switch (trama[estado]) {
-
-      // Preblanqueo quimico
-      case 'A':
-        
-        Serial.println("Preblanqueo quimico\n");
-        send_msj("nCod.val=",01);
-        send_msj("nTemp.val=",30);
-        estado++;
-      break;
-
-      case 'B':
-
-        Serial.println("Preblanqueo con jabon\n");
-
-        estado++;
-      break;
-
-      case 'C':
-        
-      break;
-
-
-      case 'D':
-        Serial.println("Poliester a ");
-        Serial.println(temperatura[0]);
-        Serial.println("\n");
-        
-        send_msj("nCod.val=",04);
-        send_msj("nTemp.val=",temperatura[0]);
-        send_msj("nTiempo.val=",tiempo[0]);
-
-        estado++;
-      break;
-
-      case 'E':
-        Serial.println("Algodon a ");
-        Serial.println(temperatura[1]);
-        Serial.println(tiempo[1]);
-        Serial.println("\n");
-        send_msj("nCod.val=",05);
-        send_msj("nTemp.val=",temperatura[1]);
-        send_msj("nTiempo.val=",tiempo[1]);
-
-        estado++;
-      break;
-
-      case 'X':
-        Serial.println("Fin del programa\n");
-        estado = 0;
-        memset(trama, 0, sizeof(trama));
-        memset(temperatura, 0, sizeof(temperatura));
-      break;
-  }
-
+  //delay(2000);
+  
+//  switch (trama[estado]) {
+//
+//      // Preblanqueo quimico
+//      case 'A':
+//        
+//        Serial.println("Preblanqueo quimico\n");
+//        if(Preblanqueo_quimico()) estado++;
+//      break;
+//
+//      case 'B':
+//
+//        Serial.println("Preblanqueo con jabon\n");
+//        
+//        estado++;
+//      break;
+//
+//      case 'C':
+//        
+//      break;
+//
+//
+//      case 'D':
+//        Serial.println("Poliester a ");
+//        if(Poliester(temperatura[0],tiempo[0])) estado++;
+//      break;
+//
+//      case 'E':
+//        Serial.println("Algodon a ");
+//       if( Algodon(temperatura[1],tiempo[1])) estado++;
+//      break;
+//
+//      case 'X':
+//        Serial.println("Fin del programa\n");
+//        estado = 0;
+//        memset(trama, 0, sizeof(trama));
+//        memset(temperatura, 0, sizeof(temperatura));
+//      break;
+//  }
+//
 
 
 

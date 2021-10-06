@@ -57,9 +57,9 @@ void setup()
     pinMode(PRESURIZADO,OUTPUT);
 
 // Interrupcione y entradas externas
-    pinMode(Op_ok, OUTPUT);
-    pinMode(Start,OUTPUT);
-    pinMode(Stop,OUTPUT);
+    pinMode(Op_ok, INPUT);
+    pinMode(Start,INPUT);
+    pinMode(Stop,INPUT);
 
 //  Inicio de parametros del Nextion   
     nexInit();

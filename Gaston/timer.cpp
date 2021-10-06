@@ -90,8 +90,8 @@ int timer3(unsigned long interval){
 }
 
 // Usado para actualizar valores de tiempo 
-int timer4(unsigned long interval, int reset = false){
-
+int timer4(unsigned long interval){
+  int reset = 0;
   unsigned long currentTime = millis();
   static unsigned long previousTime = millis();
   static int start = 0;
@@ -119,8 +119,8 @@ int timer4(unsigned long interval, int reset = false){
 
 
 // Usado para actualizar valores de temperatura
-int timer5(unsigned long interval, int reset = false){
-
+int timer5(unsigned long interval){
+  int reset = 0;
   unsigned long currentTime = millis();
   static unsigned long previousTime = millis();
   static int start = 0;
@@ -149,7 +149,8 @@ int timer5(unsigned long interval, int reset = false){
 // Funcion auxiliar
 //Convierte el tiempo de MINUTOS a milisegundos
 unsigned long To_millis(int tiempo){
-
-    return tiempo*60*1000;
+    unsigned long time = tiempo;
+    //Serial.println(tiempo*60*1000);
+    return time*60*1000;
 
 }

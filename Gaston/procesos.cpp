@@ -36,7 +36,7 @@ int Llenado(int Nivel){
         case 2:
             if (digitalRead(LC101) >= HIGH)
             {
-                digitalWrite(FV201,LOW);
+                digitalWrite(FV200,LOW);
                 digitalWrite(pump,HIGH);
                 digitalWrite(plegador_1,HIGH);
                 //digitalWrite(plegador_2,HIGH);
@@ -82,11 +82,11 @@ int Adicion_rapida(int tiempo){
     Serial.println("Adicion_rapida " + String(tiempo) + " min");
     Nextion_display(89,0,0,0,tiempo,0,0);
     unsigned long tiempo_ms = To_millis(tiempo); // Pasa el tiempo de minutos a milisegundos 
-    
+    //unsigned long tiempo_ms = tiempo*60*1000;
     // Actualiza el contador cada minuto
     if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
     
-
+    Serial.println(tiempo_ms);
     if (timer1(tiempo_ms))
     {   
         timer4(1);
@@ -106,8 +106,10 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
     Nextion_display(88,0,0,0,tiempo,t_abierto,t_cerrado);
     // Pasa el tiempo a milisegundos
     unsigned long tiempo_ms = To_millis(tiempo);
-    unsigned long t_ams = t_abierto*1000;
-    unsigned long t_cms = t_cerrado*1000;
+    unsigned long aux = t_abierto;
+    unsigned long aux2 = t_cerrado;
+    unsigned long t_ams = aux*1000;
+    unsigned long t_cms = aux2*1000;
 
     // Actualiza el contador cada minuto
     if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
@@ -183,7 +185,7 @@ int Lavado_rebose(int tiempo){
     // Pasamos el tiempo de minutos a milisegundos
     unsigned long tiempo_ms = To_millis(tiempo);
     // Se abre valvula de lavado por revose FV210
-    digitalWrite(FV210,HIGH);
+    if(!digitalRead(FV200)) digitalWrite(FV210,HIGH);
 
     // Actualiza el contador cada minuto
     if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
@@ -196,14 +198,14 @@ int Lavado_rebose(int tiempo){
     {   
         // Si el sensor de nivel 2 esta en HIGH
         // Abre la valvula de vaciado y cierra la de llenado
-        if (digitalRead(LC101) >= HIGH && digitalRead(LC100) >= HIGH)
+        if (digitalRead(LC101) >= HIGH)
         {
             digitalWrite(FV210,HIGH);
             digitalWrite(FV200,LOW);
         }
         // Si el sensor de nivel 1 esta en LOW
         // Abre la valvula de llenado y cierra la de vaciado
-        if (digitalRead(LC100) <= LOW && digitalRead(LC101) <= LOW)
+        if (digitalRead(LC100) <= LOW)
         {
             digitalWrite(FV210,LOW);
             digitalWrite(FV200,HIGH);
@@ -232,7 +234,7 @@ int Vaciado(){
     Serial.println("Vaciado");
     Nextion_display(62,0,0,0,0,0,0);
 
-    const unsigned long tiempo_vaciado = 1000;  // Falta poner el tiempo
+    const unsigned long tiempo_vaciado = 5000;  // Falta poner el tiempo
     // Se abre la valvula de vaciado y se apaga la bomba y el plegador
     digitalWrite(pump,LOW);
     digitalWrite(plegador_1,LOW);
@@ -240,12 +242,12 @@ int Vaciado(){
     digitalWrite(FV211,HIGH);
     // Espera el tiempo necesario donde se sabe que el tanque esta vacio
     // y luego cierra la valvula
-    if(!timer1(tiempo_vaciado))
+    if(timer1(tiempo_vaciado))
     {
     digitalWrite(FV211,LOW);
-    return false;
+    return true;
     }
-    else return true;
+    else return false;
 }
 
 
@@ -263,8 +265,8 @@ int Vaciado(){
 void Calentamiento(int temp, float grad){
 
     // Variables de utilidad
-    unsigned long t_abierto;
-    unsigned long t_cerrado;
+    unsigned long t_abierto = 2000;
+    unsigned long t_cerrado = 3000;
     static int estado = true;
 
     // Actualiza la temperatura actual cada minuto
@@ -335,8 +337,8 @@ void Enfriamiento(int temp, float grad){
 
 
     // Variables de utilidad
-    unsigned long t_abierto;
-    unsigned long t_cerrado;
+    unsigned long t_abierto = 2000;
+    unsigned long t_cerrado = 3000;
     static int estado = true;
     
     // Actualiza la temperatura actual cada minuto
