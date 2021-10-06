@@ -187,7 +187,7 @@ void loop(){
         break;
 
         case 5:
-          if(Adicion_lenta(1,2000,2000)) estado++;
+          if(Adicion_lenta(1,2,2)) estado++;
         break;
 
         case 6:

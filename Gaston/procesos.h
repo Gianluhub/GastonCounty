@@ -27,6 +27,8 @@ int timer2(unsigned long interval);
 int timer3(unsigned long interval);
 int timer4(unsigned long interval);
 int timer5(unsigned long interval);
+int timer6(unsigned long interval);
+
 
 //Recetas.cpp
 int Poliester(int temperatura, int tiempo);

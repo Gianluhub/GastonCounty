@@ -66,7 +66,7 @@ int Poliester(int temperatura, int tiempo){
 			else Calentamiento(temperatura,2);
 			
 			Presurizado();
-			if ( Temp_actual() >= temperatura - 2) estado = 9;
+			if ( Temp_actual() >= temperatura - 1) estado = 9;
 
 		break;
 

@@ -146,6 +146,28 @@ int timer5(unsigned long interval){
 
 }
 
+// Usado para presurizado y despresurizado
+int timer6(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
+
 // Funcion auxiliar
 //Convierte el tiempo de MINUTOS a milisegundos
 unsigned long To_millis(int tiempo){
