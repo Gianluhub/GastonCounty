@@ -161,17 +161,24 @@ void Nextion_display(int Cod, int Temp, int TempA, int Grad, int Tiempo, int Ape
 void loop(){
 
 	static int estado = 0;   // Esta variable recorrera los estados del switch segun lo contenido en el array trama
+  static int flag = true;
 	nexLoop(nex_listen_list); // Verifica si se reciben datos del HMI
+  int aux1 = 0;
+  int aux2 = 0;
 
-    //if(digitalRead(Start)>=HIGH) estado+=1;
+    if(digitalRead(Start)>=HIGH && flag)
+    {
+      estado+=1;
+      flag = false;
+    }
     switch (estado) {
         case 0:
           Serial.println("case 0");
-          if(digitalRead(Start)>=HIGH) estado++;  
+          if(digitalRead(Start)>=HIGH) flag = true;  
         break;
 
         case 1:
-          if(Llenado(1)) estado++;
+          if(Llenado(1)) estado ++;
         break;
 
         case 2:
@@ -195,7 +202,7 @@ void loop(){
         break;
 
         case 7:
-          if(Lavado_rebose(2)) estado++;
+          if(Lavado_rebose(1)) flag = true;
         break;
 
         case 8:
@@ -203,21 +210,22 @@ void loop(){
         break;
 
         case 9:
-          Calentamiento(130,2);
-          Presurizado();
+          aux1 = Calentamiento(130,2);
+          aux2 = Presurizado();
           Serial.println(Temp_actual());
-          if(Temp_actual() >= 130) estado++;
+          if(Temp_actual() >= 150 && f1 && f2) estado++;
         break;
 
         case 10:
-          Enfriamiento(60,2);
-          Despresurizado();
           Serial.println(Temp_actual());
-          if(Temp_actual() <= 60) estado++;
+          f1 = Enfriamiento(60,2);
+          f2 = Despresurizado();
+          if(Temp_actual() <= 60 && f1 && f2) estado++;
         break;
 
         case 11:
           Serial.println("Fin de programa");
+          flag = true;
           estado = 0;
         break;
 
@@ -240,14 +248,14 @@ void loop(){
 //      case 'A':
 //        
 //        Serial.println("Preblanqueo quimico\n");
-//        if(Preblanqueo_quimico()) estado++;
+//        if(Preblanqueo_quimico()) flag = true;
 //      break;
 //
 //      case 'B':
 //
 //        Serial.println("Preblanqueo con jabon\n");
 //        
-//        estado++;
+//        flag = true;
 //      break;
 //
 //      case 'C':
@@ -257,12 +265,12 @@ void loop(){
 //
 //      case 'D':
 //        Serial.println("Poliester a ");
-//        if(Poliester(temperatura[0],tiempo[0])) estado++;
+//        if(Poliester(temperatura[0],tiempo[0])) flag = true;
 //      break;
 //
 //      case 'E':
 //        Serial.println("Algodon a ");
-//       if( Algodon(temperatura[1],tiempo[1])) estado++;
+//       if( Algodon(temperatura[1],tiempo[1])) flag = true;
 //      break;
 //
 //      case 'X':

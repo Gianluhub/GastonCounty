@@ -14,10 +14,10 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado);
 int Circulacion(int interval);
 int Lavado_rebose(int tiempo);
 int Vaciado();
-void Calentamiento(int temp, float grad);
-void Enfriamiento(int temp, float grad);
-void Presurizado();
-void Despresurizado();
+int Calentamiento(int temp, float grad);
+int Enfriamiento(int temp, float grad);
+int Presurizado();
+int Despresurizado();
 int Temp_actual();
 
 // timer.cpp
