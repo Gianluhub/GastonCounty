@@ -10,11 +10,13 @@ nivel 1 es el nivel bajo y nivel 2 el alto
 // FALTA AVERIGUAR SOBRE EL ENCENDIDO DEL PLEGADOR
 int Llenado(int Nivel){
 
-    Serial.println("Llenado a nivel " + String(Nivel));
-    Nextion_display(42,0,0,0,0,0,1);
     // Abre valvula para llenar el tanque y asegura que la de reflujo este abierta
     digitalWrite(FV200,HIGH);
     digitalWrite(FV204,HIGH);
+
+    // Comunicacion por serial
+    Serial.println("Llenado a nivel " + String(Nivel));
+    Nextion_display(42,0,0,0,0,0,Nivel);
 
     // Cuando llegue al nivel deseado, cierra la valvula, enciendo el motor y el plegador
     switch(Nivel)
@@ -56,8 +58,10 @@ No avanza al siguiente paso hasta que atienda el llamado
 */
 int Llamado_op(){
 
+    // Comunicacion por serial
     Serial.println("Llamado_op");
     Nextion_display(34,0,0,0,0,0,0);
+
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
     digitalWrite(LLAMADO_OP,HIGH);
@@ -79,17 +83,30 @@ Adicion rapida
 // La variable tiempo estara dada en minutos, hay que convertirla en millisegundos
 int Adicion_rapida(int tiempo){
 
+    // Comunicacion por serial
     Serial.println("Adicion_rapida " + String(tiempo) + " min");
-    Nextion_display(89,0,0,0,tiempo,0,0);
-    unsigned long tiempo_ms = To_millis(tiempo); // Pasa el tiempo de minutos a milisegundos 
+   
+    // Comunicacion con Nextion
+    // El flag start se usa para mostrar en pantalla solo una vez por proceso
+    // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
+    static int start = true; 
+    if (start)
+    { 
+        Nextion_display(89,0,0,0,tiempo,0,0);
+        start = false; 
+    }
+    Act_tiempo(tiempo);
+
+
+    // Pasa el tiempo de minutos a milisegundos 
+    unsigned long tiempo_ms = To_millis(tiempo);
+    Serial.println(tiempo_ms); 
     
-    // Actualiza el contador cada minuto
-    if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
-    
-    Serial.println(tiempo_ms);
+    // Espera a que acabe el proceso
     if (timer1(tiempo_ms))
     {   
-        timer4(1);
+        Act_tiempo(false);  // Reiniciamos el contador
+        start = true;    // Reiniciamos el flag para que la siguiente llamada de la funcion muestre en pantalla
         return true;
     }
     else return false;
@@ -102,8 +119,20 @@ El parametro tiempo debe ser en minutos y los de t_abierto y t_cerrado en segund
 */
 int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
 
+
+    // Comunicacion por serial
     Serial.println("Adicion_lenta " + String(tiempo)+" min");
-    Nextion_display(88,0,0,0,tiempo,t_abierto,t_cerrado);
+
+    // Comunicacion con Nextion
+    // El flag start se usa para mostrar en pantalla solo una vez por proceso
+    // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
+    static int start = true; 
+    if (start)
+    { 
+        Nextion_display(88,0,0,0,tiempo,t_abierto,t_cerrado);
+        start = false; 
+    }
+    Act_tiempo(tiempo);
 
     // Pasa el tiempo a milisegundos
     unsigned long tiempo_ms = To_millis(tiempo);
@@ -112,9 +141,6 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
     unsigned long t_ams = aux*1000;
     unsigned long t_cms = aux2*1000;
 
-    // Actualiza el contador cada minuto
-    if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
-    
     // Mientras que no haya pasado el tiempo se seguiran abriendo la valvulas     
     if (!timer1(tiempo_ms))
     {
@@ -127,7 +153,8 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
     }
     else 
     {
-        timer4(1);
+        Act_tiempo(false);  //Reiniciamos el contador
+        start = true;
         return true;
     }
 }
@@ -135,36 +162,48 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
 
 /*
  Circulacion
- Es la misma funcion timer, debe recibir el tiempo en milisegundos.
+ Es la misma funcion timer pero debe recibir el tiempo en minutos.
 */
 
 int Circulacion(int interval){
 
-  Serial.println("Circulacion "+ String(interval));
-  Nextion_display(1,0,0,0,interval,0,0);
+    // Comunicacion por serial
+    Serial.println("Circulacion "+ String(interval));
 
-  unsigned long interval_ms = To_millis(interval);
-  unsigned long currentTime = millis();
-  static unsigned long previousTime = millis();
-  static int start = 0;
+    // Comunicacion con Nextion
+    // El flag se usa para mostrar en pantalla solo una vez por proceso
+    // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
+    static int flag = true;
+    if (flag)
+    { 
+        Nextion_display(1,0,0,0,interval,0,0);
+        flag = false; 
+    }
+    Act_tiempo(interval);
 
-  // Actualiza el contador cada minuto
-  if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
-  
 
-  if (start == 1)
-  { 
-    previousTime = millis();
-    start = 0;
-  }
+    // Se pasan los tiempos a milisegundos
+    unsigned long interval_ms = To_millis(interval);
+    unsigned long currentTime = millis();
+    static unsigned long previousTime = millis();
+    static int start = 0;
 
-  if (currentTime - previousTime >= interval_ms)
-  {
-    start = 1;
-    timer4(1);
-    return true;
-  }
-  else return false;
+    // Si start es 1, quiere decir que se comienza a contar de nuevo
+    if (start == 1)
+    { 
+        previousTime = millis();
+        start = 0;
+    }
+
+    // Calcula el tiempo faltante
+    if (currentTime - previousTime >= interval_ms)
+    {
+        start = 1;
+        flag = true;        // Reiniciamos flag para mostrar en pantalla
+        Act_tiempo(false);  //Reiniciamos el contador
+        return true;
+    }
+    else return false;
 
 }
 
@@ -181,21 +220,31 @@ int Circulacion(int interval){
 
 int Lavado_rebose(int tiempo){
 
-    Serial.println("Lavado rebose "+ String(tiempo) + " min");
-    Nextion_display(50,0,0,0,tiempo,0,0);
 
+    // Comunicacion por serial
+    Serial.println("Lavado rebose "+ String(tiempo) + " min");
+
+    // Comunicacion con Nextion
+    // El flag se usa para mostrar en pantalla solo una vez por proceso
+    // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
+    static int start = true;
+    if (start)
+    { 
+        Nextion_display(50,0,0,0,tiempo,0,0);
+        start = false; 
+    }
+    Act_tiempo(tiempo);
+
+
+ 
     // Pasamos el tiempo de minutos a milisegundos
     unsigned long tiempo_ms = To_millis(tiempo);
 
-    // Se abre valvula de lavado por revose FV210
+    // Se abre valvula de lavado por revose FV210 si es que no esta abierta la de agua
     if(!digitalRead(FV200)) digitalWrite(FV210,HIGH);
 
-    // Actualiza el contador cada minuto
-    if(timer4(10000)) send_msj("nTiempo.val=",millis()/(60*1000));
-
     /*
-     Mientras que el temporizador esta contando, se va 
-     realizando el lavado por rebose
+     Mientras que el temporizador esta contando, se realiza el lavado por rebose
     */
     if (!timer1(tiempo_ms))
     {   
@@ -220,7 +269,8 @@ int Lavado_rebose(int tiempo){
     // Al finalizar el tiempo se asegura que las valvulas esten cerradas
     digitalWrite(FV210,LOW);
     digitalWrite(FV200,LOW);
-    timer4(1);
+    timer4(false);
+    start = true;
     return true;
     }
 }
@@ -238,6 +288,7 @@ int Vaciado(){
     Nextion_display(62,0,0,0,0,0,0);
 
     const unsigned long tiempo_vaciado = 10000;  // Falta poner el tiempo
+
     // Se abre la valvula de vaciado y se apaga la bomba y el plegador
     digitalWrite(pump,LOW);
     digitalWrite(plegador_1,LOW);
@@ -271,14 +322,15 @@ int Vaciado(){
 
 int Calentamiento(int temp, float grad){
 
+    // Comunicacion serial
     Serial.println("Calentamiento");
+    Nextion_display(1,temp,Temp_actual(),grad,0,0,0);
+
     // Variables de utilidad
     unsigned long t_abierto = 2000;
     unsigned long t_cerrado = 3000;
     static int flag = true;
 
-    // Actualiza la temperatura actual cada minuto
-    if(timer5(10000)) send_msj("nTempA.val=",Temp_actual());
 
    //FALTA IMPLEMENTAR EL MAPEO DE TEMPERATURA
 
@@ -325,7 +377,7 @@ int Calentamiento(int temp, float grad){
     digitalWrite(FV202,LOW);
     digitalWrite(FV208,LOW);
     digitalWrite(FV209,LOW);
-    timer5(1);
+
     return true;
     }
   
@@ -346,15 +398,15 @@ int Calentamiento(int temp, float grad){
 
 int Enfriamiento(int temp, float grad){
 
+    // Comunicacion serial
     Serial.println("Enfriamiento");
+    Nextion_display(1,temp,Temp_actual(),grad,0,0,0);
+
     // Variables de utilidad
     unsigned long t_abierto = 2000;
     unsigned long t_cerrado = 3000;
     static int flag = true;
     
-    // Actualiza la temperatura actual cada minuto
-    if(timer5(10000)) send_msj("nTempA.val=",Temp_actual());
-
     if (Temp_actual() > temp)
     {   
         // Si no se requiere gradiente deja las valvulas abiertas siempre
@@ -394,7 +446,6 @@ int Enfriamiento(int temp, float grad){
     // Asegurar que las valvulas estan cerradas
     digitalWrite(FV201,LOW);
     digitalWrite(FV203,LOW);
-    timer5(1);
     return true;
     }
 

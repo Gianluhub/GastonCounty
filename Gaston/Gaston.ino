@@ -128,7 +128,7 @@ int Tomar_Dato(int i,char start, char buffer[], int save[2]){
 }
 
 
-// Envia datos al HMI para ser mostrados en pantalla
+// Funciones para envio de datos a la pantalla 
 void send_msj(char msj[],int dato){
 
   Serial2.print(msj);  // Se envia un string que hace referencia a la variable del HMI que se desea modificar ejemplo "nTemp.val="
@@ -138,6 +138,7 @@ void send_msj(char msj[],int dato){
   Serial2.write(0xff);
 }
 
+// Envia informacion de interes a la pantalla sobre el proceso que esta ejecutandose
 void Nextion_display(int Cod, int Temp, int TempA, int Grad, int Tiempo, int Aper, int Cierre ){
 
   send_msj("nCod.val=",Cod);
@@ -150,31 +151,59 @@ void Nextion_display(int Cod, int Temp, int TempA, int Grad, int Tiempo, int Ape
   send_msj("nCierre.val=",Cierre);
 }
 
+// Actualiza el tiempo restante en la pantalla cada minuto
+// Utiliza timer4 y el tiempo debe ser en minutos
+// Es obligatorio reiniciar el contador despues de usar la funcion
+void Act_tiempo(int tiempo){
+
+  static int cont = 0; // Contador que llevara el tiempo restante
+  send_msj("nTempA.val=",Temp_actual());
+
+  if (timer4(60000))
+  {
+    cont++;
+    send_msj("nTiempo.val=",tiempo-cont);
+  }
+
+  // Reinicia el contador
+  if(tiempo == false)
+  {
+    cont = 0;
+    timer4(false);
+    send_msj("nTiempo.val=",0); 
+  }
+}
+
+// Actualiza la temperatura en la pantalla cada minuto
+// Utiliza timer5 
+void Act_temp(int reset = false){
+
+  if (timer5(60000))
+  {
+    send_msj("nTemp.val=",Temp_actual());
+  }
+
+  if(reset)
+  {
+  timer5(false); // Reinicia el contador
+  }
+}
 
 
 // Maquinas de estados
-
-
-
-
 
 void loop(){
 
 	static int estado = 0;   // Esta variable recorrera los estados del switch segun lo contenido en el array trama
   static int flag = true;
 	nexLoop(nex_listen_list); // Verifica si se reciben datos del HMI
-  int aux1 = 0;
-  int aux2 = 0;
+  int temp_ok = 0;
+  int pi_ok = 0;
 
-    if(digitalRead(Start)>=HIGH && flag)
-    {
-      estado+=1;
-      flag = false;
-    }
     switch (estado) {
         case 0:
           Serial.println("case 0");
-          if(digitalRead(Start)>=HIGH) flag = true;  
+          if(digitalRead(Start)>=HIGH) estado++;  
         break;
 
         case 1:
@@ -190,19 +219,19 @@ void loop(){
         break;
 
         case 4:
-          if(Adicion_rapida(1)) estado++;
+          if(Adicion_rapida(2)) estado++;
         break;
 
         case 5:
-          if(Adicion_lenta(1,2,2)) estado++;
+          if(Adicion_lenta(2,2,2)) estado++;
         break;
 
         case 6:
-          if(Circulacion(1)) estado++;
+          if(Circulacion(2)) estado++;
         break;
 
         case 7:
-          if(Lavado_rebose(1)) flag = true;
+          if(Lavado_rebose(2)) estado++;
         break;
 
         case 8:
@@ -210,17 +239,17 @@ void loop(){
         break;
 
         case 9:
-          aux1 = Calentamiento(130,2);
-          aux2 = Presurizado();
+          temp_ok = Calentamiento(130,2);
+          pi_ok = Presurizado();
           Serial.println(Temp_actual());
-          if(Temp_actual() >= 150 && f1 && f2) estado++;
+          if(Temp_actual() >= 150 && temp_ok && pi_ok) estado++;
         break;
 
         case 10:
           Serial.println(Temp_actual());
-          f1 = Enfriamiento(60,2);
-          f2 = Despresurizado();
-          if(Temp_actual() <= 60 && f1 && f2) estado++;
+          temp_ok = Enfriamiento(60,2);
+          pi_ok = Despresurizado();
+          if(Temp_actual() <= 60 && temp_ok && pi_ok) estado++;
         break;
 
         case 11:

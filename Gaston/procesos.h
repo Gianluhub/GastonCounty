@@ -42,8 +42,8 @@ int Saponizado();
 void bNextCallback(void*ptr);
 void send_msj(char msj[],int dato);
 void Nextion_display(int Temp, int TempA, int Grad, int Tiempo, int Paso, int Aper, int Cierre);
-
-	
+void Act_tiempo(int tiempo);
+void Act_temp();	
 
 
 

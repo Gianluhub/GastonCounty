@@ -30,6 +30,12 @@ int timer1(unsigned long interval){
   static unsigned long previousTime = millis();
   static int start = 0;
 
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
+
   if (start == 1)
   { 
     previousTime = millis();
@@ -51,6 +57,12 @@ int timer2(unsigned long interval){
   unsigned long currentTime = millis();
   static unsigned long previousTime = millis();
   static int start = 0;
+
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
 
   if (start == 1)
   { 
@@ -74,6 +86,12 @@ int timer3(unsigned long interval){
   static unsigned long previousTime = millis();
   static int start = 0;
 
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
+
   if (start == 1)
   { 
     previousTime = millis();
@@ -91,15 +109,15 @@ int timer3(unsigned long interval){
 
 // Usado para actualizar valores de tiempo 
 int timer4(unsigned long interval){
-  int reset = 0;
+  //int reset = 0;
   unsigned long currentTime = millis();
   static unsigned long previousTime = millis();
   static int start = 0;
 
-  if (reset)
+  if (interval == false)
   {
     start = 1;
-    return true;
+    return false;
   }
 
   if (start == 1)
@@ -125,10 +143,10 @@ int timer5(unsigned long interval){
   static unsigned long previousTime = millis();
   static int start = 0;
 
-  if (reset)
+  if (interval == false)
   {
     start = 1;
-    return true;
+    return false;
   }
 
   if (start == 1)
@@ -153,6 +171,12 @@ int timer6(unsigned long interval){
   static unsigned long previousTime = millis();
   static int start = 0;
 
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
+
   if (start == 1)
   { 
     previousTime = millis();
@@ -171,8 +195,7 @@ int timer6(unsigned long interval){
 // Funcion auxiliar
 //Convierte el tiempo de MINUTOS a milisegundos
 unsigned long To_millis(int tiempo){
-    unsigned long time = tiempo;
-    //Serial.println(tiempo*60*1000);
-    return time*60*1000;
 
+    unsigned long time = tiempo;
+    return time*60*1000;
 }
