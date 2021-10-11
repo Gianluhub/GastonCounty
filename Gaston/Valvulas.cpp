@@ -3,7 +3,8 @@
 #include "procesos.h"
 
 
-// Clase que guarda el estado de las valvulas y lo regresa a su estado original si es necesario
+// Clase para control de las valvulas
+// Guarda el estado de las valvulas y lo regresa a su estado original si es necesario
 class Control_Valvulas{
 
 	int valvulas[15];
@@ -15,10 +16,10 @@ class Control_Valvulas{
 	public:
 	void guardar_estado(); // Guarda el estado actual de las valvulas y los motores
 	void regresar_estado(); // Regresa el estado de las valvulas al guardado previamente
-
+	void cerrar_valvulas(); // Cierra todas las valvulas 
 };
 
-
+// Funciones de la clase Control_valvulas
 void Control_Valvulas::guardar_estado(){
 
 	int i;
@@ -36,4 +37,32 @@ void Control_Valvulas::regresar_estado(){
 	{
 		digitalWrite(pins[i], valvulas[i]);
 	}
+}
+
+void Control_Valvulas::cerrar_valvulas(){
+	int i;
+	for (i=0; i<15; i++)
+	{
+		digitalWrite(pins[i],LOW);
+	}
+}
+
+
+
+// Funciones encargadas de la interrupcion del sistema.
+volatile Control_Valvulas master;
+volatile int interrupt = false;
+
+void Interrupt() {
+
+  interrupt = true;
+  master.guardar_estado();  // Guarda el estado de las valvulas si estan abiertas o cerradas
+  master.cerrar_valvulas(); // Cierra todas las valvulas por seguridad
+  Reset();                  // Resetea todos los contadores
+}
+
+void Detener_proceso(){
+
+ 
+
 }

@@ -6,8 +6,8 @@
 
 // Variables del nextion a inicializar
 extern NexButton bNext;
+extern NexButton bSelec;
 extern NexTouch *nex_listen_list[];
-
 
 
 void setup() 
@@ -56,13 +56,15 @@ void setup()
     pinMode(TOMA_MUESTRA,OUTPUT);
     pinMode(PRESURIZADO,OUTPUT);
 
-// Interrupcione y entradas externas
+// Interrupciones y entradas externas
     pinMode(Op_ok, INPUT);
     pinMode(Start,INPUT);
     pinMode(Stop,INPUT);
+    //attachInterrupt(digitalPinToInterrupt(Stop), Interrupt, RISING);
 
 //  Inicio de parametros del Nextion   
     nexInit();
     bNext.attachPop(bNextCallback,&bNext);
+    bSelec.attachPop(bSelecCallback,&bNext);
 
 }

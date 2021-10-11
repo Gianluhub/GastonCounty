@@ -14,24 +14,31 @@
   * buffer: Recibe la data proveniente del Nextion.
   * trama: Contiene la data desentramada utilizada para iniciar los procesos.
   		   Cada indice del array contiene el estado del proceso que se desea ejecutar. 
-  * temperatura : Almacena la temperatura que alcanzara el tanque al iniciar el proceso de teñido.
+  * temperatura: Almacena la temperatura que alcanzara el tanque al iniciar el proceso de teñido.
   				  Para el poliester la temepratura se almacena en el indice 0 y para el algodon en el 1.
+  * tiempo: Almacena el tiempo de circulacion despues de subir la temperatura. El indice 0 es para el poleistar y el 1 para el algodon.
+  * Nuevo_estado: Se utiliza seleccionar el estado de un proceso que se quiere repetir en el evento Tomar_muestra.
+  * estado_ok: Confirma que si se repetira un proceso
 */ 
 char buffer[50] = {0};		
 char trama[20] = {0};		
 int temperatura[2] = {0};	
 int tiempo[2] = {0};
-
+// Variables para Toma de muestra
+int Nuevo_estado = 0;
+int Nuevo_estado_ok = false;
 
 
 // Declaracion de objeto que representa los botones del Nextion
 NexButton bNext=NexButton(7,1,"bNext");
+NexButton bSelec=NexButton(9,1,"bNext");
 
 
 
 // Declaracion de lista de eventos de los botones del Nextion
 NexTouch *nex_listen_list[] = {
   &bNext,
+  &bSelec,
   NULL
 };
 
@@ -40,6 +47,7 @@ NexTouch *nex_listen_list[] = {
    Funciones que seran llamadas al producirse un evento
 */
 
+// Recibe y desentrama los datos para iniciar un nuevo proceso de teñido.
 void bNextCallback(void*ptr){
 
 	memset(buffer, 0, sizeof(buffer));  	// Limpia el buffer para recibir la data
@@ -53,6 +61,33 @@ void bNextCallback(void*ptr){
   Serial.println(tiempo[0]);        // Tiempo para el poliester
 	Serial.println(temperatura[1]);   // Temperatura para el algodon
   Serial.println(tiempo[1]);        // Tiempo para el algodon	
+}
+
+// Funcion usada en Tomar_muestar, se usa para seleccionar un subproceso que se quiera repetir.
+void bSelecCallback(void*ptr){
+  uint32_t val1 = 0;
+  uint32_t val2 = 0;
+  memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
+  bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
+  // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
+//  bSelec.getValue(&val1);
+  //bSelec.getValue(&val2);
+
+  //Seleccion_proceso(buffer[0],buffer[1]);
+  Serial.println(val1);
+  Serial.println(val2);
+  Serial.println(buffer); 
+}
+
+// Funcion usada en Tomar_muestra, confirma que hay un cambio de estado.
+void bCambiarEstadoCallback(void*ptr){
+
+  memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
+  //bState.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
+  // Se espera solo 1 byte de datos
+  Nuevo_estado = buffer[0];
+  Nuevo_estado_ok = true;
+
 }
 
 
@@ -98,7 +133,7 @@ void desentramado(char trama[],int temperatura[], int tiempo[]){
 */
 int Tomar_Dato(int i,char start, char buffer[], int save[2]){
   int k = 0;  // Indice de aux
-  char aux[4] = {0};  // Array auxiliar para las temperaturas
+  char aux[4] = {0};  // Array auxiliar
   char aux2 = 0;
 
   // Verifica si es necesario extraer un valor de temperatura
@@ -174,36 +209,48 @@ void Act_tiempo(int tiempo){
   }
 }
 
-// Actualiza la temperatura en la pantalla cada minuto
-// Utiliza timer5 
-void Act_temp(int reset = false){
+// Permite seleccionar nuevamente un proceso
+void Seleccion_proceso(int codigo, int estado){
 
-  if (timer5(60000))
-  {
-    send_msj("nTemp.val=",Temp_actual());
-  }
+    switch(codigo)
+    {
+        case 1:
+            Lista_preblanqueo_quimico(estado);
+        break;
 
-  if(reset)
-  {
-  timer5(false); // Reinicia el contador
-  }
+        case 2:
+            Lista_preblanqueo_jabon(estado);
+        break;
+
+        case 3:
+            Lista_Saponizado(estado);
+        break;
+
+        case 4:
+            Lista_Poliester(estado,temperatura[0],tiempo[0]);
+        break;
+
+        case 5:
+            Lista_Algodon(estado,temperatura[1],tiempo[1]);
+        break;
+    }
+
 }
 
-
 // Maquinas de estados
-
 void loop(){
 
 	static int estado = 0;   // Esta variable recorrera los estados del switch segun lo contenido en el array trama
   static int flag = true;
 	nexLoop(nex_listen_list); // Verifica si se reciben datos del HMI
-  int temp_ok = 0;
+  int temp_ok = 0;  
   int pi_ok = 0;
 
-    switch (estado) {
+  switch (estado) {
+
         case 0:
           Serial.println("case 0");
-          if(digitalRead(Start)>=HIGH) estado++;  
+          if(digitalRead(Start)>=HIGH) estado=11;  
         break;
 
         case 1:
@@ -223,15 +270,15 @@ void loop(){
         break;
 
         case 5:
-          if(Adicion_lenta(2,2,2)) estado++;
+          if(Adicion_lenta(1,2,2)) estado++;
         break;
 
         case 6:
-          if(Circulacion(2)) estado++;
+          if(Circulacion(1)) estado++;
         break;
 
         case 7:
-          if(Lavado_rebose(2)) estado++;
+          if(Lavado_rebose(1)) estado++;
         break;
 
         case 8:
@@ -253,6 +300,11 @@ void loop(){
         break;
 
         case 11:
+          estado = Tomar_muestra(estado);
+
+        break;
+
+        case 12:
           Serial.println("Fin de programa");
           flag = true;
           estado = 0;

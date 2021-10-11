@@ -269,7 +269,6 @@ int Lavado_rebose(int tiempo){
     // Al finalizar el tiempo se asegura que las valvulas esten cerradas
     digitalWrite(FV210,LOW);
     digitalWrite(FV200,LOW);
-    timer4(false);
     start = true;
     return true;
     }
@@ -373,12 +372,12 @@ int Calentamiento(int temp, float grad){
     }
     else 
     {
-    // Asegurar que las valvulas estan cerradas
-    digitalWrite(FV202,LOW);
-    digitalWrite(FV208,LOW);
-    digitalWrite(FV209,LOW);
+        // Asegura que las valvulas estan cerradas
+        digitalWrite(FV202,LOW);
+        digitalWrite(FV208,LOW);
+        digitalWrite(FV209,LOW);
 
-    return true;
+        return true;
     }
   
     return false;
@@ -407,6 +406,15 @@ int Enfriamiento(int temp, float grad){
     unsigned long t_cerrado = 3000;
     static int flag = true;
     
+    // Asegura que las valvulas de calentamiento estan cerradas
+    if (digitalRead(FV202) >= HIGH)
+    {
+        digitalWrite(FV202,LOW);
+        digitalWrite(FV208,LOW);
+        digitalWrite(FV209,LOW);
+        digitalWrite(FV212,LOW);
+    }
+
     if (Temp_actual() > temp)
     {   
         // Si no se requiere gradiente deja las valvulas abiertas siempre
@@ -436,7 +444,6 @@ int Enfriamiento(int temp, float grad){
                 // Cierra las valvulas
                 digitalWrite(FV201,LOW);
                 digitalWrite(FV203,LOW);
-                return true;
             }
             else flag = true;
         }
@@ -473,7 +480,7 @@ int Presurizado(){
         Serial.println("Comienza presurizado");
         if(flag)
         {
-            if(!timer6(1500))
+            if(!timer5(1500))
             {
                 // Comienza el presurizado
                 digitalWrite(FV204,LOW); // Cierra valvula de reflujo (deberian ser todas)
@@ -483,7 +490,7 @@ int Presurizado(){
         }
             //delay(1500); // tiempo que permanece abierta la valvula de aire, aun a determinar
 
-        else if(!timer6(3000)) 
+        else if(!timer5(3000)) 
         {
         digitalWrite(FV212,LOW); // Mantiene la valvula de aire cerrada por un tiempo
         }
@@ -524,6 +531,7 @@ int Despresurizado(){
     }
     if (digitalRead(PCL100) >= HIGH)
     {
+        digitalWrite(FV213,LOW);  // Cierra la valvula de despresurizado
         digitalWrite(FV204,HIGH); // Se abre la valvula de reflujo
         return true;
     }
@@ -539,7 +547,6 @@ int Temp_actual(){
     Temp_actual = map(analogRead(TC100),0,350,0,400);
     return Temp_actual;
 }
-
 
 
 

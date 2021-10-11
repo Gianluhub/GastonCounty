@@ -28,6 +28,7 @@ int timer3(unsigned long interval);
 int timer4(unsigned long interval);
 int timer5(unsigned long interval);
 int timer6(unsigned long interval);
+void Reset();
 
 
 //Recetas.cpp
@@ -39,12 +40,35 @@ int Preblanqueo_jabon();
 int Saponizado();
 
 // Gaston.ino
+void Interrupt();
 void bNextCallback(void*ptr);
+void bSelecCallback(void*ptr);
 void send_msj(char msj[],int dato);
 void Nextion_display(int Temp, int TempA, int Grad, int Tiempo, int Paso, int Aper, int Cierre);
 void Act_tiempo(int tiempo);
-void Act_temp();	
 
+// procesos_print.cpp
+void Llenado_print(int Nivel);
+void Llamado_op_print();
+void Adicion_rapida_print(int tiempo);
+void Adicion_lenta_print(int tiempo, int t_abierto, int t_cerrado);
+void Circulacion_print(int interval);
+void Lavado_rebose_print(int tiempo);
+void Vaciado_print();
+void Calentamiento_print(int temp, float grad);
+void Enfriamiento_print(int temp, float grad);
+void Preguntar_print();
+void Suavizado_print();
+void Tomar_muestra_print();
+void Fin_proceso();
 
+// tomar_muestra.cpp
+int Tomar_muestra(int estado);
+void Lista_Poliester(int estado, int temperatura, int tiempo);
+void Lista_Algodon(int estado, int temperatura, int tiempo);
+void Lista_preblanqueo_quimico(int estado);
+void Lista_preblanqueo_jabon(int estado);
+void Lista_Saponizado(int estado);
+void prueba(int estado);
 
 #endif

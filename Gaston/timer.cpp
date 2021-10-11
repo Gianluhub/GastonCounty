@@ -2,10 +2,10 @@
 
 TEMPORIZADORES
 
-Si se necesitan mas temporarizadores para procesos en paralelo, copiar y pergar el mismo codigo 
+Si se necesitan mas temporarizadores para procesos en paralelo, copiar y pegar el mismo codigo 
 cambiando el nombre a timer2, timer3...
 
-NOTA: LA FUNCION millis() REINICIA SU CONTADOR A 0 UNA VEZ PASADO LOS 50 DIAS. FALTA IMPLEMENTAR LA SOLUCION A ESTE PROBLEMA.
+NOTA: LA FUNCION millis() REINICIA SU CONTADOR A 0 UNA VEZ PASADO LOS 50 DIAS.
 
 */
 
@@ -20,6 +20,8 @@ El parametro de entrada debe estar dado en milisegundos.
 La funcion empezara a contar en el momento en que es llamada.
 Una vez que pase el tiempo dado por el intervalo, la siguiente vez que se llame a
 la funcion comenzara a contar desde cero.
+Si se llama la funcion enviandole false como argumento, reinicia el contador para que
+empiece a contar la siguiente vez que sea llamada la funcion
 
 */
 
@@ -107,7 +109,7 @@ int timer3(unsigned long interval){
 
 }
 
-// Usado para actualizar valores de tiempo 
+// Usado para actualizar valores de tiempo cada minuto 
 int timer4(unsigned long interval){
   //int reset = 0;
   unsigned long currentTime = millis();
@@ -135,8 +137,7 @@ int timer4(unsigned long interval){
 
 }
 
-
-// Usado para actualizar valores de temperatura
+// Usado para presurizado
 int timer5(unsigned long interval){
   int reset = 0;
   unsigned long currentTime = millis();
@@ -164,7 +165,7 @@ int timer5(unsigned long interval){
 
 }
 
-// Usado para presurizado y despresurizado
+// Usado para despresurizado
 int timer6(unsigned long interval){
 
   unsigned long currentTime = millis();
@@ -192,10 +193,23 @@ int timer6(unsigned long interval){
 
 }
 
-// Funcion auxiliar
+// Funciones auxiliares
+
 //Convierte el tiempo de MINUTOS a milisegundos
 unsigned long To_millis(int tiempo){
 
     unsigned long time = tiempo;
     return time*60*1000;
+}
+
+// Reinicia todos los timers
+void Reset(){
+
+  timer1(false);
+  timer2(false);
+  timer3(false);
+  timer4(false);
+  timer5(false);
+  timer6(false);
+
 }
