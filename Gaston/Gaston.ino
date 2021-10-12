@@ -20,8 +20,8 @@
   * Nuevo_estado: Se utiliza seleccionar el estado de un proceso que se quiere repetir en el evento Tomar_muestra.
   * estado_ok: Confirma que si se repetira un proceso
 */ 
-char buffer[50] = {0};		
-char trama[20] = {0};		
+char buffer[100] = {0};		
+char trama[100] = {0};		
 int temperatura[2] = {0};	
 int tiempo[2] = {0};
 // Variables para Toma de muestra
@@ -31,7 +31,10 @@ int Nuevo_estado_ok = false;
 
 // Declaracion de objeto que representa los botones del Nextion
 NexButton bNext=NexButton(7,1,"bNext");
-NexButton bSelec=NexButton(9,1,"bNext");
+NexButton bSelec=NexButton(9,1,"bSelec");
+NexButton bRight=NexButton(8,21,"bRight");
+NexButton bLeft=NexButton(8,22,"bLeft");
+NexButton bOk=NexButton(8,27,"bOk");
 
 
 
@@ -39,6 +42,9 @@ NexButton bSelec=NexButton(9,1,"bNext");
 NexTouch *nex_listen_list[] = {
   &bNext,
   &bSelec,
+  &bRight,
+  &bLeft,
+  &bOk,
   NULL
 };
 
@@ -51,7 +57,7 @@ NexTouch *nex_listen_list[] = {
 void bNextCallback(void*ptr){
 
 	memset(buffer, 0, sizeof(buffer));  	// Limpia el buffer para recibir la data
-	bNext.getText(buffer, sizeof(buffer));  // Recibe los datos y se almacenan en el buffer					
+  bNext.getText(buffer, sizeof(buffer));  // Recibe los datos y se almacenan en el buffer					
 	desentramado(trama,temperatura,tiempo);		// Separa los datos para inciar el proceso
 
 	// Imprime por serial los valores para ser monitoreados
@@ -65,27 +71,63 @@ void bNextCallback(void*ptr){
 
 // Funcion usada en Tomar_muestar, se usa para seleccionar un subproceso que se quiera repetir.
 void bSelecCallback(void*ptr){
-  uint32_t val1 = 0;
-  uint32_t val2 = 0;
+
+  send_msj("nPaso.val=",30);    // Muestra en pantalla el paso del proceso
+  send_msj("nProc.val=",5);  
+  
+  int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
+  int i = 0;
   memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
   bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
   // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
-//  bSelec.getValue(&val1);
-  //bSelec.getValue(&val2);
-
-  //Seleccion_proceso(buffer[0],buffer[1]);
-  Serial.println(val1);
-  Serial.println(val2);
+  i = Tomar_Dato(i,'-',buffer,Dato,'c','e');
+  i = Tomar_Dato(i,'$',buffer,Dato,'c','e');
+  Seleccion_proceso(Dato[0],Dato[1]);
   Serial.println(buffer); 
+  Serial.println(Dato[0]);
+  Serial.println(Dato[1]);
 }
+
+void bRightCallback(void*ptr){
+
+  int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
+  int i = 0;
+  memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
+  bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
+  // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
+  i = Tomar_Dato(i,'-',buffer,Dato,'c','e');
+  i = Tomar_Dato(i,'$',buffer,Dato,'c','e');
+  Seleccion_proceso(Dato[0],Dato[1]);
+  Serial.println(buffer); 
+  Serial.println(Dato[0]);
+  Serial.println(Dato[1]);
+}
+
+void bLeftCallback(void*ptr){
+  
+  int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
+  int i = 0;
+  memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
+  bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
+  // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
+  i = Tomar_Dato(i,'-',buffer,Dato,'c','e');
+  i = Tomar_Dato(i,'$',buffer,Dato,'c','e');
+  Seleccion_proceso(Dato[0],Dato[1]);
+  Serial.println(buffer); 
+  Serial.println(Dato[0]);
+  Serial.println(Dato[1]);
+}
+
 
 // Funcion usada en Tomar_muestra, confirma que hay un cambio de estado.
 void bCambiarEstadoCallback(void*ptr){
 
+  int Dato[2] = {0};
+  int i = 0;
   memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
-  //bState.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
-  // Se espera solo 1 byte de datos
-  Nuevo_estado = buffer[0];
+  bOk.getText(buffer,sizeof(buffer));   // Recibe los datos y se almacenan en el buffer
+  i = Tomar_Dato(i,'$',buffer,Dato,'c','e');
+  Nuevo_estado = Dato[1];
   Nuevo_estado_ok = true;
 
 }
@@ -98,6 +140,7 @@ void bCambiarEstadoCallback(void*ptr){
 	unidades de temperatura y tiempo en ese mismo orden y la X se usa para indicar fin de la trama
 */
 void desentramado(char trama[],int temperatura[], int tiempo[]){
+  
   int i = 0;  // Indice del buffer
   int j = 0;  // Indice de trama
 
@@ -117,11 +160,11 @@ void desentramado(char trama[],int temperatura[], int tiempo[]){
       i+=2;                   // Incrementa en dos para saltar al siguiente dato a extraer
       j++;                    // Incrementa la posicion del array datos
     }
-
     // Extrae la temperatura de la trama
-    i = Tomar_Dato(i,'-',buffer,temperatura);
-    i = Tomar_Dato(i,'#',buffer,tiempo);
+    i = Tomar_Dato(i,'-',buffer,temperatura,'p','a');
+    i = Tomar_Dato(i,'#',buffer,tiempo,'p','a');
     
+ 
   }while(buffer[i]!='X');
   trama[j] = 'X';
 }
@@ -131,7 +174,8 @@ void desentramado(char trama[],int temperatura[], int tiempo[]){
   Extrae los datos de interes al detectar un caracter de inicio y guarda
   los datos en formato entero.
 */
-int Tomar_Dato(int i,char start, char buffer[], int save[2]){
+int Tomar_Dato(int i,char start, char buffer[], int save[2],char save1, char save2){
+
   int k = 0;  // Indice de aux
   char aux[4] = {0};  // Array auxiliar
   char aux2 = 0;
@@ -153,10 +197,10 @@ int Tomar_Dato(int i,char start, char buffer[], int save[2]){
     i++;   // Aumenta el indice de trama para la siguiente iteracion
     
     // Si la temperatura o el tiempo pertenece a la del poliester guarda ese valor en la posicion 0 del array
-    if(aux2 == 'p') save[0] = String(aux).toInt();  // Convierte los caracteres a un entero y se guarda    
+    if(aux2 == save1) save[0] = String(aux).toInt();  // Convierte los caracteres a un entero y se guarda    
   
     // Si la temperatura o el tiempo pertenece a la del algodon guarda ese valor en la posicion 1 del array
-    else if(aux2 == 'a') save[1] = String(aux).toInt();  // Convierte los caracteres a un entero y se guarda    
+    else if(aux2 == save2) save[1] = String(aux).toInt();  // Convierte los caracteres a un entero y se guarda    
   }
   return i;
 
@@ -172,6 +216,16 @@ void send_msj(char msj[],int dato){
   Serial2.write(0xff);
   Serial2.write(0xff);
 }
+
+// Envia un String de datos a la pantalla
+void send_Strmsj(char msj[]){
+
+  Serial2.print(msj);  // Se envia un string que hace referencia a la variable del HMI que se desea modificar ejemplo "nTemp.val="
+  Serial2.write(0xff);  // Indica fin de la trama
+  Serial2.write(0xff);
+  Serial2.write(0xff);
+}
+
 
 // Envia informacion de interes a la pantalla sobre el proceso que esta ejecutandose
 void Nextion_display(int Cod, int Temp, int TempA, int Grad, int Tiempo, int Aper, int Cierre ){
@@ -192,12 +246,12 @@ void Nextion_display(int Cod, int Temp, int TempA, int Grad, int Tiempo, int Ape
 void Act_tiempo(int tiempo){
 
   static int cont = 0; // Contador que llevara el tiempo restante
-  send_msj("nTempA.val=",Temp_actual());
 
   if (timer4(60000))
   {
     cont++;
     send_msj("nTiempo.val=",tiempo-cont);
+    send_msj("nTempA.val=",Temp_actual());
   }
 
   // Reinicia el contador
@@ -246,10 +300,20 @@ void loop(){
   int temp_ok = 0;  
   int pi_ok = 0;
 
+  static int check_state = 1;     // Se uitiliza para actualizar en la pantalla el paso del proceso
+  if (check_state != estado)
+  {
+    send_msj("nPaso.val=",30);    // Muestra en pantalla el paso del proceso
+    send_msj("nProc.val=",5);
+    check_state = estado;
+  }
+
   switch (estado) {
 
         case 0:
-          Serial.println("case 0");
+          //Serial.println("case 0");
+         // send_msj("nProc.val=",4);
+         // send_msj("nPaso.val=",1);
           if(digitalRead(Start)>=HIGH) estado=11;  
         break;
 

@@ -7,6 +7,9 @@
 // Variables del nextion a inicializar
 extern NexButton bNext;
 extern NexButton bSelec;
+extern NexButton bRight;
+extern NexButton bLeft;
+extern NexButton bOk;
 extern NexTouch *nex_listen_list[];
 
 
@@ -65,6 +68,9 @@ void setup()
 //  Inicio de parametros del Nextion   
     nexInit();
     bNext.attachPop(bNextCallback,&bNext);
-    bSelec.attachPop(bSelecCallback,&bNext);
+    bSelec.attachPop(bSelecCallback,&bSelec);
+    bRight.attachPop(bRightCallback,&bRight);
+    bLeft.attachPop(bLeftCallback,&bLeft);
+    bOk.attachPop(bCambiarEstadoCallback,&bOk);
 
 }

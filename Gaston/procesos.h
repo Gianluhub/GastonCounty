@@ -28,6 +28,8 @@ int timer3(unsigned long interval);
 int timer4(unsigned long interval);
 int timer5(unsigned long interval);
 int timer6(unsigned long interval);
+int timer7(unsigned long interval);
+int timer8(unsigned long interval);
 void Reset();
 
 
@@ -43,7 +45,11 @@ int Saponizado();
 void Interrupt();
 void bNextCallback(void*ptr);
 void bSelecCallback(void*ptr);
+void bRightCallback(void*ptr);
+void bLeftCallback(void*ptr);
+void bCambiarEstadoCallback(void*ptr);
 void send_msj(char msj[],int dato);
+void send_Strmsj(char msj[]);
 void Nextion_display(int Temp, int TempA, int Grad, int Tiempo, int Paso, int Aper, int Cierre);
 void Act_tiempo(int tiempo);
 

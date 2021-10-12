@@ -15,10 +15,7 @@ int Tomar_muestra(int estado){
     {   
         Tomar_muestra_print();
         // Cambia de pagina para seleccionar el proceso
-        Serial2.print("page Preguntar");
-        Serial2.write(0xff);  // Indica fin de la trama
-        Serial2.write(0xff);
-        Serial2.write(0xff);
+        send_Strmsj("page Preguntar");
     } 
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
@@ -26,10 +23,7 @@ int Tomar_muestra(int estado){
     if (digitalRead(Op_ok) >= HIGH)
     {
         digitalWrite(LLAMADO_OP,LOW);
-        Serial2.print("page proceso");
-        Serial2.write(0xff);  // Indica fin de la trama
-        Serial2.write(0xff);
-        Serial2.write(0xff);
+        send_Strmsj("page proceso");
         start = true;
         return estado++;
     }
@@ -49,7 +43,7 @@ int Tomar_muestra(int estado){
 
 void Lista_Poliester(int estado, int temperatura, int tiempo){
 
-    send_msj("nPaso.val=",estado);
+    send_msj("nPasoM.val=",estado);
     if(estado<1) estado = 18;
     else if (estado>18) estado= 1;
 
@@ -133,7 +127,7 @@ void Lista_Poliester(int estado, int temperatura, int tiempo){
 
 void Lista_Algodon(int estado, int temperatura, int tiempo){
 
-    send_msj("nPaso.val=",estado);
+    send_msj("nPasoM.val=",estado);
     if(estado<1) estado = 48;
     else if (estado>48) estado= 1;
 
@@ -338,7 +332,7 @@ void Lista_Algodon(int estado, int temperatura, int tiempo){
 
 void Lista_preblanqueo_quimico(int estado){
 
-    send_msj("nPaso.val=",estado);
+    send_msj("nPasoM.val=",estado);
     if(estado<1) estado = 18;
     else if (estado>18) estado= 1;
 
@@ -421,7 +415,7 @@ void Lista_preblanqueo_quimico(int estado){
 
 void Lista_preblanqueo_jabon(int estado){
 
-    send_msj("nPaso.val=",estado);
+    send_msj("nPasoM.val=",estado);
     if(estado<1) estado = 13;
     else if (estado>13) estado= 1;
 
@@ -485,7 +479,7 @@ void Lista_preblanqueo_jabon(int estado){
 
 void Lista_Saponizado(int estado){
 
-    send_msj("nPaso.val=",estado);
+    send_msj("nPasoM.val=",estado);
     if(estado<1) estado = 22;
     else if (estado>22) estado= 1;
 
@@ -585,7 +579,7 @@ void Lista_Saponizado(int estado){
 
 void prueba(int estado){
 
-	send_msj("nPaso.val=",estado);
+	send_msj("nPasoM.val=",estado);
 	if(estado<1) estado = 11;
 	else if (estado>11) estado= 1;
 

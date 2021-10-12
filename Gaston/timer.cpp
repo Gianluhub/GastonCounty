@@ -193,6 +193,62 @@ int timer6(unsigned long interval){
 
 }
 
+// Usado para agregar pequeños delays para enviar datos a la pantalla
+int timer7(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
+
+// Usado para actualizar el paso del proceso en la pantalla
+int timer8(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
+
 // Funciones auxiliares
 
 //Convierte el tiempo de MINUTOS a milisegundos
@@ -211,5 +267,7 @@ void Reset(){
   timer4(false);
   timer5(false);
   timer6(false);
+  timer7(false);
+  timer8(false);
 
 }

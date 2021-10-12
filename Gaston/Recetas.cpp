@@ -19,10 +19,16 @@ void cerrar_vapor(){
 
 int Poliester(int temperatura, int tiempo){
 
-	static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
-	send_msj("nPaso.val=",estado);	// Muestra en pantalla el paso del proceso
-	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
-	int press_ok = false;			// Verifica si se llego a la presion deseada
+	static int estado = 1;				// Variable encargada de pasar de un proceso a otro		
+	int temp_ok = false;				// Verifica si se llego a la temperatura deseada
+	int press_ok = false;				// Verifica si se llego a la presion deseada
+
+	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
+	if (check_state != estado)
+	{
+		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		check_state = estado;
+	}
 
 	switch (estado)
 	{
@@ -140,6 +146,7 @@ int Poliester(int temperatura, int tiempo){
 
 		// 18. Fin
 		case 18:
+
 			estado = 1;
 			return true;
 		break;	
@@ -156,10 +163,16 @@ int Poliester(int temperatura, int tiempo){
 int Algodon(int temperatura, int tiempo){
 
 	static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
-	send_msj("nPaso.val=",estado);	// Muestra en pantalla el paso del proceso
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 	
+	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
+	if (check_state != estado)
+	{
+		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		check_state = estado;
+	}
+
 	switch(estado){
 
 
@@ -448,6 +461,13 @@ int Preblanqueo_quimico(){
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 	
+	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
+	if (check_state != estado)
+	{
+		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		check_state = estado;
+	}
+
 	switch(estado)
 	{
 
@@ -570,6 +590,13 @@ int Preblanqueo_jabon(){
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
+	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
+	if (check_state != estado)
+	{
+		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		check_state = estado;
+	}
+
 	switch(estado)
 	{
 		// 1. Llenado a nivel 2
@@ -664,6 +691,13 @@ int Saponizado(){
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
+	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
+	if (check_state != estado)
+	{
+		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		check_state = estado;
+	}
+	
 	switch(estado)
 	{
 		// 1. Llenado a nivel 2

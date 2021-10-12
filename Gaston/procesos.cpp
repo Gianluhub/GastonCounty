@@ -10,13 +10,17 @@ nivel 1 es el nivel bajo y nivel 2 el alto
 // FALTA AVERIGUAR SOBRE EL ENCENDIDO DEL PLEGADOR
 int Llenado(int Nivel){
 
+    // Muestra en pantalla el proceso, se hace solo una vez para no saturar el puerto serial.
+    static int start = true;
+    if(start)
+    { 
+        Llenado_print(Nivel);
+        start = false;
+    } 
+    
     // Abre valvula para llenar el tanque y asegura que la de reflujo este abierta
     digitalWrite(FV200,HIGH);
     digitalWrite(FV204,HIGH);
-
-    // Comunicacion por serial
-    Serial.println("Llenado a nivel " + String(Nivel));
-    Nextion_display(42,0,0,0,0,0,Nivel);
 
     // Cuando llegue al nivel deseado, cierra la valvula, enciendo el motor y el plegador
     switch(Nivel)
@@ -29,6 +33,7 @@ int Llenado(int Nivel){
                digitalWrite(pump,HIGH); 
                digitalWrite(plegador_1,HIGH);
                //digitalWrite(plegador_2,HIGH);
+               start = true;
                return true;
             }
             else return false;
@@ -42,6 +47,7 @@ int Llenado(int Nivel){
                 digitalWrite(pump,HIGH);
                 digitalWrite(plegador_1,HIGH);
                 //digitalWrite(plegador_2,HIGH);
+                start = true;
                 return true;
             }
             else return false;
@@ -58,9 +64,13 @@ No avanza al siguiente paso hasta que atienda el llamado
 */
 int Llamado_op(){
 
-    // Comunicacion por serial
-    Serial.println("Llamado_op");
-    Nextion_display(34,0,0,0,0,0,0);
+    // Muestra en pantalla el proceso, se hace solo una vez para no saturar el puerto serial.
+    static int start = true;
+    if(start)
+    { 
+        Llamado_op_print();
+        start = false;
+    } 
 
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
@@ -68,6 +78,7 @@ int Llamado_op(){
     if (digitalRead(Op_ok) >= HIGH)
     {
         digitalWrite(LLAMADO_OP,LOW);
+        start = true;
         return true;
     }
     else return false;
@@ -83,16 +94,13 @@ Adicion rapida
 // La variable tiempo estara dada en minutos, hay que convertirla en millisegundos
 int Adicion_rapida(int tiempo){
 
-    // Comunicacion por serial
-    Serial.println("Adicion_rapida " + String(tiempo) + " min");
-   
     // Comunicacion con Nextion
     // El flag start se usa para mostrar en pantalla solo una vez por proceso
     // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
     static int start = true; 
     if (start)
     { 
-        Nextion_display(89,0,0,0,tiempo,0,0);
+        Adicion_rapida_print(tiempo);
         start = false; 
     }
     Act_tiempo(tiempo);
@@ -119,17 +127,13 @@ El parametro tiempo debe ser en minutos y los de t_abierto y t_cerrado en segund
 */
 int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
 
-
-    // Comunicacion por serial
-    Serial.println("Adicion_lenta " + String(tiempo)+" min");
-
     // Comunicacion con Nextion
     // El flag start se usa para mostrar en pantalla solo una vez por proceso
     // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
     static int start = true; 
     if (start)
     { 
-        Nextion_display(88,0,0,0,tiempo,t_abierto,t_cerrado);
+        Adicion_lenta_print(tiempo,t_abierto,t_cerrado);
         start = false; 
     }
     Act_tiempo(tiempo);
@@ -167,16 +171,13 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
 
 int Circulacion(int interval){
 
-    // Comunicacion por serial
-    Serial.println("Circulacion "+ String(interval));
-
     // Comunicacion con Nextion
     // El flag se usa para mostrar en pantalla solo una vez por proceso
     // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
     static int flag = true;
     if (flag)
     { 
-        Nextion_display(1,0,0,0,interval,0,0);
+        Circulacion_print(interval);
         flag = false; 
     }
     Act_tiempo(interval);
@@ -220,17 +221,13 @@ int Circulacion(int interval){
 
 int Lavado_rebose(int tiempo){
 
-
-    // Comunicacion por serial
-    Serial.println("Lavado rebose "+ String(tiempo) + " min");
-
     // Comunicacion con Nextion
     // El flag se usa para mostrar en pantalla solo una vez por proceso
     // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
     static int start = true;
     if (start)
     { 
-        Nextion_display(50,0,0,0,tiempo,0,0);
+        Lavado_rebose_print(tiempo);
         start = false; 
     }
     Act_tiempo(tiempo);
@@ -267,10 +264,11 @@ int Lavado_rebose(int tiempo){
     else
     {
     // Al finalizar el tiempo se asegura que las valvulas esten cerradas
-    digitalWrite(FV210,LOW);
-    digitalWrite(FV200,LOW);
-    start = true;
-    return true;
+        digitalWrite(FV210,LOW);
+        digitalWrite(FV200,LOW);
+        Act_tiempo(false);       // Reiniciamos contador
+        start = true;
+        return true;
     }
 }
 
@@ -283,8 +281,15 @@ int Lavado_rebose(int tiempo){
 */
 int Vaciado(){
 
-    Serial.println("Vaciado");
-    Nextion_display(62,0,0,0,0,0,0);
+    // Comunicacion con Nextion
+    // El flag se usa para mostrar en pantalla solo una vez por proceso
+    // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
+    static int start = true;
+    if (start)
+    { 
+        Vaciado_print();
+        start = false; 
+    }
 
     const unsigned long tiempo_vaciado = 10000;  // Falta poner el tiempo
 
@@ -298,9 +303,10 @@ int Vaciado(){
     // y luego cierra la valvula
     if(timer1(tiempo_vaciado))
     {
-    Serial.println("Cierra vaciado");
-    digitalWrite(FV211,LOW);
-    return true;
+        Serial.println("Cierra vaciado");
+        digitalWrite(FV211,LOW);
+        start = true;
+        return true;
     }
     else return false;
 }
@@ -321,9 +327,17 @@ int Vaciado(){
 
 int Calentamiento(int temp, float grad){
 
-    // Comunicacion serial
-    Serial.println("Calentamiento");
-    Nextion_display(1,temp,Temp_actual(),grad,0,0,0);
+    // Comunicacion con Nextion
+    // El flag se usa para mostrar en pantalla solo una vez por proceso
+    // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
+    static int start = true;
+    if (start)
+    { 
+        Calentamiento_print(temp,grad);
+        start = false; 
+    }
+    // Actualiza la temperatura cada 100ms
+    if(timer7(100)) send_msj("nTempA.val=",Temp_actual());
 
     // Variables de utilidad
     unsigned long t_abierto = 2000;
@@ -365,6 +379,7 @@ int Calentamiento(int temp, float grad){
                 digitalWrite(FV202,LOW);
                 digitalWrite(FV208,LOW);
                 digitalWrite(FV209,LOW);
+                start = true;
                 return true;    
             }
             else flag = true;
@@ -376,7 +391,7 @@ int Calentamiento(int temp, float grad){
         digitalWrite(FV202,LOW);
         digitalWrite(FV208,LOW);
         digitalWrite(FV209,LOW);
-
+        start = true;
         return true;
     }
   
@@ -397,9 +412,17 @@ int Calentamiento(int temp, float grad){
 
 int Enfriamiento(int temp, float grad){
 
-    // Comunicacion serial
-    Serial.println("Enfriamiento");
-    Nextion_display(1,temp,Temp_actual(),grad,0,0,0);
+   // Comunicacion con Nextion
+    // El flag se usa para mostrar en pantalla solo una vez por proceso
+    // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
+    static int start = true;
+    if (start)
+    { 
+        Enfriamiento_print(temp,grad);
+        start = false; 
+    }
+    // Actualiza la temperatura cada 100ms
+    if(timer7(100)) send_msj("nTempA.val=",Temp_actual());
 
     // Variables de utilidad
     unsigned long t_abierto = 2000;
@@ -450,10 +473,11 @@ int Enfriamiento(int temp, float grad){
     }
     else
     {
-    // Asegurar que las valvulas estan cerradas
-    digitalWrite(FV201,LOW);
-    digitalWrite(FV203,LOW);
-    return true;
+        // Asegurar que las valvulas estan cerradas
+        digitalWrite(FV201,LOW);
+        digitalWrite(FV203,LOW);
+        start = true;
+        return true;
     }
 
     return false;
