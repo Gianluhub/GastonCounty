@@ -13,9 +13,9 @@ int Tomar_muestra(int estado){
     static int start = true;
     if(start)
     {   
-        Tomar_muestra_print();
-        // Cambia de pagina para seleccionar el proceso
-        send_Strmsj("page Preguntar");
+        Tomar_muestra_print();         // Muestra en pantalla
+        send_Strmsj("page Preguntar"); // Cambia de pagina para seleccionar el proceso
+        start = false;
     } 
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
@@ -580,8 +580,16 @@ void Lista_Saponizado(int estado){
 void prueba(int estado){
 
 	send_msj("nPasoM.val=",estado);
-	if(estado<1) estado = 11;
-	else if (estado>11) estado= 1;
+	if(estado<1)
+    { 
+        estado = 11;
+        send_msj("nPasoM.val=",estado);
+    }
+	else if (estado>11)
+    {
+        estado= 1;
+        send_msj("nPasoM.val=",estado);
+    } 
 
     switch (estado) {
 

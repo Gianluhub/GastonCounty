@@ -10,7 +10,6 @@ void Llenado_print(int Nivel){
 
 }
 
-
 void Llamado_op_print(){
 
     // Comunicacion por serial

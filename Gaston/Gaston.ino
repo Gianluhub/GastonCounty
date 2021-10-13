@@ -269,23 +269,27 @@ void Seleccion_proceso(int codigo, int estado){
     switch(codigo)
     {
         case 1:
-            Lista_preblanqueo_quimico(estado);
+          Lista_preblanqueo_quimico(estado);
         break;
 
         case 2:
-            Lista_preblanqueo_jabon(estado);
+          Lista_preblanqueo_jabon(estado);
         break;
 
         case 3:
-            Lista_Saponizado(estado);
+          Lista_Saponizado(estado);
         break;
 
         case 4:
-            Lista_Poliester(estado,temperatura[0],tiempo[0]);
+          Lista_Poliester(estado,temperatura[0],tiempo[0]);
         break;
 
         case 5:
-            Lista_Algodon(estado,temperatura[1],tiempo[1]);
+          Lista_Algodon(estado,temperatura[1],tiempo[1]);
+        break;
+
+        case 6:
+          prueba(estado);
         break;
     }
 
@@ -303,8 +307,8 @@ void loop(){
   static int check_state = 1;     // Se uitiliza para actualizar en la pantalla el paso del proceso
   if (check_state != estado)
   {
-    send_msj("nPaso.val=",30);    // Muestra en pantalla el paso del proceso
-    send_msj("nProc.val=",5);
+    send_msj("nPaso.val=",estado);    // Muestra en pantalla el paso del proceso
+    send_msj("nProc.val=",6);
     check_state = estado;
   }
 
