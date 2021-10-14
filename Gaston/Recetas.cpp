@@ -457,7 +457,6 @@ int Algodon(int temperatura, int tiempo){
 int Preblanqueo_quimico(){
 
 	static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
-	send_msj("nPaso.val=",estado);	// Muestra en pantalla el paso del proceso
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 	
@@ -586,7 +585,6 @@ int Preblanqueo_quimico(){
 int Preblanqueo_jabon(){
 
 	static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
-	send_msj("nPaso.val=",estado);	// Muestra en pantalla el paso del proceso
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
@@ -687,7 +685,6 @@ int Preblanqueo_jabon(){
 int Saponizado(){
 
 	static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
-	send_msj("nPaso.val=",estado);	// Muestra en pantalla el paso del proceso
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
@@ -833,3 +830,48 @@ int Saponizado(){
 
 
 
+/*
+    Funcion de suavizado
+
+    Esta funcion es opcional en el proceso del teñido
+    el operador debe tener la opcion de decidir si se desea realizar el suavizado de la tela
+    esto se decide casi finalizando el programa.
+
+    Se debe implementar una funcion que se comunique con el hmi para preguntar si se desea o no
+    este proceso
+*/
+
+int Suavizado(){
+    static int estado = 0;
+
+    switch(estado)
+    {   
+        // 0. Realiza el llenado a nivel 1 si hace falta
+        case 0:
+            if(Llenado(1)) estado = 1;
+        break;
+        // 1. Llamado a operador para preparacion de tanque
+        case 1:
+            if(Llamado_op()) estado = 2;
+        break;
+
+        // 2. Adicion rapida de 2 min
+        case 2:
+            if(Adicion_rapida(2)) estado = 3;
+        break;
+
+        // 3. Circulacion de 20 min
+        case 3:
+            if(Circulacion(20)) estado = 4;
+        break;
+
+        // 4. Fin
+        case 4:
+            estado = 0;
+            return true;
+        break;
+    }
+
+    return false;
+
+}

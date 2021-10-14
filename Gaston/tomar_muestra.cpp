@@ -5,7 +5,7 @@
 
 extern int Nuevo_estado;
 extern int Nuevo_estado_ok;
-
+extern int Back;
 
 
 int Tomar_muestra(int estado){
@@ -20,11 +20,12 @@ int Tomar_muestra(int estado){
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
     digitalWrite(LLAMADO_OP,HIGH);
-    if (digitalRead(Op_ok) >= HIGH)
+    if (digitalRead(Op_ok) >= HIGH || Back)
     {
         digitalWrite(LLAMADO_OP,LOW);
-        send_Strmsj("page proceso");
+        send_Strmsj("page Proceso");
         start = true;
+        Back = false;
         return estado++;
     }
     else if(Nuevo_estado_ok)
@@ -43,9 +44,18 @@ int Tomar_muestra(int estado){
 
 void Lista_Poliester(int estado, int temperatura, int tiempo){
 
+    Serial.println("Poliester");
     send_msj("nPasoM.val=",estado);
-    if(estado<1) estado = 18;
-    else if (estado>18) estado= 1;
+    if(estado<1)
+    { 
+        estado = 18;
+        send_msj("nPasoM.val=",estado);
+    }
+    else if (estado>18)
+    {
+        estado= 1;
+        send_msj("nPasoM.val=",estado);
+    } 
 
     switch(estado)
     {
@@ -127,9 +137,17 @@ void Lista_Poliester(int estado, int temperatura, int tiempo){
 
 void Lista_Algodon(int estado, int temperatura, int tiempo){
 
-    send_msj("nPasoM.val=",estado);
-    if(estado<1) estado = 48;
-    else if (estado>48) estado= 1;
+    Serial.println("Algodon");
+    if(estado<1)
+    { 
+        estado = 48;
+        send_msj("nPasoM.val=",estado);
+    }
+    else if (estado>48)
+    {
+        estado= 1;
+        send_msj("nPasoM.val=",estado);
+    } 
 
     switch(estado)
     {
@@ -332,9 +350,18 @@ void Lista_Algodon(int estado, int temperatura, int tiempo){
 
 void Lista_preblanqueo_quimico(int estado){
 
+    Serial.println("Preblanqueo Q");
     send_msj("nPasoM.val=",estado);
-    if(estado<1) estado = 18;
-    else if (estado>18) estado= 1;
+    if(estado<1)
+    { 
+        estado = 18;
+        send_msj("nPasoM.val=",estado);
+    }
+    else if (estado>18)
+    {
+        estado= 1;
+        send_msj("nPasoM.val=",estado);
+    } 
 
     switch(estado)
     {
@@ -415,9 +442,19 @@ void Lista_preblanqueo_quimico(int estado){
 
 void Lista_preblanqueo_jabon(int estado){
 
+    Serial.println("Preblanqueo Jabon");
     send_msj("nPasoM.val=",estado);
-    if(estado<1) estado = 13;
-    else if (estado>13) estado= 1;
+    if(estado<1)
+    { 
+        estado = 13;
+        send_msj("nPasoM.val=",estado);
+    }
+    else if (estado>13)
+    {
+        estado= 1;
+        send_msj("nPasoM.val=",estado);
+    } 
+
 
     switch(estado)
     {
@@ -479,9 +516,18 @@ void Lista_preblanqueo_jabon(int estado){
 
 void Lista_Saponizado(int estado){
 
+    Serial.println("Saponizado");
     send_msj("nPasoM.val=",estado);
-    if(estado<1) estado = 22;
-    else if (estado>22) estado= 1;
+    if(estado<1)
+    { 
+        estado = 22;
+        send_msj("nPasoM.val=",estado);
+    }
+    else if (estado>22)
+    {
+        estado= 1;
+        send_msj("nPasoM.val=",estado);
+    } 
 
     switch(estado)
     {
@@ -579,13 +625,14 @@ void Lista_Saponizado(int estado){
 
 void prueba(int estado){
 
-	send_msj("nPasoM.val=",estado);
+	Serial.println("Prueba");
+    send_msj("nPasoM.val=",estado);
 	if(estado<1)
     { 
-        estado = 11;
+        estado = 12;
         send_msj("nPasoM.val=",estado);
     }
-	else if (estado>11)
+	else if (estado>12)
     {
         estado= 1;
         send_msj("nPasoM.val=",estado);

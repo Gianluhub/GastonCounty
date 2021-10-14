@@ -495,7 +495,7 @@ int Enfriamiento(int temp, float grad){
     // REVISAR ESTA PARTE
 int Presurizado(){
 
-    static int flag = true;
+    static int flag = true;  // Sirve de ayuda para implementar los delays con un mismo contador
     const int presion = 150; // Presion maxima, aun no se sabe cuanto vale
 
     // Si la temperatura es mayor a 80 y no se tiene el maximo de presion empieza a presurizar
@@ -575,48 +575,3 @@ int Temp_actual(){
 
 
 
-/*
-    Funcion de suavizado
-
-    Esta funcion es opcional en el proceso del teñido
-    el operador debe tener la opcion de decidir si se desea realizar el suavizado de la tela
-    esto se decide casi finalizando el programa.
-
-    Se debe implementar una funcion que se comunique con el hmi para preguntar si se desea o no
-    este proceso
-*/
-
-int Suavizado(){
-    static int estado = 0;
-
-    switch(estado)
-    {   
-        // 0. Realiza el llenado a nivel 1 si hace falta
-        case 0:
-            if(Llenado(1)) estado = 1;
-        break;
-        // 1. Llamado a operador para preparacion de tanque
-        case 1:
-            if(Llamado_op()) estado = 2;
-        break;
-
-        // 2. Adicion rapida de 2 min
-        case 2:
-            if(Adicion_rapida(2)) estado = 3;
-        break;
-
-        // 3. Circulacion de 20 min
-        case 3:
-            if(Circulacion(20)) estado = 4;
-        break;
-
-        // 4. Fin
-        case 4:
-            estado = 0;
-            return true;
-        break;
-    }
-
-    return false;
-
-}

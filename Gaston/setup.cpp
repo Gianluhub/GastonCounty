@@ -61,8 +61,8 @@ void setup()
 
 // Interrupciones y entradas externas
     pinMode(Op_ok, INPUT);
-    pinMode(Start,INPUT);
-    pinMode(Stop,INPUT);
+    pinMode(START,INPUT);
+    pinMode(STOP,INPUT);
     //attachInterrupt(digitalPinToInterrupt(Stop), Interrupt, RISING);
 
 //  Inicio de parametros del Nextion   

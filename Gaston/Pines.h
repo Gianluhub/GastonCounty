@@ -46,7 +46,7 @@
 
 // Interrupciones y entradas externas
 #define Op_ok CONTROLLINO_A6 // Interruptor de llamado de operador
-#define Start CONTROLLINO_A7 // Interruptor de inicio de proceso
-#define Stop  38			 // I16 Interrupcion para stop del proceso
+#define START CONTROLLINO_A7 // Interruptor de inicio de proceso
+#define STOP  38			 // I16 Interrupcion para stop del proceso
 
 #endif

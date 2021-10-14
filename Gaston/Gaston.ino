@@ -24,17 +24,21 @@ char buffer[100] = {0};
 char trama[100] = {0};		
 int temperatura[2] = {0};	
 int tiempo[2] = {0};
-// Variables para Toma de muestra
-int Nuevo_estado = 0;
-int Nuevo_estado_ok = false;
+
+// Variables para Toma de muestra usadas en el archivo tomar_muestra.cpp
+int Nuevo_estado = 0;         // Si se desea repetir un proceso, esta variable guarda el estado a donde se quiere regresar
+int Nuevo_estado_ok = false;  // Este flag funciona para indicar que se va a repetir un proceso 
+int Back = false;             // Si no se desea repetir algun proceso, este flag indicara que continue el programa
 
 
 // Declaracion de objeto que representa los botones del Nextion
 NexButton bNext=NexButton(7,1,"bNext");
 NexButton bSelec=NexButton(9,1,"bSelec");
+NexButton bBack=NexButton(9,2,"bBack");
 NexButton bRight=NexButton(8,21,"bRight");
 NexButton bLeft=NexButton(8,22,"bLeft");
-NexButton bOk=NexButton(8,27,"bOk");
+NexButton bOk=NexButton(8,26,"bOk");
+
 
 
 
@@ -45,6 +49,7 @@ NexTouch *nex_listen_list[] = {
   &bRight,
   &bLeft,
   &bOk,
+  &bBack,
   NULL
 };
 
@@ -71,9 +76,6 @@ void bNextCallback(void*ptr){
 
 // Funcion usada en Tomar_muestar, se usa para seleccionar un subproceso que se quiera repetir.
 void bSelecCallback(void*ptr){
-
-  send_msj("nPaso.val=",30);    // Muestra en pantalla el paso del proceso
-  send_msj("nProc.val=",5);  
   
   int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
   int i = 0;
@@ -130,6 +132,10 @@ void bCambiarEstadoCallback(void*ptr){
   Nuevo_estado = Dato[1];
   Nuevo_estado_ok = true;
 
+}
+
+void bBackCallback(void*ptr){
+  Back = true;
 }
 
 
@@ -210,7 +216,7 @@ int Tomar_Dato(int i,char start, char buffer[], int save[2],char save1, char sav
 // Funciones para envio de datos a la pantalla 
 void send_msj(char msj[],int dato){
 
-  Serial2.print(msj);  // Se envia un string que hace referencia a la variable del HMI que se desea modificar ejemplo "nTemp.val="
+  Serial2.print(msj);   // Se envia un string que hace referencia a la variable del HMI que se desea modificar ejemplo "nTemp.val="
   Serial2.print(dato);  // Este es el dato que se guardara en la variable msj
   Serial2.write(0xff);  // Indica fin de la trama
   Serial2.write(0xff);
@@ -220,7 +226,7 @@ void send_msj(char msj[],int dato){
 // Envia un String de datos a la pantalla
 void send_Strmsj(char msj[]){
 
-  Serial2.print(msj);  // Se envia un string que hace referencia a la variable del HMI que se desea modificar ejemplo "nTemp.val="
+  Serial2.print(msj);   // Se envia un string que hace referencia a la variable del HMI que se desea modificar ejemplo "nTemp.val="
   Serial2.write(0xff);  // Indica fin de la trama
   Serial2.write(0xff);
   Serial2.write(0xff);
@@ -247,6 +253,7 @@ void Act_tiempo(int tiempo){
 
   static int cont = 0; // Contador que llevara el tiempo restante
 
+  // Cada vez que pase 1 minuto restara el tiempo en la pantalla
   if (timer4(60000))
   {
     cont++;
@@ -263,7 +270,7 @@ void Act_tiempo(int tiempo){
   }
 }
 
-// Permite seleccionar nuevamente un proceso
+// Permite seleccionar manualmente un proceso
 void Seleccion_proceso(int codigo, int estado){
 
     switch(codigo)
@@ -298,9 +305,150 @@ void Seleccion_proceso(int codigo, int estado){
 // Maquinas de estados
 void loop(){
 
-	static int estado = 0;   // Esta variable recorrera los estados del switch segun lo contenido en el array trama
-  static int flag = true;
-	nexLoop(nex_listen_list); // Verifica si se reciben datos del HMI
+	static int estado = 0;           // Esta variable recorrera los estados del switch segun lo contenido en el array trama
+  static int start = false;        // Este flag espera a que el operador presione el boton de start para comenzar el proceso
+  static int print_code = true;    // Imprime en pantalla el codigo del proceso que se esta ejecutando solo una vez por proceso
+
+
+
+  // Verifica si se reciben datos de la pantalla
+  nexLoop(nex_listen_list); 
+
+  // Espera a que el operador presione el boton de start para iniciar el proceso
+  if(digitalRead(START) >= HIGH)
+  {
+    start =  true;
+  }
+  
+
+  if(start)
+  {
+
+    switch (trama[estado]) {
+
+      // Preblanqueo quimico
+      case 'A':
+        
+        // Imprime solo una vez
+        if(print_code)
+        {
+          Serial.println("Preblanqueo quimico\n");
+          send_msj("nProc.val=",1);
+          print_code = false;
+        }
+
+        if(Preblanqueo_quimico()) 
+        {
+          print_code = true;
+          estado++;
+        }
+
+      break;
+
+      
+      case 'B':
+
+        // Imprime solo una vez
+        if(print_code)
+        {
+          Serial.println("Preblanqueo con jabon\n");
+          send_msj("nProc.val=",2);
+          print_code = false;
+        }
+
+        if(Preblanqueo_jabon())
+        {
+          print_code = true;
+          estado++;
+        }
+
+      break;
+
+      
+      case 'C':
+
+        // Imprime solo una vez
+        if(print_code)
+        {
+          Serial.println("Preblanqueo con jabon\n");
+          send_msj("nProc.val=",3);
+          print_code = false;
+        }
+
+        if(Saponizado())
+        {
+          print_code = true;
+          estado++;
+        }
+
+      break;
+
+
+      case 'D':
+
+        // Imprime solo una vez
+        if(print_code)
+        {
+          Serial.println("Poliester");
+          send_msj("nProc.val=",4);
+          print_code = false;
+        }
+        
+        if(Poliester(temperatura[0],tiempo[0]))
+        {
+          print_code = true;
+          estado++;
+        } 
+
+      break;
+
+
+      case 'E':
+
+        // Imprime solo una vez
+        if(print_code)
+        {
+          Serial.println("Algodon");
+          send_msj("nProc.val=",5);
+          print_code = false;
+        }
+        
+       if( Algodon(temperatura[1],tiempo[1]))
+       {
+        print_code = true;
+        estado++;
+       } 
+
+      break;
+
+
+      case 'X':
+
+        Serial.println("Fin del programa\n");
+        Nextion_display(0,0,0,0,0,0,0);
+        send_msj("nProc.val=",0);
+        estado = 0;
+        start = false;
+        memset(trama, 0, sizeof(trama));
+        memset(temperatura, 0, sizeof(temperatura));
+
+      break;
+    }
+  }
+
+
+
+
+
+}
+
+
+
+void Test(){
+
+  static int estado = 0;   // Esta variable recorrera los estados del switch segun lo contenido en el array trama
+  
+  nexLoop(nex_listen_list); // Verifica si se reciben datos del HMI
   int temp_ok = 0;  
   int pi_ok = 0;
 
@@ -311,14 +459,17 @@ void loop(){
     send_msj("nProc.val=",6);
     check_state = estado;
   }
-
+  
   switch (estado) {
 
         case 0:
-          //Serial.println("case 0");
-         // send_msj("nProc.val=",4);
-         // send_msj("nPaso.val=",1);
-          if(digitalRead(Start)>=HIGH) estado=11;  
+        
+          if(digitalRead(START)>=HIGH)
+          { 
+           send_msj("nProc.val=",6);
+           estado=11;
+              
+          } 
         break;
 
         case 1:
@@ -374,64 +525,8 @@ void loop(){
 
         case 12:
           Serial.println("Fin de programa");
-          flag = true;
           estado = 0;
         break;
-
-
        
     }
-
-
-
-//  Serial.println("Temperatura ");
-//  Serial.println(Temp_actual());
-//  Serial.println("Lectura ");
-//  Serial.println(analogRead(TC100));
- // Temp_actual();
-  //delay(2000);
-  
-//  switch (trama[estado]) {
-//
-//      // Preblanqueo quimico
-//      case 'A':
-//        
-//        Serial.println("Preblanqueo quimico\n");
-//        if(Preblanqueo_quimico()) flag = true;
-//      break;
-//
-//      case 'B':
-//
-//        Serial.println("Preblanqueo con jabon\n");
-//        
-//        flag = true;
-//      break;
-//
-//      case 'C':
-//        
-//      break;
-//
-//
-//      case 'D':
-//        Serial.println("Poliester a ");
-//        if(Poliester(temperatura[0],tiempo[0])) flag = true;
-//      break;
-//
-//      case 'E':
-//        Serial.println("Algodon a ");
-//       if( Algodon(temperatura[1],tiempo[1])) flag = true;
-//      break;
-//
-//      case 'X':
-//        Serial.println("Fin del programa\n");
-//        estado = 0;
-//        memset(trama, 0, sizeof(trama));
-//        memset(temperatura, 0, sizeof(temperatura));
-//      break;
-//  }
-//
-
-
-
-
 }
