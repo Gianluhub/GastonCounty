@@ -3,8 +3,6 @@
 #include "Pines.h"
 #include "procesos.h"
 
-// Prototipo de funcion que pregunta si se desea suavizado o no mediante el hmi
-int preguntar(){return false;}
 
 // Funcion de seguridad
 // Cierra las valvulas de calentamiento y presurizado
@@ -42,9 +40,9 @@ int Poliester(int temperatura, int tiempo){
 			if(Llamado_op()) estado = 3;
 		break;
 
-		// 3. Adicion rapida 4 min
+		// 3. Adicion rapida 5 min
 		case 3:
-			if(Adicion_rapida(4)) estado = 4;
+			if(Adicion_rapida(5)) estado = 4;
 		break;
 
 
@@ -76,12 +74,9 @@ int Poliester(int temperatura, int tiempo){
 			if (temperatura == 130)
 			{
 				if (Temp_actual() < 90) temp_ok = Calentamiento(90,2);
-
-				else if ( Temp_actual() >= 90) temp_ok = Calentamiento(130,1.5);
-				
+				else if ( Temp_actual() >= 90) temp_ok = Calentamiento(130,1.5);	
 			}
 			else temp_ok = Calentamiento(temperatura,2);
-			
 			press_ok =  Presurizado();
 
 			if ( Temp_actual() >= temperatura - 1 && temp_ok && press_ok) estado = 9;
@@ -135,18 +130,17 @@ int Poliester(int temperatura, int tiempo){
 		// Parte nueva añadida (el suavizado debe ser opcional)
 		// 16. Preguntar por suavizado
 		case 16:
-			if(preguntar()) estado = 17;
-			else estado = 18;
+			if(Preguntar_Suavizado()) estado = 17;
 		break;
 
-		// 17. Suavizado
+		// 17. Toma de muestra
 		case 17:
-			if(Suavizado()) estado = 18;
+			estado = Tomar_muestra(estado);
 		break;
 
 		// 18. Fin
 		case 18:
-
+			Fin_proceso();
 			estado = 1;
 			return true;
 		break;	
@@ -423,27 +417,22 @@ int Algodon(int temperatura, int tiempo){
 		// Parte nueva añadida (el suavizado debe ser opcional)
 		// 44. preguntar si se desea suvizado de tela (Suavizado es opcional)
 		case 44:
-			if(preguntar()) estado = 45;
-			else estado = 46;
+			if(Preguntar_Suavizado()) estado = 45;
 		break;
 
-		// 45. Suavizado
+		// 45. Toma de muestra
 		case 45:
-			if(Suavizado()) estado = 46;
-		break;
-
-		// 46. Llamado de operador (Toma de muestra)
-		case 46:
 			estado = Tomar_muestra(estado);
 		break;
 
-		// 47. Vaciado de tanque
-		case 47:
-			if(Vaciado()) estado = 48;
+		// 46. Vaciado de tanque
+		case 46:
+			if(Vaciado()) estado = 47;
 		break;
 
-		// 48. Fin
-		case 48:
+		// 47. Fin
+		case 47:
+			Fin_proceso();
 			estado = 1;
 			return true;
 		break;
@@ -843,6 +832,12 @@ int Saponizado(){
 
 int Suavizado(){
     static int estado = 0;
+	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
+	if (check_state != estado)
+	{
+		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		check_state = estado;
+	}
 
     switch(estado)
     {   
@@ -875,3 +870,74 @@ int Suavizado(){
     return false;
 
 }
+
+
+
+// LAVADO DE MAQUINA, FALTA IMLEMENTAR FUNCION CON VALVULA DE DUCHA
+// Y ADEMAS FALTA SABER COMO FUNCIONA CON LA DUCHA
+
+// int Lavado_Maquina(){
+
+// 	static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
+// 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
+// 	int press_ok = false;			// Verifica si se llego a la presion deseada
+
+// 	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
+// 	if (check_state != estado)
+// 	{
+// 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+// 		check_state = estado;
+// 	}
+
+// 	// 1. Llenado a nivel 2
+// 	case 1:
+// 		if(Llenado(2)) estado = 2;
+// 	break;
+
+// 	// 2. Llamado de operador
+// 	case 2:
+// 		if(Llamado_op()) estado = 3;
+// 	break;
+
+// 	// 3. Adicion rapida de 25 min
+// 	case 3:
+// 		if(Adicion_rapida(25)) estado = 4;
+// 	break;
+
+// 	// 4. Circulacion FALTA TIEMPO
+// 	case 4:
+// 		if(Circulacion()) estado = 5;
+// 	break;
+
+// 	// 5. Subir temperatura a 60
+// 	case 5:
+// 		temp_ok = Calentamiento(60,2);
+// 		if (Temp_actual() >= temperatura && temp_ok) estado = 6;
+// 	break;
+
+// 	case 6:
+// 		Calentamiento(60,2);
+// 		if(Llamado_op())
+// 		{
+// 			cerrar_vapor();
+// 			estado = 7;
+// 		}
+// 	break;
+
+
+// 	// 7. Adicion rapida FALTA TIEMPO
+// 	case 7:
+// 		Calentamiento(60,2);
+// 		if(Adicion_rapida(FALTATIEMPO))
+// 		{
+// 			cerrar_vapor();
+// 			estado = 8;
+// 		}
+// 	break;
+
+// 	// 8. Subir temperatura a 130
+// 	case 8:
+		
+// 	break;
+
+// }

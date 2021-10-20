@@ -27,17 +27,19 @@ int tiempo[2] = {0};
 
 // Variables para Toma de muestra usadas en el archivo tomar_muestra.cpp
 int Nuevo_estado = 0;         // Si se desea repetir un proceso, esta variable guarda el estado a donde se quiere regresar
-int Nuevo_estado_ok = false;  // Este flag funciona para indicar que se va a repetir un proceso 
-int Back = false;             // Si no se desea repetir algun proceso, este flag indicara que continue el programa
+int Nuevo_estado_ok = false;  // Este flag funciona para indicar que se va a repetir un proceso o se va a realizar suavizado
+int Back = false;             // Si no se desea repetir algun proceso o realizar suavizado, este flag indicara que continue el programa
 
 
 // Declaracion de objeto que representa los botones del Nextion
-NexButton bNext=NexButton(7,1,"bNext");
+NexButton bNext=NexButton(7,1,"bNext");        // Boton de confirmacion
 NexButton bSelec=NexButton(9,1,"bSelec");
 NexButton bBack=NexButton(9,2,"bBack");
 NexButton bRight=NexButton(8,21,"bRight");
 NexButton bLeft=NexButton(8,22,"bLeft");
 NexButton bOk=NexButton(8,26,"bOk");
+NexButton bSuavSi=NexButton(12,1,"bSuavSi");
+NexButton bSuavNo=NexButton(12,2,"bSuavNo");
 
 
 
@@ -50,6 +52,8 @@ NexTouch *nex_listen_list[] = {
   &bLeft,
   &bOk,
   &bBack,
+  &bSuavSi,
+  &bSuavNo,
   NULL
 };
 
@@ -138,6 +142,13 @@ void bBackCallback(void*ptr){
   Back = true;
 }
 
+void SuavizadoSiCallback(void*ptr){
+  Nuevo_estado_ok = true;
+}
+
+void SuavizadoNoCallback(void*ptr){
+  Back = true;
+}
 
 /*
 	Lee los datos del buffer y toma los datos de interes
@@ -424,8 +435,7 @@ void loop(){
 
       case 'X':
 
-        Serial.println("Fin del programa\n");
-        Nextion_display(0,0,0,0,0,0,0);
+        Fin_proceso();
         send_msj("nProc.val=",0);
         estado = 0;
         start = false;
@@ -435,10 +445,6 @@ void loop(){
       break;
     }
   }
-
-
-
-
 
 }
 

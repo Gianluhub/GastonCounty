@@ -48,6 +48,8 @@ void bSelecCallback(void*ptr);
 void bRightCallback(void*ptr);
 void bLeftCallback(void*ptr);
 void bCambiarEstadoCallback(void*ptr);
+void SuavizadoSiCallback(void*ptr);
+void SuavizadoNoCallback(void*ptr);
 void send_msj(char msj[],int dato);
 void send_Strmsj(char msj[]);
 void Nextion_display(int Temp, int TempA, int Grad, int Tiempo, int Paso, int Aper, int Cierre);
@@ -70,6 +72,7 @@ void Fin_proceso();
 
 // tomar_muestra.cpp
 int Tomar_muestra(int estado);
+int Preguntar_Suavizado();
 void Lista_Poliester(int estado, int temperatura, int tiempo);
 void Lista_Algodon(int estado, int temperatura, int tiempo);
 void Lista_preblanqueo_quimico(int estado);

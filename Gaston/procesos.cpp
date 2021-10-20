@@ -18,11 +18,10 @@ int Llenado(int Nivel){
         start = false;
     } 
     
-    // Abre valvula para llenar el tanque y asegura que la de reflujo este abierta
-    digitalWrite(FV200,HIGH);
+    // Asegura que la valvula de reflujo esta abierta
     digitalWrite(FV204,HIGH);
 
-    // Cuando llegue al nivel deseado, cierra la valvula, enciendo el motor y el plegador
+    // Cuando llegue al nivel deseado, cierra la valvula, enciende el motor y el plegador
     switch(Nivel)
     {   
         // Llenado a nivel 1
@@ -36,7 +35,11 @@ int Llenado(int Nivel){
                start = true;
                return true;
             }
-            else return false;
+            else{
+                // Si no esta activo el sensor de nivel, abre la valvula de agua
+                digitalWrite(FV200,HIGH);
+                return false;
+                }
         break;
 
         // Llenado a nivel 2
@@ -50,7 +53,12 @@ int Llenado(int Nivel){
                 start = true;
                 return true;
             }
-            else return false;
+            else
+            {   
+                // Si no esta activo el sensor de nivel, abre la valvula de agua
+                digitalWrite(FV200,HIGH);
+                return false;
+            }
         break;
     }
 

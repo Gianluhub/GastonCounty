@@ -20,7 +20,7 @@ int Tomar_muestra(int estado){
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
     digitalWrite(LLAMADO_OP,HIGH);
-    if (digitalRead(Op_ok) >= HIGH || Back)
+    if ((digitalRead(Op_ok) >= HIGH || Back) && !Nuevo_estado_ok)
     {
         digitalWrite(LLAMADO_OP,LOW);
         send_Strmsj("page Proceso");
@@ -39,6 +39,37 @@ int Tomar_muestra(int estado){
 
 }
 
+int Preguntar_Suavizado(){
+
+    static int start = true;
+    if(start)
+    {   
+        Suavizado_print();         // Muestra en pantalla
+        send_Strmsj("page Suavizado"); // Cambia de pagina para seleccionar el proceso
+        start = false;
+    } 
+    // Enciende la alarma para avisar al operador
+    // Y espera a que este responda
+    digitalWrite(LLAMADO_OP,HIGH);
+    if ((digitalRead(Op_ok) >= HIGH || Back) && !Nuevo_estado_ok)
+    {
+        digitalWrite(LLAMADO_OP,LOW);
+        start = true;
+        Back = false;
+        return true;
+    }
+    else if(Nuevo_estado_ok)
+    {   
+        digitalWrite(LLAMADO_OP,LOW);
+        if(Suavizado())
+        {
+            start = true;
+            Nuevo_estado_ok = false;
+            return true;
+        }
+    }
+    return false;
+}
 
 
 
@@ -120,11 +151,11 @@ void Lista_Poliester(int estado, int temperatura, int tiempo){
         break;
 
         case 16:
-            Preguntar_print();
+            Suavizado_print();
         break;
 
         case 17:
-            Suavizado_print();
+            Tomar_muestra_print();
         break;
 
         case 18:
@@ -140,10 +171,10 @@ void Lista_Algodon(int estado, int temperatura, int tiempo){
     Serial.println("Algodon");
     if(estado<1)
     { 
-        estado = 48;
+        estado = 47;
         send_msj("nPasoM.val=",estado);
     }
-    else if (estado>48)
+    else if (estado>47)
     {
         estado= 1;
         send_msj("nPasoM.val=",estado);
@@ -324,22 +355,18 @@ void Lista_Algodon(int estado, int temperatura, int tiempo){
         break;
 
         case 44:
-            Preguntar_print();
-        break;
-
-        case 45:
             Suavizado_print();
         break;
 
-        case 46:
+        case 45:
             Tomar_muestra_print();
         break;
 
-        case 47:
+        case 46:
             Vaciado_print();
         break;
 
-        case 48:
+        case 47:
             // Fin
             Fin_proceso();
         break;
@@ -680,7 +707,7 @@ void prueba(int estado){
         break;
 
         case 11:
-          Tomar_muestra_print();
+            Tomar_muestra_print();
         break;
 
         case 12:

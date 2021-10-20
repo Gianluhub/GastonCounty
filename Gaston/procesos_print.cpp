@@ -73,6 +73,7 @@ void Enfriamiento_print(int temp, float grad){
 }
 
 void Preguntar_print(){
+
     // Comunicacion por serial
     Serial.println("Preguntar por suavizado");
     Nextion_display(32,0,0,0,0,0,0);
@@ -82,7 +83,8 @@ void Preguntar_print(){
 void Suavizado_print(){
 
     // Comunicacion por serial
-    Serial.println("suavizado");
+    Serial.println("Suavizado");
+    send_Strmsj("tProceso.txt= \"Suavizado\"");
     Nextion_display(32,0,0,0,0,0,0);
 }
 
