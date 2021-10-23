@@ -12,6 +12,8 @@ extern NexButton bLeft;
 extern NexButton bOk;
 extern NexButton bSuavSi;
 extern NexButton bSuavNo;
+extern NexButton bLavRedSi;
+extern NexButton bLavRedNo;
 extern NexTouch *nex_listen_list[];
 
 
@@ -75,5 +77,6 @@ void setup()
     bOk.attachPop(bCambiarEstadoCallback,&bOk);
     bSuavSi.attachPop(SuavizadoSiCallback,&bSuavSi);
     bSuavNo.attachPop(SuavizadoNoCallback,&bSuavNo);
+    bLavRedSi.attachPop(LavadoRedSiCallback,&bLavRedSi);
 
 }

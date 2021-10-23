@@ -35,11 +35,15 @@ void Reset();
 
 //Recetas.cpp
 int Poliester(int temperatura, int tiempo);
-int Algodon(int temperatura, int tiempo);
+int Algodon(int temperatura, int tiempoC,int tiempoF);
 int Suavizado();
-int Preblanqueo_quimico();
-int Preblanqueo_jabon();
-int Saponizado();
+int Preblanqueo_quimico(int temperatura, int tiempo);
+int Preblanqueo_jabon(int temperatura, int tiempo);
+int Saponizado(int temperatura, int tiempo);
+int Directo(int temperatura, int tiempo);
+int Lavado_Maquina();
+int Lavado_reductivo(int temperatura, int tiempo);
+
 
 // Gaston.ino
 void Interrupt();
@@ -50,10 +54,19 @@ void bLeftCallback(void*ptr);
 void bCambiarEstadoCallback(void*ptr);
 void SuavizadoSiCallback(void*ptr);
 void SuavizadoNoCallback(void*ptr);
+void LavadoRedSiCallback(void*ptr);
 void send_msj(char msj[],int dato);
 void send_Strmsj(char msj[]);
 void Nextion_display(int Temp, int TempA, int Grad, int Tiempo, int Paso, int Aper, int Cierre);
 void Act_tiempo(int tiempo);
+
+// Desentramado.cpp
+void desentramado(char trama[],int temperatura[], int tiempo[]);
+int Tomar_Dato(int i,char start, char buffer[], int save[]);
+void write_data(int array[], char save, int dato);
+int read_data(int array[], char dato);
+
+
 
 // procesos_print.cpp
 void Llenado_print(int Nivel);
@@ -73,11 +86,14 @@ void Fin_proceso();
 // tomar_muestra.cpp
 int Tomar_muestra(int estado);
 int Preguntar_Suavizado();
+int Preguntar_Lavado();
 void Lista_Poliester(int estado, int temperatura, int tiempo);
-void Lista_Algodon(int estado, int temperatura, int tiempo);
-void Lista_preblanqueo_quimico(int estado);
-void Lista_preblanqueo_jabon(int estado);
+void Lista_Algodon(int estado, int temperatura, int tiempoC, int tiempoF);
+void Lista_preblanqueo_quimico(int estado, int temperatura, int tiempo);
+void Lista_preblanqueo_jabon(int estado, int temperatura, int tiempo);
 void Lista_Saponizado(int estado);
-void prueba(int estado);
+void Lista_Directo(int estado, int temperatura, int tiempo);
+void Lista_Lavado_reductivo(int estado, int temperatura, int tiempo);
+void prueba(int estado, int temperatura, int tiempo);
 
 #endif

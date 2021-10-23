@@ -22,17 +22,19 @@
 */ 
 char buffer[100] = {0};		
 char trama[100] = {0};		
-int temperatura[2] = {0};	
-int tiempo[2] = {0};
+int temperatura[10] = {0};	
+int tiempo[10] = {0};
 
 // Variables para Toma de muestra usadas en el archivo tomar_muestra.cpp
 int Nuevo_estado = 0;         // Si se desea repetir un proceso, esta variable guarda el estado a donde se quiere regresar
-int Nuevo_estado_ok = false;  // Este flag funciona para indicar que se va a repetir un proceso o se va a realizar suavizado
+int Nuevo_estado_ok = false;  // Este flag funciona para indicar que se va a repetir un proceso
 int Back = false;             // Si no se desea repetir algun proceso o realizar suavizado, este flag indicara que continue el programa
-
+int suav = false;             // Flag para indicar que se realizara suavizado
+int lav_red = false;          // Flag para indicar Lavado reductivo
 
 // Declaracion de objeto que representa los botones del Nextion
 NexButton bNext=NexButton(7,1,"bNext");        // Boton de confirmacion
+//NexButton bNext=NexButton(0,16,"bNext"); 
 NexButton bSelec=NexButton(9,1,"bSelec");
 NexButton bBack=NexButton(9,2,"bBack");
 NexButton bRight=NexButton(8,21,"bRight");
@@ -40,6 +42,8 @@ NexButton bLeft=NexButton(8,22,"bLeft");
 NexButton bOk=NexButton(8,26,"bOk");
 NexButton bSuavSi=NexButton(12,1,"bSuavSi");
 NexButton bSuavNo=NexButton(12,2,"bSuavNo");
+NexButton bLavRedSi=NexButton(12,1,"bLavRedSi");
+NexButton bLavRedNo=NexButton(12,2,"bLavRedNo");
 
 
 
@@ -54,6 +58,8 @@ NexTouch *nex_listen_list[] = {
   &bBack,
   &bSuavSi,
   &bSuavNo,
+  &bLavRedsi,
+  &bLavRedNo,
   NULL
 };
 
@@ -72,10 +78,16 @@ void bNextCallback(void*ptr){
 	// Imprime por serial los valores para ser monitoreados
 	Serial.println(buffer);	
 	Serial.println(trama);
-	Serial.println(temperatura[0]);   // Temperatura para el poliester
-  Serial.println(tiempo[0]);        // Tiempo para el poliester
-	Serial.println(temperatura[1]);   // Temperatura para el algodon
-  Serial.println(tiempo[1]);        // Tiempo para el algodon	
+	Serial.println(temperatura[0]);   // Temperatura para preblanqueos
+  Serial.println(tiempo[0]);        // Tiempo para preblanqueos
+	Serial.println(temperatura[1]);   // Temperatura para el poliester
+  Serial.println(tiempo[1]);        // Tiempo para el poliester
+  Serial.println(temperatura[2]);   // Temperatura para el algodon
+  Serial.println(tiempo[2]);        // Tiempo para el algodon
+  Serial.println(tiempo[3]);        // Tiempo para el algodon
+  Serial.println(temperatura[4]);   // Temperatura para el directo
+  Serial.println(tiempo[4]);        // Tiempo para el directo 
+
 }
 
 // Funcion usada en Tomar_muestar, se usa para seleccionar un subproceso que se quiera repetir.
@@ -86,8 +98,8 @@ void bSelecCallback(void*ptr){
   memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
   bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
   // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
-  i = Tomar_Dato(i,'-',buffer,Dato,'c','e');
-  i = Tomar_Dato(i,'$',buffer,Dato,'c','e');
+  i = Tomar_Dato(i,'-',buffer,Dato);
+  i = Tomar_Dato(i,'$',buffer,Dato);
   Seleccion_proceso(Dato[0],Dato[1]);
   Serial.println(buffer); 
   Serial.println(Dato[0]);
@@ -101,8 +113,8 @@ void bRightCallback(void*ptr){
   memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
   bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
   // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
-  i = Tomar_Dato(i,'-',buffer,Dato,'c','e');
-  i = Tomar_Dato(i,'$',buffer,Dato,'c','e');
+  i = Tomar_Dato(i,'-',buffer,Dato);
+  i = Tomar_Dato(i,'$',buffer,Dato);
   Seleccion_proceso(Dato[0],Dato[1]);
   Serial.println(buffer); 
   Serial.println(Dato[0]);
@@ -116,8 +128,8 @@ void bLeftCallback(void*ptr){
   memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
   bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
   // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
-  i = Tomar_Dato(i,'-',buffer,Dato,'c','e');
-  i = Tomar_Dato(i,'$',buffer,Dato,'c','e');
+  i = Tomar_Dato(i,'-',buffer,Dato);
+  i = Tomar_Dato(i,'$',buffer,Dato);
   Seleccion_proceso(Dato[0],Dato[1]);
   Serial.println(buffer); 
   Serial.println(Dato[0]);
@@ -132,7 +144,7 @@ void bCambiarEstadoCallback(void*ptr){
   int i = 0;
   memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
   bOk.getText(buffer,sizeof(buffer));   // Recibe los datos y se almacenan en el buffer
-  i = Tomar_Dato(i,'$',buffer,Dato,'c','e');
+  i = Tomar_Dato(i,'$',buffer,Dato);
   Nuevo_estado = Dato[1];
   Nuevo_estado_ok = true;
 
@@ -143,85 +155,17 @@ void bBackCallback(void*ptr){
 }
 
 void SuavizadoSiCallback(void*ptr){
-  Nuevo_estado_ok = true;
+  suav = true;
 }
 
 void SuavizadoNoCallback(void*ptr){
   Back = true;
 }
 
-/*
-	Lee los datos del buffer y toma los datos de interes
-	la trama recibida viene dada de en la forma: +A+D-130-60-+X
-	Donde las letras representan un proceso como preblanqueo o poliester, los numeros representan
-	unidades de temperatura y tiempo en ese mismo orden y la X se usa para indicar fin de la trama
-*/
-void desentramado(char trama[],int temperatura[], int tiempo[]){
-  
-  int i = 0;  // Indice del buffer
-  int j = 0;  // Indice de trama
-
-  // Limpia los arrays
-  memset(trama, 0, sizeof(trama)); 
-  memset(temperatura, 0, sizeof(temperatura));
-  memset(tiempo, 0, sizeof(tiempo)); 
- 
-  
-  // Extrae los datos hasta que se lea el caracter de fin 'X'
-  do
-  {
-    // Revisa si hay un dato nuevo que tomar
-    if(buffer[i] == '+')
-    {
-      trama[j] = buffer[i+1]; // Toma el dato siguiente
-      i+=2;                   // Incrementa en dos para saltar al siguiente dato a extraer
-      j++;                    // Incrementa la posicion del array datos
-    }
-    // Extrae la temperatura de la trama
-    i = Tomar_Dato(i,'-',buffer,temperatura,'p','a');
-    i = Tomar_Dato(i,'#',buffer,tiempo,'p','a');
-    
- 
-  }while(buffer[i]!='X');
-  trama[j] = 'X';
+void LavadoRedSiCallback(void*ptr){
+  lav_red = true;
 }
 
-
-/*
-  Extrae los datos de interes al detectar un caracter de inicio y guarda
-  los datos en formato entero.
-*/
-int Tomar_Dato(int i,char start, char buffer[], int save[2],char save1, char save2){
-
-  int k = 0;  // Indice de aux
-  char aux[4] = {0};  // Array auxiliar
-  char aux2 = 0;
-
-  // Verifica si es necesario extraer un valor de temperatura
-  if (buffer[i] == start)
-  {
-    aux2 = buffer[i+1];     // Guarda el caracter para saber si es de poliester o algodon
-    i+=2;                   // Incrementa al siguiente dato a extraer
-
-    // Extrae los valores de temperatura hasta que se lea el caracter de fin '-'
-    do
-    {
-      aux[k] = buffer[i];
-      k++;
-      i++;
-    }while(buffer[i]!=start);
-
-    i++;   // Aumenta el indice de trama para la siguiente iteracion
-    
-    // Si la temperatura o el tiempo pertenece a la del poliester guarda ese valor en la posicion 0 del array
-    if(aux2 == save1) save[0] = String(aux).toInt();  // Convierte los caracteres a un entero y se guarda    
-  
-    // Si la temperatura o el tiempo pertenece a la del algodon guarda ese valor en la posicion 1 del array
-    else if(aux2 == save2) save[1] = String(aux).toInt();  // Convierte los caracteres a un entero y se guarda    
-  }
-  return i;
-
-}
 
 
 // Funciones para envio de datos a la pantalla 
@@ -287,27 +231,39 @@ void Seleccion_proceso(int codigo, int estado){
     switch(codigo)
     {
         case 1:
-          Lista_preblanqueo_quimico(estado);
+          Lista_preblanqueo_quimico(estado,temperatura[0],tiempo[0]);
         break;
 
         case 2:
-          Lista_preblanqueo_jabon(estado);
+          Lista_preblanqueo_jabon(estado,temperatura[0],tiempo[0]);
         break;
 
         case 3:
-          Lista_Saponizado(estado);
+          Lista_Saponizado(estado,temperatura[0],tiempo[0]);
         break;
 
         case 4:
-          Lista_Poliester(estado,temperatura[0],tiempo[0]);
+          Lista_Poliester(estado,temperatura[1],tiempo[1]);
         break;
 
         case 5:
-          Lista_Algodon(estado,temperatura[1],tiempo[1]);
+          Lista_Algodon(estado,temperatura[2],tiempo[2],tiempo[3]);
         break;
 
         case 6:
-          prueba(estado);
+          Lista_Directo(estado,temperatura[4],tiempo[4]);
+        break;
+
+        case 7:
+         // Lista_Suavizado()
+        break;
+
+        case 8:
+          Lista_Lavado_reductivo(estado,80,30);
+        break;
+
+        case 9:
+          prueba();
         break;
     }
 
@@ -319,8 +275,6 @@ void loop(){
 	static int estado = 0;           // Esta variable recorrera los estados del switch segun lo contenido en el array trama
   static int start = false;        // Este flag espera a que el operador presione el boton de start para comenzar el proceso
   static int print_code = true;    // Imprime en pantalla el codigo del proceso que se esta ejecutando solo una vez por proceso
-
-
 
   // Verifica si se reciben datos de la pantalla
   nexLoop(nex_listen_list); 
@@ -348,7 +302,7 @@ void loop(){
           print_code = false;
         }
 
-        if(Preblanqueo_quimico()) 
+        if(Preblanqueo_quimico(temperatura[0],tiempo[0])) 
         {
           print_code = true;
           estado++;
@@ -356,7 +310,7 @@ void loop(){
 
       break;
 
-      
+      // Preblanqueo con jabon
       case 'B':
 
         // Imprime solo una vez
@@ -367,7 +321,7 @@ void loop(){
           print_code = false;
         }
 
-        if(Preblanqueo_jabon())
+        if(Preblanqueo_jabon(temperatura[0],tiempo[0]))
         {
           print_code = true;
           estado++;
@@ -375,18 +329,18 @@ void loop(){
 
       break;
 
-      
+      // Saponizado
       case 'C':
 
         // Imprime solo una vez
         if(print_code)
         {
-          Serial.println("Preblanqueo con jabon\n");
+          Serial.println("Sanponizado\n");
           send_msj("nProc.val=",3);
           print_code = false;
         }
 
-        if(Saponizado())
+        if(Saponizado(temperatura[0],tiempo[0]))
         {
           print_code = true;
           estado++;
@@ -394,7 +348,7 @@ void loop(){
 
       break;
 
-
+      // Poliester
       case 'D':
 
         // Imprime solo una vez
@@ -405,7 +359,7 @@ void loop(){
           print_code = false;
         }
         
-        if(Poliester(temperatura[0],tiempo[0]))
+        if(Poliester(temperatura[1],tiempo[1]))
         {
           print_code = true;
           estado++;
@@ -414,6 +368,7 @@ void loop(){
       break;
 
 
+      // Algodon
       case 'E':
 
         // Imprime solo una vez
@@ -424,7 +379,7 @@ void loop(){
           print_code = false;
         }
         
-       if( Algodon(temperatura[1],tiempo[1]))
+       if(Algodon(temperatura[2],tiempo[2],tiempo[3]))
        {
         print_code = true;
         estado++;
@@ -432,7 +387,42 @@ void loop(){
 
       break;
 
+      // Directo
+      case 'F':
 
+        // Imprime solo una vez
+        if(print_code)
+        {
+          Serial.println("Directo");
+          send_msj("nProc.val=",6);
+          print_code = false;
+        }
+        if( Directo(temperatura[4],tiempo[4]))
+        {
+          print_code = true;
+          estado++;
+        }
+
+      break;
+
+      // Lavado de maquina
+      case 'G':
+        // Imprime solo una vez
+        if(print_code)
+        {
+          Serial.println("Lavado de maquina");
+          send_msj("nProc.val=",7);
+          print_code = false;
+        }
+        if(Lavado_Maquina())
+        {
+          print_code = true;
+          estado++;
+        }
+
+      break;
+
+      // Fin del proceso
       case 'X':
 
         Fin_proceso();

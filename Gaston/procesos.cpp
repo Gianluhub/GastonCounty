@@ -28,6 +28,7 @@ int Llenado(int Nivel){
         case 1:
             if (digitalRead(LC100) >= HIGH)
             {
+               // Cierra valvula de agua y enciende la bomba y el plegador
                digitalWrite(FV200,LOW);
                digitalWrite(pump,HIGH); 
                digitalWrite(plegador_1,HIGH);
@@ -45,7 +46,8 @@ int Llenado(int Nivel){
         // Llenado a nivel 2
         case 2:
             if (digitalRead(LC101) >= HIGH)
-            {
+            {   
+                // Cierra valvula de agua y enciende la bomba y el plegador
                 digitalWrite(FV200,LOW);
                 digitalWrite(pump,HIGH);
                 digitalWrite(plegador_1,HIGH);
