@@ -32,6 +32,15 @@ int Back = false;             // Si no se desea repetir algun proceso o realizar
 int suav = false;             // Flag para indicar que se realizara suavizado
 int lav_red = false;          // Flag para indicar Lavado reductivo
 
+
+// Variables de interrupcion usadas en Valvulas.cpp
+// Funciones encargadas de la interrupcion del sistema.
+//Control_Valvulas master;
+volatile int interrupt = false;     // Activa la interrupcion y para el proceso
+volatile int start = false;        // Este flag espera a que el operador presione el boton de start para comenzar el proceso
+
+
+
 // Declaracion de objeto que representa los botones del Nextion
 NexButton bNext=NexButton(7,1,"bNext");        // Boton de confirmacion
 //NexButton bNext=NexButton(0,16,"bNext"); 
@@ -58,7 +67,7 @@ NexTouch *nex_listen_list[] = {
   &bBack,
   &bSuavSi,
   &bSuavNo,
-  &bLavRedsi,
+  &bLavRedSi,
   &bLavRedNo,
   NULL
 };
@@ -263,7 +272,7 @@ void Seleccion_proceso(int codigo, int estado){
         break;
 
         case 9:
-          prueba();
+          prueba(estado,130,60);
         break;
     }
 
@@ -273,15 +282,23 @@ void Seleccion_proceso(int codigo, int estado){
 void loop(){
 
 	static int estado = 0;           // Esta variable recorrera los estados del switch segun lo contenido en el array trama
-  static int start = false;        // Este flag espera a que el operador presione el boton de start para comenzar el proceso
   static int print_code = true;    // Imprime en pantalla el codigo del proceso que se esta ejecutando solo una vez por proceso
 
   // Verifica si se reciben datos de la pantalla
   nexLoop(nex_listen_list); 
 
+  
+  // Interrupcion del proceso
+  if(interrupt)
+  {
+    Detener_proceso();
+    interrupt = false;
+  }
+
   // Espera a que el operador presione el boton de start para iniciar el proceso
   if(digitalRead(START) >= HIGH)
   {
+    
     start =  true;
   }
   
@@ -427,10 +444,13 @@ void loop(){
 
         Fin_proceso();
         send_msj("nProc.val=",0);
+        send_Strmsj("page repetir");
         estado = 0;
         start = false;
-        memset(trama, 0, sizeof(trama));
-        memset(temperatura, 0, sizeof(temperatura));
+        Reset();                              //Reinicia los temporizadores
+        memset(trama, 0, sizeof(trama));      
+        memset(temperatura, 0, sizeof(temperatura));  
+        memset(tiempo, 0, sizeof(tiempo));
 
       break;
     }
@@ -520,8 +540,14 @@ void Test(){
         break;
 
         case 12:
-          Serial.println("Fin de programa");
+          Fin_proceso();
+          send_msj("nProc.val=",0);
+          send_Strmsj("page repetir");
           estado = 0;
+          memset(trama, 0, sizeof(trama));
+          memset(temperatura, 0, sizeof(temperatura));
+          memset(tiempo, 0, sizeof(tiempo));
+
         break;
        
     }

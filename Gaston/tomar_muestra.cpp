@@ -21,6 +21,7 @@ int Tomar_muestra(int estado){
         // Apaga la bomba y el plegador
         digitalWrite(pump,LOW);
         digitalWrite(plegador_1,LOW);
+        //digitalWrite(jet_1,LOW);
     } 
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
@@ -35,6 +36,7 @@ int Tomar_muestra(int estado){
         // Enciende la bomba y el plegador
         digitalWrite(pump,HIGH);
         digitalWrite(plegador_1,HIGH);
+        //digitalWrite(jet_1,HIGH);
         delay(200);     // Delay para dar tiempo a que arranquen los motores??
         return estado++;
     }
@@ -371,7 +373,7 @@ void Lista_Algodon(int estado, int temperatura, int tiempoC, int tiempoF){
         break;
 
         case 32:
-            Calentamiento_print(65)
+            Calentamiento_print(65,2);
         break;
 
         case 33:
@@ -423,7 +425,7 @@ void Lista_Algodon(int estado, int temperatura, int tiempoC, int tiempoF){
         break;
 
         case 45:
-            Circulacion_print(20)
+            Circulacion_print(20);
         break;
 
         case 46:
@@ -876,7 +878,7 @@ void Lista_Lavado_reductivo(int estado, int temperatura, int tiempo){
 }
 
 
-void prueba(int estado){
+void prueba(int estado, int temperatura, int tiempo){
 
 	Serial.println("Prueba");
     send_msj("nPasoM.val=",estado);

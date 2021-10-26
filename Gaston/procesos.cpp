@@ -508,8 +508,8 @@ int Presurizado(){
     static int flag = true;  // Sirve de ayuda para implementar los delays con un mismo contador
     const int presion = 150; // Presion maxima, aun no se sabe cuanto vale
 
-    // Si la temperatura es mayor a 80 y no se tiene el maximo de presion empieza a presurizar
-    if (Temp_actual() >= 80 && digitalRead(PCH100) <= LOW)
+    // Si la temperatura es mayor a 85 y no se tiene el maximo de presion empieza a presurizar
+    if (Temp_actual() >= 85 && digitalRead(PCH100) <= LOW)
     {   
         Serial.println("Comienza presurizado");
         if(flag)
@@ -517,7 +517,7 @@ int Presurizado(){
             if(!timer5(1500))
             {
                 // Comienza el presurizado
-                digitalWrite(FV204,LOW); // Cierra valvula de reflujo (deberian ser todas)
+                Cerrar_presurizado(); // Cierra todas las valvulas salvo las que se encarguen de la temperatura y presurizacion
                 digitalWrite(FV212,HIGH); // Se abre valvula de presurizado (entrada de aire)
             }
             else flag = false;
@@ -584,4 +584,19 @@ int Temp_actual(){
 
 
 
+// Cierra todas las valvulas salvo las encargadas de suministrar vapor a la maquina y de presurizar
+void Cerrar_presurizado(){
+
+    digitalWrite(FV200,LOW);
+    digitalWrite(FV201,LOW);
+    digitalWrite(FV203,LOW);
+    digitalWrite(FV204,LOW);
+    digitalWrite(FV205,LOW);
+    digitalWrite(FV206,LOW);
+    digitalWrite(FV207,LOW);
+    digitalWrite(FV210,LOW);
+    digitalWrite(FV211,LOW);
+    digitalWrite(FV213,LOW);
+    digitalWrite(FV214,LOW);             
+}
 

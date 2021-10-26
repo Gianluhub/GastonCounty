@@ -19,6 +19,7 @@ int Enfriamiento(int temp, float grad);
 int Presurizado();
 int Despresurizado();
 int Temp_actual();
+void Cerrar_presurizado();
 
 // timer.cpp
 unsigned long To_millis(int tiempo);
@@ -91,9 +92,13 @@ void Lista_Poliester(int estado, int temperatura, int tiempo);
 void Lista_Algodon(int estado, int temperatura, int tiempoC, int tiempoF);
 void Lista_preblanqueo_quimico(int estado, int temperatura, int tiempo);
 void Lista_preblanqueo_jabon(int estado, int temperatura, int tiempo);
-void Lista_Saponizado(int estado);
+void Lista_Saponizado(int estado,int temperatura, int tiempo);
 void Lista_Directo(int estado, int temperatura, int tiempo);
 void Lista_Lavado_reductivo(int estado, int temperatura, int tiempo);
 void prueba(int estado, int temperatura, int tiempo);
+
+// Valvulas.cpp
+void Detener_proceso();
+
 
 #endif

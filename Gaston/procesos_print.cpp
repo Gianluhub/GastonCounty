@@ -97,6 +97,16 @@ void Tomar_muestra_print(){
 
 }
 
+void Lavado_reductivo_print(){
+
+    // Comunicacion por serial
+    Serial.println("Lavado reductivo");
+    send_Strmsj("tProceso.txt= \"Lavado reductivo\"");
+    Nextion_display(32,0,0,0,0,0,0);
+
+}
+
+
 
 void Fin_proceso(){
 

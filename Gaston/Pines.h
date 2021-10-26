@@ -28,7 +28,7 @@
 #define FV211 13  // D11 Valvula de vaciado
 #define FV212 42  // D12 Valvula de presurizado (entrada de aire)
 #define FV213 43  // D13 Valvula de despresurizado (salida de aire)
-#define FV214 44  // D14 Valvula de regadera
+#define FV214 44  // D14 Valvula de ducha
 
 // Sensores
 #define TC100 CONTROLLINO_A0  // Sensor de temperatura
