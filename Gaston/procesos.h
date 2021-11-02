@@ -20,6 +20,7 @@ int Presurizado();
 int Despresurizado();
 int Temp_actual();
 void Cerrar_presurizado();
+void Handler_motores(int state);
 
 // timer.cpp
 unsigned long To_millis(int tiempo);
@@ -53,16 +54,18 @@ void bSelecCallback(void*ptr);
 void bRightCallback(void*ptr);
 void bLeftCallback(void*ptr);
 void bCambiarEstadoCallback(void*ptr);
+void bBackCallback(void*ptr);
 void SuavizadoSiCallback(void*ptr);
 void SuavizadoNoCallback(void*ptr);
 void LavadoRedSiCallback(void*ptr);
 void send_msj(char msj[],int dato);
 void send_Strmsj(char msj[]);
 void Nextion_display(int Temp, int TempA, int Grad, int Tiempo, int Paso, int Aper, int Cierre);
+void Seleccion_proceso(int codigo, int estado);
 void Act_tiempo(int tiempo);
 
 // Desentramado.cpp
-void desentramado(char trama[],int temperatura[], int tiempo[]);
+int desentramado(char trama[],int temperatura[], int tiempo[]);
 int Tomar_Dato(int i,char start, char buffer[], int save[]);
 void write_data(int array[], char save, int dato);
 int read_data(int array[], char dato);
@@ -99,6 +102,9 @@ void prueba(int estado, int temperatura, int tiempo);
 
 // Valvulas.cpp
 void Detener_proceso();
+void Reiniciar_proceso();
+void Callback_ISR();
+
 
 
 #endif

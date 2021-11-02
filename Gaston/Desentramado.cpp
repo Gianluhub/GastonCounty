@@ -33,10 +33,13 @@ void write_data(int array[], char save, int dato){
 
       // Algodon
       case 'a':
-        if(array[2] == 0) array[2] = dato;
-        else array[3] = dato;
+        array[2] = dato;
       break;
 
+      // Algodon segundo dato de tiempo
+      case 'f':
+        array[3] = dato;
+      break;
       // Directo
       case 'd':
         array[4] = dato;
@@ -88,6 +91,11 @@ int read_data(int array[], char dato){
         // No retorna el segundo valor del algodon usado para el tiempo
       break;
 
+      // Algodon segundo dato de tiempo
+      case 'f':
+        return array[3] = dato;
+      break;
+
       // Directo
       case 'd':
         return array[4];
@@ -115,15 +123,19 @@ int read_data(int array[], char dato){
 	Donde las letras representan un proceso como preblanqueo o poliester, los numeros representan
 	unidades de temperatura y tiempo en ese mismo orden y la X se usa para indicar fin de la trama
 */
-void desentramado(char trama[],int temperatura[], int tiempo[]){
+int desentramado(char trama[],int temperatura[], int tiempo[]){
   
   int i = 0;  // Indice del buffer
   int j = 0;  // Indice de trama
+  int err = 0; // Contador de error
+  int ERR = false; // se activa para salir del loop
 
   // Limpia los arrays
   memset(trama, 0, sizeof(trama)); 
   memset(temperatura, 0, sizeof(temperatura));
-  memset(tiempo, 0, sizeof(tiempo)); 
+  memset(tiempo, 0, sizeof(tiempo));
+
+  
  
   
   // Extrae los datos que representan los procesos a ejecutar hasta que se lea el caracter de fin 'X'
@@ -160,9 +172,19 @@ void desentramado(char trama[],int temperatura[], int tiempo[]){
       i = Tomar_Dato(i,'-',buffer,temperatura);
       i = Tomar_Dato(i,'#',buffer,tiempo);
     }
- 
-  }while(buffer[i]!='X');
+    
+    if(err >= sizeof(buffer))
+    {
+      err = 0;
+      Serial.println("Error");
+      return false;
+    }
+    err++;
+
+  }while(buffer[i]!='X' || ERR);
   trama[j] = 'X';
+  
+  return true;
 }
 
 
@@ -177,6 +199,7 @@ int Tomar_Dato(int i,char start, char buffer[], int save[]){
   int k = 0;  // Indice de aux
   char aux[4] = {0};  // Array auxiliar que almacena los datos de interes
   char aux2 = 0;      // Array auxiliar que almacena el caracter 
+ 
 
   // Verifica si es necesario extraer un valor 
   if (buffer[i] == start)
@@ -202,6 +225,7 @@ int Tomar_Dato(int i,char start, char buffer[], int save[]){
     // else if(aux2 == save3) save[2] = String(aux).toInt();  // Convierte los caracteres a un entero y se guarda 
     // else if(aux2 == save4) save[3] = String(aux).toInt();  // Convierte los caracteres a un entero y se guarda 
   }
+
   return i;   // retorna el siguiente dato a leer
 
 }

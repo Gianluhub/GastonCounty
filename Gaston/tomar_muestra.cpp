@@ -8,20 +8,29 @@ extern int Nuevo_estado_ok;
 extern int Back;
 extern int suav;            
 extern int lav_red;
+extern int nPaso;
 
 int Tomar_muestra(int estado){
 
     static int start = true;
+    static int motores[3] = {0};
+
     if(start)
     {   
         Tomar_muestra_print();         // Muestra en pantalla
         send_Strmsj("page Preguntar"); // Cambia de pagina para seleccionar el proceso
         start = false;
 
-        // Apaga la bomba y el plegador
+        
+        // Guarda el estado de los motores antes de apagar
+        motores[0] = digitalRead(pump);
+        motores[1] = digitalRead(plegador_1);
+        motores[2] = digitalRead(jet_1);
+
+        // Apaga la bomba y el plegador y torniquete
         digitalWrite(pump,LOW);
         digitalWrite(plegador_1,LOW);
-        //digitalWrite(jet_1,LOW);
+        digitalWrite(jet_1,LOW);
     } 
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
@@ -29,16 +38,20 @@ int Tomar_muestra(int estado){
     if ((digitalRead(Op_ok) >= HIGH || Back) && !Nuevo_estado_ok)
     {
         digitalWrite(LLAMADO_OP,LOW);
-        send_Strmsj("page Proceso");
+        //send_Strmsj("page Proceso");
         start = true;
         Back = false;
 
-        // Enciende la bomba y el plegador
-        digitalWrite(pump,HIGH);
-        digitalWrite(plegador_1,HIGH);
-        //digitalWrite(jet_1,HIGH);
-        delay(200);     // Delay para dar tiempo a que arranquen los motores??
-        return estado++;
+        // Regresa los motores a su estado anterior
+        digitalWrite(pump,motores[0]);  
+        digitalWrite(plegador_1,motores[1]);
+        digitalWrite(jet_1,motores[2]);
+        //delay(200);     // Delay para dar tiempo a que arranquen los motores??
+        estado++;
+        Serial.println("ESTADO");
+        Serial.println(estado);
+        return estado;
+        // probar con estado +=1
     }
     else if(Nuevo_estado_ok)
     {   
@@ -46,11 +59,6 @@ int Tomar_muestra(int estado){
         start = true;
         Nuevo_estado_ok = false;
         estado = Nuevo_estado;
-
-        // Enciende la bomba y el plegador
-        digitalWrite(pump,HIGH);
-        digitalWrite(plegador_1,HIGH);
-        delay(200);
         return estado;
     }
     else if(suav)
@@ -146,11 +154,13 @@ void Lista_Poliester(int estado, int temperatura, int tiempo){
     if(estado<1)
     { 
         estado = 18;
+        nPaso = 18;
         send_msj("nPasoM.val=",estado);
     }
     else if (estado>18)
     {
         estado= 1;
+        nPaso = 1;
         send_msj("nPasoM.val=",estado);
     } 
 
@@ -238,11 +248,13 @@ void Lista_Algodon(int estado, int temperatura, int tiempoC, int tiempoF){
     if(estado<1)
     { 
         estado = 48;
+        nPaso = 48;
         send_msj("nPasoM.val=",estado);
     }
     else if (estado>48)
     {
         estado= 1;
+        nPaso = 1;
         send_msj("nPasoM.val=",estado);
     } 
 
@@ -452,11 +464,13 @@ void Lista_preblanqueo_quimico(int estado, int temperatura, int tiempo){
     if(estado<1)
     { 
         estado = 19;
+        nPaso = 19;
         send_msj("nPasoM.val=",estado);
     }
     else if (estado>19)
     {
         estado= 1;
+        nPaso = 1;
         send_msj("nPasoM.val=",estado);
     } 
 
@@ -548,11 +562,13 @@ void Lista_preblanqueo_jabon(int estado, int temperatura, int tiempo){
     if(estado<1)
     { 
         estado = 13;
+        nPaso = 13;
         send_msj("nPasoM.val=",estado);
     }
     else if (estado>13)
     {
-        estado= 1;
+        estado = 1;
+        nPaso  = 1;
         send_msj("nPasoM.val=",estado);
     } 
 
@@ -622,11 +638,13 @@ void Lista_Saponizado(int estado, int temperatura, int tiempo){
     if(estado<1)
     { 
         estado = 23;
+        nPaso = 23;
         send_msj("nPasoM.val=",estado);
     }
     else if (estado>23)
     {
-        estado= 1;
+        estado = 1;
+        nPaso = 1;
         send_msj("nPasoM.val=",estado);
     } 
 
@@ -734,11 +752,13 @@ void Lista_Directo(int estado, int temperatura, int tiempo){
     if(estado<1)
     { 
         estado = 15;
+        nPaso = 15;
         send_msj("nPasoM.val=",estado);
     }
     else if (estado>15)
     {
         estado= 1;
+        nPaso = 1;
         send_msj("nPasoM.val=",estado);
     } 
 
@@ -813,11 +833,13 @@ void Lista_Lavado_reductivo(int estado, int temperatura, int tiempo){
     if(estado<1)
     { 
         estado = 13;
+        nPaso = 13;
         send_msj("nPasoM.val=",estado);
     }
     else if (estado>13)
     {
-        estado= 1;
+        estado = 1;
+        nPaso = 1;
         send_msj("nPasoM.val=",estado);
     }
 
@@ -885,11 +907,13 @@ void prueba(int estado, int temperatura, int tiempo){
 	if(estado<1)
     { 
         estado = 12;
+        nPaso = 12;
         send_msj("nPasoM.val=",estado);
     }
 	else if (estado>12)
     {
         estado= 1;
+        nPaso = 1;
         send_msj("nPasoM.val=",estado);
     } 
 
@@ -897,7 +921,8 @@ void prueba(int estado, int temperatura, int tiempo){
 
         case 1:
 	    	Llenado_print(1);
-
+        break;
+        
         case 2:
         	Llenado_print(2);
         break;
@@ -939,7 +964,7 @@ void prueba(int estado, int temperatura, int tiempo){
         break;
 
         case 12:
-          Serial.println("Fin de programa");
+            Fin_proceso();
         break;
     }
 

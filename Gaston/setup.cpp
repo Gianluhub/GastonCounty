@@ -10,10 +10,9 @@ extern NexButton bSelec;
 extern NexButton bRight;
 extern NexButton bLeft;
 extern NexButton bOk;
+extern NexButton bBack;
 extern NexButton bSuavSi;
-extern NexButton bSuavNo;
 extern NexButton bLavRedSi;
-extern NexButton bLavRedNo;
 extern NexTouch *nex_listen_list[];
 
 
@@ -74,9 +73,10 @@ void setup()
     bNext.attachPop(bNextCallback,&bNext);
     bSelec.attachPop(bSelecCallback,&bSelec);
     bRight.attachPop(bRightCallback,&bRight);
+    bLeft.attachPop(bLeftCallback,&bLeft);
     bOk.attachPop(bCambiarEstadoCallback,&bOk);
+    bBack.attachPop(bBackCallback,&bBack);
     bSuavSi.attachPop(SuavizadoSiCallback,&bSuavSi);
-    bSuavNo.attachPop(SuavizadoNoCallback,&bSuavNo);
     bLavRedSi.attachPop(LavadoRedSiCallback,&bLavRedSi);
 
 }

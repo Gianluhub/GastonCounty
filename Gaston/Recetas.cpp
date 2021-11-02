@@ -3,7 +3,8 @@
 #include "Pines.h"
 #include "procesos.h"
 
-
+extern int Nuevo_estado;
+extern int Intrr;
 // Funcion de seguridad
 // Cierra las valvulas de calentamiento y presurizado
 void cerrar_vapor(){
@@ -27,6 +28,12 @@ int Poliester(int temperatura, int tiempo){
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		check_state = estado;
 	}
+
+	if(Intrr)
+  	{
+    Intrr = false;
+    estado = Nuevo_estado;
+  	}
 
 	switch (estado)
 	{
@@ -171,6 +178,12 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		check_state = estado;
 	}
+
+	if(Intrr)
+  	{
+	    Intrr = false;
+	    estado = Nuevo_estado;
+  	}
 
 	switch(estado){
 
@@ -484,6 +497,12 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 		check_state = estado;
 	}
 
+	if(Intrr)
+  	{
+	    Intrr = false;
+	    estado = Nuevo_estado;
+  	}
+
 	switch(estado)
 	{
 
@@ -616,6 +635,13 @@ int Preblanqueo_jabon(int temperatura, int tiempo){
 		check_state = estado;
 	}
 
+	
+	if(Intrr)
+  	{
+	    Intrr = false;
+	    estado = Nuevo_estado;
+  	}
+
 	switch(estado)
 	{
 		// 1. Llenado a nivel 2
@@ -717,6 +743,13 @@ int Saponizado(int temperatura, int tiempo){
 		check_state = estado;
 	}
 	
+	
+	if(Intrr)
+  	{
+	    Intrr = false;
+	    estado = Nuevo_estado;
+  	}
+
 	switch(estado)
 	{
 		// 1. Llenado a nivel 2
@@ -871,6 +904,13 @@ int Directo(int temperatura, int tiempo){
 		check_state = estado;
 	}
 
+	
+	if(Intrr)
+  	{
+	    Intrr = false;
+	    estado = Nuevo_estado;
+  	}
+
 	switch(estado)
 	{
 		// 1. Llenado a nivel 2
@@ -991,6 +1031,13 @@ int Suavizado(){
 		check_state = estado;
 	}
 
+    
+	if(Intrr)
+  	{
+	    Intrr = false;
+	    estado = Nuevo_estado;
+  	}
+
     switch(estado)
     {   
         // 0. Realiza el llenado a nivel 1 si hace falta
@@ -1042,7 +1089,13 @@ int Lavado_Maquina(){
 		check_state = estado;
 	}
 
-	
+	if(Intrr)
+  	{
+	    Intrr = false;
+	    estado = Nuevo_estado;
+  	}
+
+
 	switch(estado)
 	{
 
@@ -1147,6 +1200,12 @@ int Lavado_reductivo(int temperatura, int tiempo){
 		send_msj("nProc.val=",8);
 		check_state = estado;
 	}
+
+	if(Intrr)
+  	{
+	    Intrr = false;
+	    estado = Nuevo_estado;
+  	}
 
 	switch(estado)
 	{

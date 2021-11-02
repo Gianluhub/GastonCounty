@@ -47,6 +47,7 @@ int timer1(unsigned long interval){
   if (currentTime - previousTime >= interval)
   {
     start = 1;
+    Serial.println("Timer1 True");
     return true;
   }
   else return false;
@@ -111,7 +112,7 @@ int timer3(unsigned long interval){
 
 // Usado para actualizar valores de tiempo cada minuto 
 int timer4(unsigned long interval){
-  //int reset = 0;
+
   unsigned long currentTime = millis();
   static unsigned long previousTime = millis();
   static int start = 0;
@@ -139,7 +140,7 @@ int timer4(unsigned long interval){
 
 // Usado para presurizado
 int timer5(unsigned long interval){
-  int reset = 0;
+
   unsigned long currentTime = millis();
   static unsigned long previousTime = millis();
   static int start = 0;
@@ -221,7 +222,7 @@ int timer7(unsigned long interval){
 
 }
 
-// Usado para actualizar el paso del proceso en la pantalla
+// Usado para la adicion lenta
 int timer8(unsigned long interval){
 
   unsigned long currentTime = millis();
@@ -269,5 +270,7 @@ void Reset(){
   timer6(false);
   timer7(false);
   timer8(false);
+  Circulacion(false);
+
 
 }

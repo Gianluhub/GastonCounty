@@ -31,28 +31,29 @@ int Nuevo_estado_ok = false;  // Este flag funciona para indicar que se va a rep
 int Back = false;             // Si no se desea repetir algun proceso o realizar suavizado, este flag indicara que continue el programa
 int suav = false;             // Flag para indicar que se realizara suavizado
 int lav_red = false;          // Flag para indicar Lavado reductivo
-
+int nProc = 0;                 // Variable que almacena el codigo del teñido que se esta ejecutando.
+int nPaso = 0;                // Varable que almacena el estado o paso del proceso. 
 
 // Variables de interrupcion usadas en Valvulas.cpp
 // Funciones encargadas de la interrupcion del sistema.
 //Control_Valvulas master;
 volatile int interrupt = false;     // Activa la interrupcion y para el proceso
 volatile int start = false;        // Este flag espera a que el operador presione el boton de start para comenzar el proceso
-
+int Intrr = false;                  // Produce un cambio de proceso mediante interrupcion
 
 
 // Declaracion de objeto que representa los botones del Nextion
-NexButton bNext=NexButton(7,1,"bNext");        // Boton de confirmacion
-//NexButton bNext=NexButton(0,16,"bNext"); 
-NexButton bSelec=NexButton(9,1,"bSelec");
-NexButton bBack=NexButton(9,2,"bBack");
-NexButton bRight=NexButton(8,21,"bRight");
-NexButton bLeft=NexButton(8,22,"bLeft");
-NexButton bOk=NexButton(8,26,"bOk");
-NexButton bSuavSi=NexButton(12,1,"bSuavSi");
-NexButton bSuavNo=NexButton(12,2,"bSuavNo");
-NexButton bLavRedSi=NexButton(12,1,"bLavRedSi");
-NexButton bLavRedNo=NexButton(12,2,"bLavRedNo");
+
+//NexButton bNext=NexButton(0,15,"bNext"); 
+NexButton bNext=NexButton(9,3,"bNext");          // Page confirmacion
+NexButton bSelec=NexButton(11,5,"bSelec");       // Page Preguntar
+NexButton bBack=NexButton(11,8,"bBack");         // Page Preguntar
+NexButton bRight=NexButton(8,21,"bRight");       // Page TomaMuestra 
+NexButton bLeft=NexButton(8,22,"bLeft");         // Page TomaMuestra 
+NexButton bOk=NexButton(14,3,"bOk");             // Page TomaMuestra 
+NexButton bSuavSi=NexButton(12,2,"bSuavSi");     // Page Suavizado
+NexButton bLavRedSi=NexButton(13,2,"bLavRedSi"); // Page LavReductivo
+
 
 
 
@@ -66,9 +67,7 @@ NexTouch *nex_listen_list[] = {
   &bOk,
   &bBack,
   &bSuavSi,
-  &bSuavNo,
   &bLavRedSi,
-  &bLavRedNo,
   NULL
 };
 
@@ -80,82 +79,113 @@ NexTouch *nex_listen_list[] = {
 // Recibe y desentrama los datos para iniciar un nuevo proceso de teñido.
 void bNextCallback(void*ptr){
 
-	memset(buffer, 0, sizeof(buffer));  	// Limpia el buffer para recibir la data
-  bNext.getText(buffer, sizeof(buffer));  // Recibe los datos y se almacenan en el buffer					
-	desentramado(trama,temperatura,tiempo);		// Separa los datos para inciar el proceso
+  int data_ok;
 
-	// Imprime por serial los valores para ser monitoreados
+	memset(buffer, 0, sizeof(buffer));  	// Limpia el buffer para recibir la data
+  memset(trama, 0, sizeof(trama)); 
+  memset(temperatura, 0, sizeof(temperatura));
+  memset(tiempo, 0, sizeof(tiempo));
+  bNext.getText(buffer, sizeof(buffer));  // Recibe los datos y se almacenan en el buffer					
+	data_ok = desentramado(trama,temperatura,tiempo);		// Separa los datos para inciar el proceso
+
+	if(data_ok == false)
+  {
+    memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
+    memset(trama, 0, sizeof(trama)); 
+    memset(temperatura, 0, sizeof(temperatura));
+    memset(tiempo, 0, sizeof(tiempo));
+  }else
+  {
+  // Imprime por serial los valores para ser monitoreados
 	Serial.println(buffer);	
 	Serial.println(trama);
+  Serial.println("Preblanqueo");
 	Serial.println(temperatura[0]);   // Temperatura para preblanqueos
   Serial.println(tiempo[0]);        // Tiempo para preblanqueos
+  Serial.println("=============================");
+  Serial.println("Poliester");
 	Serial.println(temperatura[1]);   // Temperatura para el poliester
   Serial.println(tiempo[1]);        // Tiempo para el poliester
+  Serial.println("==============================");
+  Serial.println("Algodon");
   Serial.println(temperatura[2]);   // Temperatura para el algodon
   Serial.println(tiempo[2]);        // Tiempo para el algodon
   Serial.println(tiempo[3]);        // Tiempo para el algodon
+  Serial.println("==============================");
+  Serial.println("Directo");
   Serial.println(temperatura[4]);   // Temperatura para el directo
   Serial.println(tiempo[4]);        // Tiempo para el directo 
-
+  Serial.println("==============================");
+  }
 }
 
-// Funcion usada en Tomar_muestar, se usa para seleccionar un subproceso que se quiera repetir.
+// Funcion usada en Tomar_muestra, se usa para seleccionar un subproceso que se quiera repetir.
 void bSelecCallback(void*ptr){
   
   int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
   int i = 0;
+  nProc = 0;
+  nPaso = 0;
   memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
   bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
   // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
   i = Tomar_Dato(i,'-',buffer,Dato);
   i = Tomar_Dato(i,'$',buffer,Dato);
-  Seleccion_proceso(Dato[0],Dato[1]);
+  nProc = Dato[0];
+  nPaso = Dato[1];
+  Seleccion_proceso(nProc,nPaso);
   Serial.println(buffer); 
-  Serial.println(Dato[0]);
-  Serial.println(Dato[1]);
+  Serial.println(nProc);
+  Serial.println(nPaso);
 }
 
 void bRightCallback(void*ptr){
 
-  int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
-  int i = 0;
-  memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
-  bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
-  // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
-  i = Tomar_Dato(i,'-',buffer,Dato);
-  i = Tomar_Dato(i,'$',buffer,Dato);
-  Seleccion_proceso(Dato[0],Dato[1]);
+  // int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
+  // int i = 0;
+  // memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
+  // bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
+  // // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
+  // i = Tomar_Dato(i,'-',buffer,Dato);
+  // i = Tomar_Dato(i,'$',buffer,Dato);
+  nPaso++;
+  Seleccion_proceso(nProc,nPaso);
   Serial.println(buffer); 
-  Serial.println(Dato[0]);
-  Serial.println(Dato[1]);
+  Serial.println(nProc);
+  Serial.println(nPaso);
 }
 
 void bLeftCallback(void*ptr){
   
-  int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
-  int i = 0;
-  memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
-  bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
-  // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
-  i = Tomar_Dato(i,'-',buffer,Dato);
-  i = Tomar_Dato(i,'$',buffer,Dato);
-  Seleccion_proceso(Dato[0],Dato[1]);
+  // int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
+  // int i = 0;
+  // memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
+  // bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
+  // // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
+  // i = Tomar_Dato(i,'-',buffer,Dato);
+  // i = Tomar_Dato(i,'$',buffer,Dato);
+  nPaso--;
+  Seleccion_proceso(nProc,nPaso);
   Serial.println(buffer); 
-  Serial.println(Dato[0]);
-  Serial.println(Dato[1]);
+  Serial.println(nProc);
+  Serial.println(nPaso);
 }
 
 
 // Funcion usada en Tomar_muestra, confirma que hay un cambio de estado.
 void bCambiarEstadoCallback(void*ptr){
 
-  int Dato[2] = {0};
-  int i = 0;
-  memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
-  bOk.getText(buffer,sizeof(buffer));   // Recibe los datos y se almacenan en el buffer
-  i = Tomar_Dato(i,'$',buffer,Dato);
-  Nuevo_estado = Dato[1];
+  // int Dato[2] = {0};
+  // int i = 0;
+  // memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
+  // bOk.getText(buffer,sizeof(buffer));   // Recibe los datos y se almacenan en el buffer
+  // i = Tomar_Dato(i,'$',buffer,Dato);
+  Nuevo_estado = nPaso;
   Nuevo_estado_ok = true;
+  nPaso = 0;
+  nProc = 0;
+  Serial.println("Nuevo estado");
+  Serial.println(Nuevo_estado);
 
 }
 
@@ -167,9 +197,6 @@ void SuavizadoSiCallback(void*ptr){
   suav = true;
 }
 
-void SuavizadoNoCallback(void*ptr){
-  Back = true;
-}
 
 void LavadoRedSiCallback(void*ptr){
   lav_red = true;
@@ -283,27 +310,27 @@ void loop(){
 
 	static int estado = 0;           // Esta variable recorrera los estados del switch segun lo contenido en el array trama
   static int print_code = true;    // Imprime en pantalla el codigo del proceso que se esta ejecutando solo una vez por proceso
-
+  int testing = true;
   // Verifica si se reciben datos de la pantalla
   nexLoop(nex_listen_list); 
 
   
   // Interrupcion del proceso
-  if(interrupt)
-  {
-    Detener_proceso();
-    interrupt = false;
-  }
+  if(interrupt) Callback_ISR();
+  //if(interrupt) Serial.println("Intrr");
+    //interrupt = false;
+  
 
+
+  if (start) Test();
   // Espera a que el operador presione el boton de start para iniciar el proceso
-  if(digitalRead(START) >= HIGH)
+  if(digitalRead(START) >= HIGH && !interrupt)
   {
-    
     start =  true;
   }
   
 
-  if(start)
+  if(start && !testing)
   {
 
     switch (trama[estado]) {
@@ -316,6 +343,7 @@ void loop(){
         {
           Serial.println("Preblanqueo quimico\n");
           send_msj("nProc.val=",1);
+          nProc = 1;
           print_code = false;
         }
 
@@ -335,6 +363,7 @@ void loop(){
         {
           Serial.println("Preblanqueo con jabon\n");
           send_msj("nProc.val=",2);
+          nProc = 2;
           print_code = false;
         }
 
@@ -354,6 +383,7 @@ void loop(){
         {
           Serial.println("Sanponizado\n");
           send_msj("nProc.val=",3);
+          nProc = 3;
           print_code = false;
         }
 
@@ -373,6 +403,7 @@ void loop(){
         {
           Serial.println("Poliester");
           send_msj("nProc.val=",4);
+          nProc = 4;
           print_code = false;
         }
         
@@ -393,6 +424,7 @@ void loop(){
         {
           Serial.println("Algodon");
           send_msj("nProc.val=",5);
+          nProc = 5;
           print_code = false;
         }
         
@@ -412,6 +444,7 @@ void loop(){
         {
           Serial.println("Directo");
           send_msj("nProc.val=",6);
+          nProc = 6;
           print_code = false;
         }
         if( Directo(temperatura[4],tiempo[4]))
@@ -429,6 +462,7 @@ void loop(){
         {
           Serial.println("Lavado de maquina");
           send_msj("nProc.val=",7);
+          nProc = 7;
           print_code = false;
         }
         if(Lavado_Maquina())
@@ -444,10 +478,12 @@ void loop(){
 
         Fin_proceso();
         send_msj("nProc.val=",0);
-        send_Strmsj("page repetir");
+        nProc = 0;
+        send_Strmsj("page Repetir");
         estado = 0;
         start = false;
-        Reset();                              //Reinicia los temporizadores
+        //Reinicia los temporizadores y limpia los buffers
+        Reset();                              
         memset(trama, 0, sizeof(trama));      
         memset(temperatura, 0, sizeof(temperatura));  
         memset(tiempo, 0, sizeof(tiempo));
@@ -464,74 +500,84 @@ void Test(){
 
   static int estado = 0;   // Esta variable recorrera los estados del switch segun lo contenido en el array trama
   
-  nexLoop(nex_listen_list); // Verifica si se reciben datos del HMI
+  //nexLoop(nex_listen_list); // Verifica si se reciben datos del HMI
   int temp_ok = 0;  
   int pi_ok = 0;
+
+  if(Intrr)
+  {
+    Intrr = false;
+    estado = Nuevo_estado;
+  }
 
   static int check_state = 1;     // Se uitiliza para actualizar en la pantalla el paso del proceso
   if (check_state != estado)
   {
     send_msj("nPaso.val=",estado);    // Muestra en pantalla el paso del proceso
-    send_msj("nProc.val=",6);
+    send_msj("nProc.val=",9);
+    nProc = 9;
+    //Serial.println(estado);
     check_state = estado;
+    Serial.println("Estado"+String(estado));
+    if(estado == 0) Serial.println("Inicio");
   }
   
   switch (estado) {
 
-        case 0:
-        
+        case 0:          
           if(digitalRead(START)>=HIGH)
           { 
-           send_msj("nProc.val=",6);
-           estado=11;
-              
+           estado=7;  
           } 
         break;
 
         case 1:
-          if(Llenado(1)) estado ++;
+          if(Llenado(1)) estado=2;
         break;
 
         case 2:
-          if(Llenado(2)) estado++;
+          if(Llenado(2)) estado=3;
         break;
 
         case 3:
-          if(Llamado_op()) estado++;
+          if(Llamado_op()) estado=4;
         break;
 
         case 4:
-          if(Adicion_rapida(2)) estado++;
+          if(Adicion_rapida(2)) estado=5;
         break;
 
         case 5:
-          if(Adicion_lenta(1,2,2)) estado++;
-        break;
-
-        case 6:
-          if(Circulacion(1)) estado++;
+          if(Circulacion(1)) estado=6;
+          
         break;
 
         case 7:
-          if(Lavado_rebose(1)) estado++;
+           if(Adicion_lenta(2,1,2)) estado=8;
+        break;
+
+        case 6:
+          if(Lavado_rebose(1)) estado=7;
         break;
 
         case 8:
-          if(Vaciado()) estado++;
+          if(Vaciado()) estado=11;
         break;
 
         case 9:
           temp_ok = Calentamiento(130,2);
           pi_ok = Presurizado();
           Serial.println(Temp_actual());
-          if(Temp_actual() >= 150 && temp_ok && pi_ok) estado++;
+          //if(Temp_actual() >= 150 && temp_ok && pi_ok) estado++;
+          if(digitalRead(Op_ok)>= HIGH) estado++;
         break;
 
         case 10:
           Serial.println(Temp_actual());
           temp_ok = Enfriamiento(60,2);
           pi_ok = Despresurizado();
-          if(Temp_actual() <= 60 && temp_ok && pi_ok) estado++;
+          //if(Temp_actual() <= 60 && temp_ok && pi_ok) estado++;
+          if(digitalRead(Op_ok)>= HIGH) estado++;
         break;
 
         case 11:
@@ -541,14 +587,71 @@ void Test(){
 
         case 12:
           Fin_proceso();
-          send_msj("nProc.val=",0);
-          send_Strmsj("page repetir");
+          //send_msj("nProc.val=",0);
+          send_Strmsj("page Repetir");
           estado = 0;
+          Reset();
           memset(trama, 0, sizeof(trama));
           memset(temperatura, 0, sizeof(temperatura));
           memset(tiempo, 0, sizeof(tiempo));
 
         break;
        
-    }
-}
+
+        case 13:
+        static int caso = 5;
+        switch(caso)
+        {
+        case 1:
+        if(timer1(60000)) {Serial.println("Timer1 true");
+        caso++;}
+        break;
+
+        case 2:
+        if(timer1(30000)) {Serial.println("Timer1 true");
+        caso++;}
+        break;
+
+        case 3:
+        if(timer2(30000)) {Serial.println("Timer2 true");
+        caso++;}
+        break;
+
+        case 4:
+        if(timer3(30000)){ Serial.println("Timer3 true");
+        caso++;}
+        break;
+
+        case 5:
+        if(timer4(30000)) {Serial.println("Timer4 true");
+        caso++;}
+        break;
+
+        case 6:
+        if(timer5(30000)) {Serial.println("Timer5 true");
+        caso++;}
+        break;
+
+        case 7:
+        if(timer6(30000)) {Serial.println("Timer6 true");
+        caso++;}
+        break;
+
+        case 8:
+        if(timer7(30000)) {Serial.println("Timer7 true");
+        caso++;}
+        break;
+
+        case 9:
+        if(timer8(30000)) {Serial.println("Timer8 true");
+        caso++;}
+        break;
+
+        case 10:
+        if(timer8(30000)) {Serial.println("Timer8 true");
+        caso=1;}
+        break;
+      
+         
+        } 
+}}

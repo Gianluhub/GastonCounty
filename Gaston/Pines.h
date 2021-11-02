@@ -47,6 +47,7 @@
 // Interrupciones y entradas externas
 #define Op_ok CONTROLLINO_A6 // Interruptor de llamado de operador
 #define START CONTROLLINO_A7 // Interruptor de inicio de proceso
-#define STOP  38			 // I16 Interrupcion para stop del proceso
+#define STOP  18			 // I16 Interrupcion para stop del proceso
+#define OVERCURRENT 18	     // Interrupcion por sobre corriente del jet
 
 #endif
