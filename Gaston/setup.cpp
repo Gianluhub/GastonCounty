@@ -13,6 +13,7 @@ extern NexButton bOk;
 extern NexButton bBack;
 extern NexButton bSuavSi;
 extern NexButton bLavRedSi;
+extern NexButton bAct;
 extern NexTouch *nex_listen_list[];
 
 
@@ -66,6 +67,8 @@ void setup()
     pinMode(Op_ok, INPUT);
     pinMode(START,INPUT);
     pinMode(STOP,INPUT);
+    pinMode(NEXT,INPUT);
+    pinMode(NEXT2,INPUT);
     attachInterrupt(digitalPinToInterrupt(STOP), Interrupt, RISING);
 
 //  Inicio de parametros del Nextion   
@@ -78,5 +81,6 @@ void setup()
     bBack.attachPop(bBackCallback,&bBack);
     bSuavSi.attachPop(SuavizadoSiCallback,&bSuavSi);
     bLavRedSi.attachPop(LavadoRedSiCallback,&bLavRedSi);
+    bAct.attachPop(bActCallback,&bAct);
 
 }

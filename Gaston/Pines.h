@@ -49,5 +49,7 @@
 #define START CONTROLLINO_A7 // Interruptor de inicio de proceso
 #define STOP  18			 // I16 Interrupcion para stop del proceso
 #define OVERCURRENT 18	     // Interrupcion por sobre corriente del jet
+#define NEXT CONTROLLINO_A8 // Interruptor usado para pasar al siguiente proceso. Solamente para pruebas
+#define NEXT2 CONTROLLINO_A9	// Otro interruptor de prueba
 
 #endif

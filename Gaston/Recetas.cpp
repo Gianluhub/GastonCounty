@@ -5,6 +5,9 @@
 
 extern int Nuevo_estado;
 extern int Intrr;
+extern int nPaso;
+extern int nProc;
+
 // Funcion de seguridad
 // Cierra las valvulas de calentamiento y presurizado
 void cerrar_vapor(){
@@ -22,11 +25,15 @@ int Poliester(int temperatura, int tiempo){
 	int temp_ok = false;				// Verifica si se llego a la temperatura deseada
 	int press_ok = false;				// Verifica si se llego a la presion deseada
 
+	if(Next()) estado++;
+	
 	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		check_state = estado;
+		nPaso = estado;
+		nProc = 4;
 	}
 
 	if(Intrr)
@@ -172,11 +179,15 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 	
+	if(Next()) estado++;
+
 	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		check_state = estado;
+		nPaso = estado;
+		nProc = 5;
 	}
 
 	if(Intrr)
@@ -490,11 +501,15 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 	
+	if(Next()) estado++;
+	
 	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		check_state = estado;
+		nPaso = estado;
+		nProc = 1;
 	}
 
 	if(Intrr)
@@ -628,11 +643,15 @@ int Preblanqueo_jabon(int temperatura, int tiempo){
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
+	if(Next()) estado++;
+
 	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		check_state = estado;
+		nPaso = estado;
+		nProc = 2;
 	}
 
 	
@@ -736,11 +755,15 @@ int Saponizado(int temperatura, int tiempo){
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
+	if(Next()) estado++;
+
 	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		check_state = estado;
+		nPaso = estado;
+		nProc = 3;
 	}
 	
 	
@@ -897,11 +920,15 @@ int Directo(int temperatura, int tiempo){
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
+	if(Next()) estado++;
+
 	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		check_state = estado;
+		nPaso = estado;
+		nProc = 7;
 	}
 
 	
@@ -1022,13 +1049,18 @@ int Directo(int temperatura, int tiempo){
 */
 
 int Suavizado(){
-    static int estado = 0;
+    static int estado = 1;
 	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
+	
+	if(Next2()) estado++;
+
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		send_msj("nProc.val=",7);
 		check_state = estado;
+		nPaso = estado;
+		nProc = 7;
 	}
 
     
@@ -1040,29 +1072,34 @@ int Suavizado(){
 
     switch(estado)
     {   
-        // 0. Realiza el llenado a nivel 1 si hace falta
+        
         case 0:
+        	if(digitalRead(START) >= HIGH) estado = 1;
+        break;
+
+        // 1. Realiza el llenado a nivel 1 si hace falta
+        case 1:
             if(Llenado(2)) estado = 1;
         break;
-        // 1. Llamado a operador para preparacion de tanque
-        case 1:
-            if(Llamado_op()) estado = 2;
-        break;
-
-        // 2. Adicion rapida de 2 min
+        // 2. Llamado a operador para preparacion de tanque
         case 2:
-            if(Adicion_rapida(2)) estado = 3;
+            if(Llamado_op()) estado = 3;
         break;
 
-        // 3. Circulacion de 20 min
+        // 3. Adicion rapida de 2 min
         case 3:
-            if(Circulacion(20)) estado = 4;
+            if(Adicion_rapida(2)) estado = 4;
         break;
 
-        // 4. Fin
+        // 4. Circulacion de 20 min
         case 4:
+            if(Circulacion(20)) estado = 5;
+        break;
+
+        // 5. Fin
+        case 5:
         	Fin_proceso();
-            estado = 0;
+            estado = 1;
             return true;
         break;
     }
@@ -1082,11 +1119,15 @@ int Lavado_Maquina(){
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
+	if(Next()) estado++;
+
 	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		check_state = estado;
+		nPaso = estado;
+		nProc = 10;
 	}
 
 	if(Intrr)
@@ -1101,6 +1142,7 @@ int Lavado_Maquina(){
 
 		// 1. Llenado a nivel 2
 		case 1:
+			digitalWrite(FV214,HIGH); 	// Abre valvula de ducha
 			if(Llenado(2)) estado = 2;
 		break;
 
@@ -1174,6 +1216,7 @@ int Lavado_Maquina(){
 		// 13. Fin
 		case 13:
 			Fin_proceso();
+			digitalWrite(FV214,LOW); 	// Cierra valvula de ducha
 			estado = 1;
 			return true;
 		break;
@@ -1193,12 +1236,16 @@ int Lavado_reductivo(int temperatura, int tiempo){
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
+	if(Next2()) estado++;
+
 	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
 		send_msj("nProc.val=",8);
 		check_state = estado;
+		nPaso = estado;
+		nProc = 8;
 	}
 
 	if(Intrr)

@@ -32,6 +32,7 @@ int timer5(unsigned long interval);
 int timer6(unsigned long interval);
 int timer7(unsigned long interval);
 int timer8(unsigned long interval);
+int timer9(unsigned long interval);
 void Reset();
 
 
@@ -63,6 +64,9 @@ void send_Strmsj(char msj[]);
 void Nextion_display(int Temp, int TempA, int Grad, int Tiempo, int Paso, int Aper, int Cierre);
 void Seleccion_proceso(int codigo, int estado);
 void Act_tiempo(int tiempo);
+int Next();
+int Next2();
+void bActCallback(void*ptr);
 
 // Desentramado.cpp
 int desentramado(char trama[],int temperatura[], int tiempo[]);
@@ -98,6 +102,8 @@ void Lista_preblanqueo_jabon(int estado, int temperatura, int tiempo);
 void Lista_Saponizado(int estado,int temperatura, int tiempo);
 void Lista_Directo(int estado, int temperatura, int tiempo);
 void Lista_Lavado_reductivo(int estado, int temperatura, int tiempo);
+void Lista_Lavado_Maquina(int estado);
+void Lista_Suavizado(int estado);
 void prueba(int estado, int temperatura, int tiempo);
 
 // Valvulas.cpp

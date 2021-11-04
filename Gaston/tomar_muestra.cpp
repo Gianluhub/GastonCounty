@@ -9,12 +9,13 @@ extern int Back;
 extern int suav;            
 extern int lav_red;
 extern int nPaso;
+extern int nProc;
 
 int Tomar_muestra(int estado){
 
-    static int start = true;
-    static int motores[3] = {0};
-
+    static int start = true;      // Cambia a la pantalla de toma de muestra, solo se hace una vez 
+    static int motores[3] = {0};  // Controla el estado de los motores
+   
     if(start)
     {   
         Tomar_muestra_print();         // Muestra en pantalla
@@ -35,23 +36,22 @@ int Tomar_muestra(int estado){
     // Enciende la alarma para avisar al operador
     // Y espera a que este responda
     digitalWrite(LLAMADO_OP,HIGH);
-    if ((digitalRead(Op_ok) >= HIGH || Back) && !Nuevo_estado_ok)
+    if ((digitalRead(Op_ok) >= HIGH || Back) && !Nuevo_estado_ok && !suav && !lav_red)
     {
         digitalWrite(LLAMADO_OP,LOW);
-        //send_Strmsj("page Proceso");
+        send_Strmsj("page Proceso");
         start = true;
         Back = false;
 
-        // Regresa los motores a su estado anterior
-        digitalWrite(pump,motores[0]);  
-        digitalWrite(plegador_1,motores[1]);
-        digitalWrite(jet_1,motores[2]);
+        // // Regresa los motores a su estado anterior
+        // digitalWrite(pump,motores[0]);  
+        // digitalWrite(plegador_1,motores[1]);
+        // digitalWrite(jet_1,motores[2]);
         //delay(200);     // Delay para dar tiempo a que arranquen los motores??
         estado++;
         Serial.println("ESTADO");
         Serial.println(estado);
         return estado;
-        // probar con estado +=1
     }
     else if(Nuevo_estado_ok)
     {   
@@ -62,87 +62,24 @@ int Tomar_muestra(int estado){
         return estado;
     }
     else if(suav)
-    {
+    {   
         if(Suavizado())
-        {
+        { 
+                 
             suav = false;
             Back = true;
         } 
     }
     else if(lav_red)
-    {
+    {   
         if(Lavado_reductivo(80,30))
-        {
+        {  
             lav_red = false;
             Back = true;
         }
     }
     return estado;
 
-}
-
-int Preguntar_Suavizado(){
-
-    static int start = true;
-    if(start)
-    {   
-        Suavizado_print();         // Muestra en pantalla
-        send_Strmsj("page Suavizado"); // Cambia de pagina para seleccionar el proceso
-        start = false;
-    } 
-    // Enciende la alarma para avisar al operador
-    // Y espera a que este responda
-    digitalWrite(LLAMADO_OP,HIGH);
-    if ((digitalRead(Op_ok) >= HIGH || Back) && !Nuevo_estado_ok)
-    {
-        digitalWrite(LLAMADO_OP,LOW);
-        start = true;
-        Back = false;
-        return true;
-    }
-    else if(Nuevo_estado_ok)
-    {   
-        digitalWrite(LLAMADO_OP,LOW);
-        if(Suavizado())
-        {
-            start = true;
-            Nuevo_estado_ok = false;
-            return true;
-        }
-    }
-    return false;
-}
-
-int Preguntar_Lavado(){
-
-    static int start = true;
-    if(start)
-    {   
-        Suavizado_print();         // Muestra en pantalla
-        send_Strmsj("page Lavado"); // Cambia de pagina para seleccionar el proceso
-        start = false;
-    } 
-    // Enciende la alarma para avisar al operador
-    // Y espera a que este responda
-    digitalWrite(LLAMADO_OP,HIGH);
-    if ((digitalRead(Op_ok) >= HIGH || Back) && !Nuevo_estado_ok)
-    {
-        digitalWrite(LLAMADO_OP,LOW);
-        start = true;
-        Back = false;
-        return true;
-    }
-    else if(Nuevo_estado_ok)
-    {   
-        digitalWrite(LLAMADO_OP,LOW);
-        if(Suavizado())
-        {
-            start = true;
-            Nuevo_estado_ok = false;
-            return true;
-        }
-    }
-    return false;
 }
 
 
@@ -900,6 +837,47 @@ void Lista_Lavado_reductivo(int estado, int temperatura, int tiempo){
 }
 
 
+void Lista_Suavizado(int estado){
+
+    Serial.println("Suavizado");
+    send_msj("nPasoM.val=",estado);
+    if(estado<1)
+    { 
+        estado = 5;
+        nPaso = 5;
+        send_msj("nPasoM.val=",estado);
+    }
+    else if (estado>5)
+    {
+        estado = 1;
+        nPaso = 1;
+        send_msj("nPasoM.val=",estado);
+    }
+
+    switch(estado)
+    {
+        case 1:
+            Llenado_print(2);
+        break;
+
+        case 2:
+            Llamado_op_print();
+        break;
+
+        case 3:
+            Adicion_rapida_print(2);
+        break;
+
+        case 4:
+            Circulacion_print(20);
+        break;
+
+        case 5:
+            Fin_proceso();
+        break;
+    }
+}
+
 void prueba(int estado, int temperatura, int tiempo){
 
 	Serial.println("Prueba");
@@ -964,6 +942,81 @@ void prueba(int estado, int temperatura, int tiempo){
         break;
 
         case 12:
+            Fin_proceso();
+        break;
+    }
+
+}
+
+void Lista_Lavado_Maquina(int estado){
+
+    Serial.println("Lavado de maquina");
+    send_msj("nPasoM.val=",estado);
+    if(estado<1)
+    { 
+        estado = 13;
+        nPaso = 13;
+        send_msj("nPasoM.val=",estado);
+    }
+    else if (estado>13)
+    {
+        estado= 1;
+        nPaso = 1;
+        send_msj("nPasoM.val=",estado);
+    }
+
+    switch(estado)
+    {
+
+        case 1:
+            Llenado_print(2);
+        break;
+
+        case 2:
+            Llamado_op_print();
+        break;
+
+        case 3:
+            Adicion_rapida_print(5);
+        break;
+
+        case 4:
+            Calentamiento_print(130,0);
+        break;
+
+        case 5:
+            Circulacion_print(60);
+        break;
+
+        case 6:
+            Enfriamiento_print(60,0);
+        break;
+
+        case 7:
+            Vaciado_print();
+        break;
+
+        case 8:
+            Llenado_print(2);
+        break;
+
+        case 9:
+            Llamado_op_print();
+        break;
+
+        case 10:
+            Adicion_rapida_print(5);
+        break;
+
+        case 11:
+            Circulacion_print(15);
+        break;
+
+        case 12:
+            Vaciado_print();
+        break;
+
+        case 13:
             Fin_proceso();
         break;
     }

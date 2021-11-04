@@ -150,7 +150,7 @@ int Adicion_rapida(int tiempo){
 Adicion lenta
 El parametro tiempo debe ser en minutos y los de t_abierto y t_cerrado en segundos
 */
-int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
+int Adicion_lenta(int tiempo, int t_cerrado, int t_abierto ){
 
     Handler_motores(true);
     // Comunicacion con Nextion
@@ -158,7 +158,7 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
     // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
     if (Mostrar)
     { 
-        Adicion_lenta_print(tiempo,t_abierto,t_cerrado);
+        Adicion_lenta_print(tiempo,t_cerrado,t_abierto);
         Mostrar = false; 
     }
     Act_tiempo(tiempo);
@@ -185,8 +185,6 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
             {
                 // Abre la valvula de dosificacion de aditivos
                digitalWrite(FV206,HIGH);
-               Serial.println("Abre");
-
             }
             else flag = false;
 
@@ -195,13 +193,13 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
         {
             // Cierra las valvulas durante un tiempo t_cerrado
             digitalWrite(FV206,LOW);
-            Serial.println("Cierra");
-            
+                 
         }
         else flag = true;
     }
     else 
     {
+        digitalWrite(FV206,LOW); // Cerramos la valvulas
         Act_tiempo(false);  //Reiniciamos el contador
         flag = true;
         Mostrar = true;
@@ -219,7 +217,7 @@ int Adicion_lenta(int tiempo, int t_abierto, int t_cerrado ){
 
 int Circulacion(int interval){
 
-    
+    Serial.println("Circulacion");
     Handler_motores(true);
     // Comunicacion con Nextion
     // El flag se usa para mostrar en pantalla solo una vez por proceso
@@ -231,32 +229,12 @@ int Circulacion(int interval){
     }
     Act_tiempo(interval);
 
-
     // Se pasan los tiempos a milisegundos
     unsigned long interval_ms = To_millis(interval);
-    unsigned long currentTime = millis();
-    static unsigned long previousTime = millis();
-    static int start = 0;
-
-    // Reinicia el temporizador
-    if (interval==false)
-    {
-      start = 1;
-      Mostrar = true;
-      return false;
-    }
-    
-    // Si start es 1, quiere decir que se comienza a contar de nuevo
-    if (start == 1)
-    { 
-        previousTime = millis();
-        start = 0;
-    }
 
     // Calcula el tiempo faltante
-    if (currentTime - previousTime >= interval_ms)
+    if (timer9(interval_ms))
     {
-        start = 1;
         Mostrar = true;        // Reiniciamos flag para mostrar en pantalla
         Act_tiempo(false);  //Reiniciamos el contador
         Serial.println("Circulacion true");
@@ -562,32 +540,34 @@ int Enfriamiento(int temp, float grad){
     // REVISAR ESTA PARTE
 int Presurizado(){
 
-    static int flag = true;  // Sirve de ayuda para implementar los delays con un mismo contador
-    const int presion = 150; // Presion maxima, aun no se sabe cuanto vale
+    //static int flag = true;  // Sirve de ayuda para implementar los delays con un mismo contador
+   // const int presion = 150; // Presion maxima, aun no se sabe cuanto vale
 
     // Si la temperatura es mayor a 85 y no se tiene el maximo de presion empieza a presurizar
     if (Temp_actual() >= 85 && digitalRead(PCH100) <= LOW)
     {   
         Serial.println("Comienza presurizado");
-        if(flag)
-        {
-            if(!timer5(1500))
-            {
-                // Comienza el presurizado
-                Cerrar_presurizado(); // Cierra todas las valvulas salvo las que se encarguen de la temperatura y presurizacion
-                digitalWrite(FV212,HIGH); // Se abre valvula de presurizado (entrada de aire)
-            }
-            else flag = false;
-        }
-            //delay(1500); // tiempo que permanece abierta la valvula de aire, aun a determinar
+        // if(flag)
+        // {
+        //     if(!timer5(1500))
+        //     {
+        //         // Comienza el presurizado
+        //         Cerrar_presurizado(); // Cierra todas las valvulas salvo las que se encarguen de la temperatura y presurizacion
+        //         digitalWrite(FV212,HIGH); // Se abre valvula de presurizado (entrada de aire)
+        //     }
+        //     else flag = false;
+        // }
+        //     //delay(1500); // tiempo que permanece abierta la valvula de aire, aun a determinar
 
-        else if(!timer5(3000)) 
-        {
-        digitalWrite(FV212,LOW); // Mantiene la valvula de aire cerrada por un tiempo
-        }
-        else flag = true;
+        // else if(!timer5(3000)) 
+        // {
+        // digitalWrite(FV212,LOW); // Mantiene la valvula de aire cerrada por un tiempo
+        // }
+        // else flag = true;
     
-
+        //Comienza el presurizado
+        Cerrar_presurizado(); // Cierra todas las valvulas salvo las que se encarguen de la temperatura y presurizacion
+        digitalWrite(FV212,HIGH); // Se abre valvula de presurizado (entrada de aire)
     }
     else
     {

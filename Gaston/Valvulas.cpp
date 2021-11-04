@@ -36,10 +36,12 @@ void Interrupt() {
 
 void Detener_proceso(){
 
+	Serial.println("Entra");
   master.guardar_estado();  // Guarda el estado de las valvulas si estan abiertas o cerradas
   master.cerrar_valvulas(); // Cierra todas las valvulas por seguridad
   Reset();									// Reinicia todos los temporizadores
   Mostrar = true;
+  Serial.println("Entra");
 }
 
 void Reiniciar_proceso(){
@@ -57,9 +59,8 @@ void Callback_ISR(){
 		case 1:
 			Detener_proceso();
 			send_Strmsj("page TomaMuestra");
-			nPaso = 1;
 			Seleccion_proceso(nProc,nPaso);
-			state++;
+			state=2;
 		break;
 
 		case 2:
@@ -92,6 +93,7 @@ void Control_Valvulas::guardar_estado(){
 		motores[0] = digitalRead(pump);
 		motores[1] = digitalRead(plegador_1);
 		motores[2] = digitalRead(jet_1);
+		Serial.println(motores[0]);
 }
 
 void Control_Valvulas::regresar_estado(){
@@ -115,9 +117,11 @@ void Control_Valvulas::cerrar_valvulas(){
 	{
 		digitalWrite(pins[i],LOW);
 	}
-
+	Serial.println("Entra");
 	// Apaga la bomba y el plegador
   digitalWrite(pump,LOW); 	
   digitalWrite(plegador_1,LOW);
   digitalWrite(jet_1,LOW);
+  Serial.println("Apaga motores");
+  Serial.println(digitalRead(pump));
 }
