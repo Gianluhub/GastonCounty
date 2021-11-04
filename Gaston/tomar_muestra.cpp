@@ -10,23 +10,18 @@ extern int suav;
 extern int lav_red;
 extern int nPaso;
 extern int nProc;
+extern int Estado_anterior;
 
 int Tomar_muestra(int estado){
 
     static int start = true;      // Cambia a la pantalla de toma de muestra, solo se hace una vez 
-    static int motores[3] = {0};  // Controla el estado de los motores
+    //static int motores[3] = {0};  // Controla el estado de los motores
    
     if(start)
     {   
         Tomar_muestra_print();         // Muestra en pantalla
         send_Strmsj("page Preguntar"); // Cambia de pagina para seleccionar el proceso
         start = false;
-
-        
-        // Guarda el estado de los motores antes de apagar
-        motores[0] = digitalRead(pump);
-        motores[1] = digitalRead(plegador_1);
-        motores[2] = digitalRead(jet_1);
 
         // Apaga la bomba y el plegador y torniquete
         digitalWrite(pump,LOW);
@@ -42,12 +37,6 @@ int Tomar_muestra(int estado){
         send_Strmsj("page Proceso");
         start = true;
         Back = false;
-
-        // // Regresa los motores a su estado anterior
-        // digitalWrite(pump,motores[0]);  
-        // digitalWrite(plegador_1,motores[1]);
-        // digitalWrite(jet_1,motores[2]);
-        //delay(200);     // Delay para dar tiempo a que arranquen los motores??
         estado++;
         Serial.println("ESTADO");
         Serial.println(estado);
@@ -63,20 +52,20 @@ int Tomar_muestra(int estado){
     }
     else if(suav)
     {   
-        if(Suavizado())
-        { 
-                 
-            suav = false;
-            Back = true;
-        } 
+        Estado_anterior = estado;
+        start = true;     
+        suav = false;
+        //Back = true;
+        return 100;   
     }
     else if(lav_red)
     {   
-        if(Lavado_reductivo(80,30))
-        {  
-            lav_red = false;
-            Back = true;
-        }
+        Estado_anterior = estado;
+        start = true;
+        lav_red = false;
+        //Back = true;
+        return 101;
+        
     }
     return estado;
 

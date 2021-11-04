@@ -31,8 +31,9 @@ int Nuevo_estado_ok = false;  // Este flag funciona para indicar que se va a rep
 int Back = false;             // Si no se desea repetir algun proceso o realizar suavizado, este flag indicara que continue el programa
 int suav = false;             // Flag para indicar que se realizara suavizado
 int lav_red = false;          // Flag para indicar Lavado reductivo
-int nProc = 0;                 // Variable que almacena el codigo del teñido que se esta ejecutando.
+int nProc = 0;                 // Variable que almacena el codigo del teñido que se esta ejecutando
 int nPaso = 0;                // Varable que almacena el estado o paso del proceso. 
+int Estado_anterior = 0;      // Almacena el estado anterior para regresar a el luego de que se haya realizado el suavizado o el lavado reductivo
 
 // Variables de interrupcion usadas en Valvulas.cpp
 // Funciones encargadas de la interrupcion del sistema.
@@ -605,7 +606,17 @@ void Test(){
           memset(temperatura, 0, sizeof(temperatura));
           memset(tiempo, 0, sizeof(tiempo));
         break;
-  }
+
+          // 100. Suavizado
+      case 100:
+        if(Suavizado()) estado = Estado_anterior;
+      break;
+  
+      // 101. Lavado reductivo
+      case 101:
+        if(Lavado_reductivo(80,30)) estado = Estado_anterior;
+      break;
+    }
 }
 
 

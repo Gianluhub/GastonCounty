@@ -7,6 +7,7 @@ extern int Nuevo_estado;
 extern int Intrr;
 extern int nPaso;
 extern int nProc;
+extern int Estado_anterior;
 
 // Funcion de seguridad
 // Cierra las valvulas de calentamiento y presurizado
@@ -31,6 +32,7 @@ int Poliester(int temperatura, int tiempo){
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		send_msj("nProc.val=",4);			// Muestra en pantalla el codigo del proceso
 		check_state = estado;
 		nPaso = estado;
 		nProc = 4;
@@ -146,12 +148,6 @@ int Poliester(int temperatura, int tiempo){
 			if (Vaciado()) estado = 17;
 		break;
 
-		// // Parte nueva añadida (el suavizado debe ser opcional)
-		// // 17. Preguntar por suavizado
-		// case 17:
-		// 	if(Preguntar_Suavizado()) estado = 18;
-		// break;
-
 		// 17. Toma de muestra
 		case 17:
 			estado = Tomar_muestra(estado);
@@ -162,6 +158,16 @@ int Poliester(int temperatura, int tiempo){
 			Fin_proceso();
 			estado = 1;
 			return true;
+		break;
+
+		// 100. Suavizado
+		case 100:
+			if(Suavizado())	estado = Estado_anterior;
+		break;
+
+		// 101. Lavado reductivo
+		case 101:
+			if(Lavado_reductivo(80,30)) estado = Estado_anterior;
 		break;	
 	}
 
@@ -185,6 +191,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		send_msj("nProc.val=",5);			// Muestra en pantalla el codigo del proceso
 		check_state = estado;
 		nPaso = estado;
 		nProc = 5;
@@ -488,6 +495,16 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 			estado = 1;
 			return true;
 		break;
+
+		// 100. Suavizado
+		case 100:
+			if(Suavizado())	estado = Estado_anterior;
+		break;
+
+		// 101. Lavado reductivo
+		case 101:
+			if(Lavado_reductivo(80,30)) estado = Estado_anterior;
+		break;
 	}
 
 	return false;
@@ -507,6 +524,7 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		send_msj("nProc.val=",1);			// Muestra en pantalla el codigo del proceso
 		check_state = estado;
 		nPaso = estado;
 		nProc = 1;
@@ -628,6 +646,16 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 			return true;
 		break;
 
+		// 100. Suavizado
+		case 100:
+			if(Suavizado())	estado = Estado_anterior;
+		break;
+
+		// 101. Lavado reductivo
+		case 101:
+			if(Lavado_reductivo(80,30)) estado = Estado_anterior;
+		break;
+
 	}
 
 	return false;
@@ -649,6 +677,7 @@ int Preblanqueo_jabon(int temperatura, int tiempo){
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		send_msj("nProc.val=",2);			// Muestra en pantalla el codigo del proceso
 		check_state = estado;
 		nPaso = estado;
 		nProc = 2;
@@ -742,6 +771,16 @@ int Preblanqueo_jabon(int temperatura, int tiempo){
 			return true;
 		break;
 
+		// 100. Suavizado
+		case 100:
+			if(Suavizado())	estado = Estado_anterior;
+		break;
+
+		// 101. Lavado reductivo
+		case 101:
+			if(Lavado_reductivo(80,30)) estado = Estado_anterior;
+		break;
+
 	}
 
 	return false;
@@ -761,6 +800,7 @@ int Saponizado(int temperatura, int tiempo){
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		send_msj("nProc.val=",3);			// Muestra en pantalla el codigo del proceso
 		check_state = estado;
 		nPaso = estado;
 		nProc = 3;
@@ -907,6 +947,16 @@ int Saponizado(int temperatura, int tiempo){
 			estado = 1;
 			return true;
 		break;
+
+		// 100. Suavizado
+		case 100:
+			if(Suavizado())	estado = Estado_anterior;
+		break;
+
+		// 101. Lavado reductivo
+		case 101:
+			if(Lavado_reductivo(80,30)) estado = Estado_anterior;
+		break;
 	}
 
 	return false;
@@ -926,6 +976,7 @@ int Directo(int temperatura, int tiempo){
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		send_msj("nProc.val=",6);			// Muestra en pantalla el codigo del proceso
 		check_state = estado;
 		nPaso = estado;
 		nProc = 7;
@@ -1015,11 +1066,6 @@ int Directo(int temperatura, int tiempo){
 			if(Vaciado()) estado = 14;
 		break;
 
-		// // 11. Suaviazado
-		// case 11:
-		// 	if(Preguntar_Suavizado()) estado = 12;
-		// break;
-
 		// 14. Toma de muestra
 		case 14:
 			estado = Tomar_muestra(estado);
@@ -1031,6 +1077,16 @@ int Directo(int temperatura, int tiempo){
 			estado = 1;
 			return true;
 		break;	
+
+		// 100. Suavizado
+		case 100:
+			if(Suavizado())	estado = Estado_anterior;
+		break;
+
+		// 101. Lavado reductivo
+		case 101:
+			if(Lavado_reductivo(80,30)) estado = Estado_anterior;
+		break;
 	}
 
 	return false;
@@ -1126,6 +1182,7 @@ int Lavado_Maquina(){
 	if (check_state != estado)
 	{
 		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		send_msj("nProc.val=",10);			// Muestra en pantalla el codigo del proceso
 		check_state = estado;
 		nPaso = estado;
 		nProc = 10;
@@ -1220,10 +1277,9 @@ int Lavado_Maquina(){
 			digitalWrite(FV214,LOW); 	// Cierra valvula de ducha
 			estado = 1;
 			return true;
-		break;
-
-		return false;
+		break;		
 	}
+	return false;
 
 }
 
@@ -1338,6 +1394,9 @@ int Lavado_reductivo(int temperatura, int tiempo){
 			estado = 1;
 			return true;
 		break;
+
+		default:
+			estado = 7;
 	}
 
 	return false;

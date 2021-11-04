@@ -217,7 +217,6 @@ int Adicion_lenta(int tiempo, int t_cerrado, int t_abierto ){
 
 int Circulacion(int interval){
 
-    Serial.println("Circulacion");
     Handler_motores(true);
     // Comunicacion con Nextion
     // El flag se usa para mostrar en pantalla solo una vez por proceso
