@@ -1072,32 +1072,33 @@ int Suavizado(){
 
     switch(estado)
     {   
-        
-        case 0:
-        	if(digitalRead(START) >= HIGH) estado = 1;
-        break;
-
-        // 1. Realiza el llenado a nivel 1 si hace falta
+        // 1. Vaciado
         case 1:
-            if(Llenado(2)) estado = 1;
+        	if(Vaciado()) estado = 2;
         break;
-        // 2. Llamado a operador para preparacion de tanque
+
+        // 2. Realiza el llenado a nivel 1 si hace falta
         case 2:
-            if(Llamado_op()) estado = 3;
+            if(Llenado(2)) estado = 3;
         break;
 
-        // 3. Adicion rapida de 2 min
+        // 3. Llamado a operador para preparacion de tanque
         case 3:
-            if(Adicion_rapida(2)) estado = 4;
+            if(Llamado_op()) estado = 4;
         break;
 
-        // 4. Circulacion de 20 min
+        // 4. Adicion rapida de 2 min
         case 4:
-            if(Circulacion(20)) estado = 5;
+            if(Adicion_rapida(2)) estado = 5;
         break;
 
-        // 5. Fin
+        // 5. Circulacion de 20 min
         case 5:
+            if(Circulacion(20)) estado = 6;
+        break;
+
+        // 6. Fin
+        case 6:
         	Fin_proceso();
             estado = 1;
             return true;
@@ -1256,77 +1257,83 @@ int Lavado_reductivo(int temperatura, int tiempo){
 
 	switch(estado)
 	{
-		// 1. Llenado a nivel 2
+		
+		// 1. Vaciado
 		case 1:
-			if(Llenado(2)) estado = 2;
+			if(Vaciado());
 		break;
 
-		// 2. Adicion rapida 10 min
+		// 2. Llenado a nivel 2
 		case 2:
-			if(Adicion_rapida(10)) estado = 3;
+			if(Llenado(2)) estado = 3;
 		break;
 
-		// 3. Subir temperatura 
+		// 3. Adicion rapida 10 min
 		case 3:
+			if(Adicion_rapida(10)) estado = 4;
+		break;
+
+		// 4. Subir temperatura 
+		case 4:
 			temp_ok = Calentamiento(temperatura,2);
 			Presurizado();
-			if (Temp_actual() >= temperatura && temp_ok) estado = 4;
+			if (Temp_actual() >= temperatura && temp_ok) estado = 5;
 		break;
 
-		// 4. Circulacion 
-		case 4:
+		// 5. Circulacion 
+		case 5:
 			Calentamiento(temperatura,2);
 			if(Circulacion(tiempo))
 			{
 				cerrar_vapor();
-				estado = 5;
+				estado = 6;
 			}
 		break;
 
-		// 5. Enfriamiento a 60
-		case 5:
+		// 6. Enfriamiento a 60
+		case 6:
 			temp_ok = Enfriamiento(60,2);
 			press_ok = Despresurizado();
-			if (Temp_actual() <= 60 && temp_ok) estado = 6;
+			if (Temp_actual() <= 60 && temp_ok) estado = 7;
 		break;
 
-		// 6. Toma de muestra
-		case 6:	
+		// 7. Toma de muestra
+		case 7:	
 			estado = Tomar_muestra(estado);
 		break;
 
-		// 7. Lavado por rebose 15 min
-		case 7:
-			if(Lavado_rebose(15)) estado = 8;
-		break;
-
-		// 8. Vaciado
+		// 8. Lavado por rebose 15 min
 		case 8:
-			if(Vaciado()) estado = 9;
+			if(Lavado_rebose(15)) estado = 9;
 		break;
 
-		// 9. Llenado a nivel 2
+		// 9. Vaciado
 		case 9:
-			if(Llenado(2)) estado = 10;
+			if(Vaciado()) estado = 10;
 		break;
 
-		// 10. Preparacion de tanque
+		// 10. Llenado a nivel 2
 		case 10:
-			if(Llamado_op()) estado = 11;
+			if(Llenado(2)) estado = 11;
 		break;
 
-		// 11. Adicion rapida 3 min
+		// 11. Preparacion de tanque
 		case 11:
-			if(Adicion_rapida(3)) estado = 12;
+			if(Llamado_op()) estado = 12;
 		break;
 
-		// 12. Circulacion 10 min
-		case 12:	
-			if(Circulacion(10)) estado = 13;
+		// 12. Adicion rapida 3 min
+		case 12:
+			if(Adicion_rapida(3)) estado = 13;
 		break;
 
-		// 13. Fin
-		case 13:
+		// 13. Circulacion 10 min
+		case 13:	
+			if(Circulacion(10)) estado = 14;
+		break;
+
+		// 14. Fin
+		case 14:
 			Fin_proceso();
 			estado = 1;
 			return true;

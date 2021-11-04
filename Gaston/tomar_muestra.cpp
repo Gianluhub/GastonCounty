@@ -769,11 +769,11 @@ void Lista_Lavado_reductivo(int estado, int temperatura, int tiempo){
     send_msj("nPasoM.val=",estado);
     if(estado<1)
     { 
-        estado = 13;
-        nPaso = 13;
+        estado = 14;
+        nPaso = 14;
         send_msj("nPasoM.val=",estado);
     }
-    else if (estado>13)
+    else if (estado>14)
     {
         estado = 1;
         nPaso = 1;
@@ -782,55 +782,60 @@ void Lista_Lavado_reductivo(int estado, int temperatura, int tiempo){
 
     switch(estado)
     {
+        
         case 1:
-            Llenado_print(2);
-        break;
-
-        case 2:
-            Adicion_rapida_print(10);
-        break;
-
-        case 3: 
-            Calentamiento_print(temperatura,2);
-        break;
-
-        case 4:
-            Circulacion_print(tiempo);
-        break;
-
-        case 5:
-            Enfriamiento_print(60,2);
-        break;
-
-        case 6:
-            Tomar_muestra_print();
-        break;
-
-        case 7:
-            Lavado_rebose_print(15);
-        break;
-
-        case 8:
             Vaciado_print();
         break;
 
-        case 9:
+        case 2:
             Llenado_print(2);
         break;
 
+        case 3:
+            Adicion_rapida_print(10);
+        break;
+
+        case 4: 
+            Calentamiento_print(temperatura,2);
+        break;
+
+        case 5:
+            Circulacion_print(tiempo);
+        break;
+
+        case 6:
+            Enfriamiento_print(60,2);
+        break;
+
+        case 7:
+            Tomar_muestra_print();
+        break;
+
+        case 8:
+            Lavado_rebose_print(15);
+        break;
+
+        case 9:
+            Vaciado_print();
+        break;
+
         case 10:
-            Llamado_op_print();
+            Llenado_print(2);
         break;
 
         case 11:
-            Adicion_rapida_print(3);
+            Llamado_op_print();
         break;
 
         case 12:
-            Circulacion_print(10);
+            Adicion_rapida_print(3);
         break;
 
         case 13:
+            Circulacion_print(10);
+        break;
+
+        case 14:
             Fin_proceso();
         break;
     } 
@@ -843,11 +848,11 @@ void Lista_Suavizado(int estado){
     send_msj("nPasoM.val=",estado);
     if(estado<1)
     { 
-        estado = 5;
-        nPaso = 5;
+        estado = 6;
+        nPaso = 6;
         send_msj("nPasoM.val=",estado);
     }
-    else if (estado>5)
+    else if (estado>6)
     {
         estado = 1;
         nPaso = 1;
@@ -856,23 +861,28 @@ void Lista_Suavizado(int estado){
 
     switch(estado)
     {
+        
         case 1:
-            Llenado_print(2);
+            Vaciado_print();
         break;
 
         case 2:
-            Llamado_op_print();
+            Llenado_print(2);
         break;
 
         case 3:
-            Adicion_rapida_print(2);
+            Llamado_op_print();
         break;
 
         case 4:
-            Circulacion_print(20);
+            Adicion_rapida_print(2);
         break;
 
         case 5:
+            Circulacion_print(20);
+        break;
+
+        case 6:
             Fin_proceso();
         break;
     }
