@@ -5,9 +5,10 @@
 
 extern int Nuevo_estado;
 extern int Intrr;
+extern int Intrr_2;
 extern int nPaso;
 extern int nProc;
-extern int Estado_anterior;
+//extern int Estado_anterior;
 
 // Funcion de seguridad
 // Cierra las valvulas de calentamiento y presurizado
@@ -22,7 +23,8 @@ void cerrar_vapor(){
 
 int Poliester(int temperatura, int tiempo){
 
-	static int estado = 1;				// Variable encargada de pasar de un proceso a otro		
+	static int estado = 1;				// Variable encargada de pasar de un proceso a otro
+	static int Estado_anterior = 0;		// Almacena el estado del proceso en toma de muestra antes de hacer suavizado o lavado reductivo		
 	int temp_ok = false;				// Verifica si se llego a la temperatura deseada
 	int press_ok = false;				// Verifica si se llego a la presion deseada
 
@@ -120,6 +122,7 @@ int Poliester(int temperatura, int tiempo){
 		
 		// 11. Toma de muestra
 		case 11:
+			Estado_anterior = 11;
 			estado = Tomar_muestra(estado);
 		break;
 
@@ -150,6 +153,7 @@ int Poliester(int temperatura, int tiempo){
 
 		// 17. Toma de muestra
 		case 17:
+			Estado_anterior = 17;
 			estado = Tomar_muestra(estado);
 		break;
 
@@ -181,7 +185,8 @@ int Poliester(int temperatura, int tiempo){
 // OJO LINEA 294
 int Algodon(int temperatura, int tiempoC, int tiempoF){
 
-	static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
+	static int estado = 1;			// Variable encargada de pasar de un proceso a otro
+	static int Estado_anterior = 0;	// Almacena el estado del proceso en toma de muestra antes de hacer suavizado o lavado reductivo		
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 	
@@ -285,6 +290,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		// 14. Llamado a operador (Tomar muestra)
 		case 14:
+			Estado_anterior = 14;
 			estado = Tomar_muestra(estado);
 		break;
 
@@ -421,6 +427,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 		// Para que el operador salte el lavado opcional al precionar el boton de llamado de op
 		// Si desea realizar el proceso debera escogerlo manualmente dentro de la pantalla.
 		case 36:
+			Estado_anterior = 36;
 			estado = Tomar_muestra(estado);
 		break;
 
@@ -473,14 +480,9 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 			if(Circulacion(20)) estado = 46;
 		break; 
 
-		// Parte nueva añadida (el suavizado debe ser opcional)
-		// 46. preguntar si se desea suvizado de tela (Suavizado es opcional)
-		// case 46:
-		// 	if(Preguntar_Suavizado()) estado = 47;
-		// break;
-
 		// 46. Toma de muestra
 		case 46:
+			Estado_anterior = 46;
 			estado = Tomar_muestra(estado);
 		break;
 
@@ -515,6 +517,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 int Preblanqueo_quimico(int temperatura, int tiempo){
 
 	static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
+	static int Estado_anterior = 0;		// Almacena el estado del proceso en toma de muestra antes de hacer suavizado o lavado reductivo
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 	
@@ -586,6 +589,7 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 
 		// 8. Toma de muestra
 		case 8:
+			Estado_anterior = 8;
 			estado = Tomar_muestra(estado);
 		break;
 
@@ -668,6 +672,7 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 int Preblanqueo_jabon(int temperatura, int tiempo){
 
 	static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
+	static int Estado_anterior = 0;	// Almacena el estado del proceso en toma de muestra antes de hacer suavizado o lavado reductivo
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
@@ -738,34 +743,39 @@ int Preblanqueo_jabon(int temperatura, int tiempo){
 			if (Temp_actual() <= 60 && temp_ok && press_ok) estado = 8;
 		break;
 
-
-		// 8. Lavado por rebose 10 min
+		// 8. Toma de muestra
 		case 8:
-			if(Lavado_rebose(10)) estado = 9;
+			Estado_anterior = 8;
+			estado = Tomar_muestra(estado);
 		break;
 
-		// 9. Vaciado de tanque
+		// 9. Lavado por rebose 10 min
 		case 9:
-			if(Vaciado()) estado = 10;
+			if(Lavado_rebose(10)) estado = 10;
 		break;
 
-		// 10. Llenado a nivel 2
+		// 10. Vaciado de tanque
 		case 10:
-			if(Llenado(2)) estado = 11;
+			if(Vaciado()) estado = 11;
 		break;
 
-		// 11. Lavado por rebose 5 min
+		// 11. Llenado a nivel 2
 		case 11:
-			if(Lavado_rebose(5)) estado = 12;
+			if(Llenado(2)) estado = 12;
 		break;
 
-		// 12. Vaciado de tanque
+		// 12. Lavado por rebose 5 min
 		case 12:
-			if(Vaciado()) estado = 13;
+			if(Lavado_rebose(5)) estado = 13;
 		break;
 
-		// 13. Fin
+		// 13. Vaciado de tanque
 		case 13:
+			if(Vaciado()) estado = 14;
+		break;
+
+		// 14. Fin
+		case 14:
 			Fin_proceso();
 			estado = 1;
 			return true;
@@ -790,7 +800,8 @@ int Preblanqueo_jabon(int temperatura, int tiempo){
 
 int Saponizado(int temperatura, int tiempo){
 
-	static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
+	static int estado = 1;			// Variable encargada de pasar de un proceso a otro	
+	static int Estado_anterior = 0;		// Almacena el estado del proceso en toma de muestra antes de hacer suavizado o lavado reductivo	
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
@@ -872,6 +883,7 @@ int Saponizado(int temperatura, int tiempo){
 
 		// 10. Llamado de operador (Toma de muestra)
 		case 10:
+			Estado_anterior = 10;
 			estado = Tomar_muestra(estado);
 		break;
 
@@ -917,6 +929,7 @@ int Saponizado(int temperatura, int tiempo){
 
 		// 19. Toma de muestra
 		case 19:
+			Estado_anterior = 19;
 			estado = Tomar_muestra(estado);
 		break;
 
@@ -966,7 +979,8 @@ int Saponizado(int temperatura, int tiempo){
 
 int Directo(int temperatura, int tiempo){
 
-    static int estado = 1;			// Variable encargada de pasar de un proceso a otro		
+    static int estado = 1;			// Variable encargada de pasar de un proceso a otro
+    static int Estado_anterior = 0;	// Almacena el estado del proceso en toma de muestra antes de hacer suavizado o lavado reductivo		
 	int temp_ok = false;			// Verifica si se llego a la temperatura deseada
 	int press_ok = false;			// Verifica si se llego a la presion deseada
 
@@ -1053,6 +1067,7 @@ int Directo(int temperatura, int tiempo){
 
 		// 11. Toma de muestra
 		case 11:
+			Estado_anterior = 11;
 			estado = Tomar_muestra(estado);
 		break;
 
@@ -1068,6 +1083,7 @@ int Directo(int temperatura, int tiempo){
 
 		// 14. Toma de muestra
 		case 14:
+			Estado_anterior = 14;
 			estado = Tomar_muestra(estado);
 		break;
 
@@ -1120,9 +1136,9 @@ int Suavizado(){
 	}
 
     
-	if(Intrr)
+	if(Intrr_2)
   	{
-	    Intrr = false;
+	    Intrr_2 = false;
 	    estado = Nuevo_estado;
   	}
 
@@ -1305,9 +1321,9 @@ int Lavado_reductivo(int temperatura, int tiempo){
 		nProc = 8;
 	}
 
-	if(Intrr)
+	if(Intrr_2)
   	{
-	    Intrr = false;
+	    Intrr_2 = false;
 	    estado = Nuevo_estado;
   	}
 
@@ -1316,7 +1332,7 @@ int Lavado_reductivo(int temperatura, int tiempo){
 		
 		// 1. Vaciado
 		case 1:
-			if(Vaciado());
+			if(Vaciado()) estado = 2;
 		break;
 
 		// 2. Llenado a nivel 2

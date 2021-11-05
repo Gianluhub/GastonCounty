@@ -10,7 +10,7 @@ extern int suav;
 extern int lav_red;
 extern int nPaso;
 extern int nProc;
-extern int Estado_anterior;
+//extern int Estado_anterior;
 
 int Tomar_muestra(int estado){
 
@@ -52,18 +52,16 @@ int Tomar_muestra(int estado){
     }
     else if(suav)
     {   
-        Estado_anterior = estado;
+        //Estado_anterior = estado;
         start = true;     
         suav = false;
-        //Back = true;
         return 100;   
     }
     else if(lav_red)
     {   
-        Estado_anterior = estado;
+        //Estado_anterior = estado;
         start = true;
         lav_red = false;
-        //Back = true;
         return 101;
         
     }
@@ -77,6 +75,7 @@ void Lista_Poliester(int estado, int temperatura, int tiempo){
 
     Serial.println("Poliester");
     send_msj("nPasoM.val=",estado);
+    send_msj("nProc.val=",4);
     if(estado<1)
     { 
         estado = 18;
@@ -171,6 +170,7 @@ void Lista_Poliester(int estado, int temperatura, int tiempo){
 void Lista_Algodon(int estado, int temperatura, int tiempoC, int tiempoF){
 
     Serial.println("Algodon");
+    send_msj("nProc.val=",5);
     if(estado<1)
     { 
         estado = 48;
@@ -387,6 +387,7 @@ void Lista_preblanqueo_quimico(int estado, int temperatura, int tiempo){
 
     Serial.println("Preblanqueo Q");
     send_msj("nPasoM.val=",estado);
+    send_msj("nProc.val=",1);
     if(estado<1)
     { 
         estado = 19;
@@ -485,13 +486,14 @@ void Lista_preblanqueo_jabon(int estado, int temperatura, int tiempo){
 
     Serial.println("Preblanqueo Jabon");
     send_msj("nPasoM.val=",estado);
+    send_msj("nProc.val=",2);
     if(estado<1)
     { 
-        estado = 13;
-        nPaso = 13;
+        estado = 14;
+        nPaso = 14;
         send_msj("nPasoM.val=",estado);
     }
-    else if (estado>13)
+    else if (estado>14)
     {
         estado = 1;
         nPaso  = 1;
@@ -530,26 +532,30 @@ void Lista_preblanqueo_jabon(int estado, int temperatura, int tiempo){
         break;
 
         case 8:
-            Lavado_rebose_print(10);
+            Tomar_muestra_print();
         break;
 
         case 9:
-            Vaciado_print();
+            Lavado_rebose_print(10);
         break;
 
         case 10:
-            Llenado_print(2);
-        break;
-
-        case 11:
-            Lavado_rebose_print(5);
-        break;
-
-        case 12:
             Vaciado_print();
         break;
 
+        case 11:
+            Llenado_print(2);
+        break;
+
+        case 12:
+            Lavado_rebose_print(5);
+        break;
+
         case 13:
+            Vaciado_print();
+        break;
+
+        case 14:
             Fin_proceso();
         break;
 
@@ -561,6 +567,7 @@ void Lista_Saponizado(int estado, int temperatura, int tiempo){
 
     Serial.println("Saponizado");
     send_msj("nPasoM.val=",estado);
+    send_msj("nProc.val=",3);
     if(estado<1)
     { 
         estado = 23;
@@ -675,6 +682,7 @@ void Lista_Directo(int estado, int temperatura, int tiempo){
 
     Serial.println("Directo");
     send_msj("nPasoM.val=",estado);
+    send_msj("nProc.val=",6);
     if(estado<1)
     { 
         estado = 15;
@@ -756,6 +764,7 @@ void Lista_Lavado_reductivo(int estado, int temperatura, int tiempo){
 
     Serial.println("Directo");
     send_msj("nPasoM.val=",estado);
+    send_msj("nProc.val=",8);
     if(estado<1)
     { 
         estado = 14;
@@ -835,6 +844,7 @@ void Lista_Suavizado(int estado){
 
     Serial.println("Suavizado");
     send_msj("nPasoM.val=",estado);
+    send_msj("nProc.val=",7);
     if(estado<1)
     { 
         estado = 6;
@@ -881,6 +891,7 @@ void prueba(int estado, int temperatura, int tiempo){
 
 	Serial.println("Prueba");
     send_msj("nPasoM.val=",estado);
+    send_msj("nProc.val=",9);
 	if(estado<1)
     { 
         estado = 12;
@@ -951,6 +962,7 @@ void Lista_Lavado_Maquina(int estado){
 
     Serial.println("Lavado de maquina");
     send_msj("nPasoM.val=",estado);
+    send_msj("nProc.val=",10);
     if(estado<1)
     { 
         estado = 13;

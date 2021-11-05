@@ -24,6 +24,7 @@ Control_Valvulas master;
 extern volatile int interrupt;
 extern volatile int start;
 extern int Intrr;
+extern int Intrr_2;
 extern int Nuevo_estado_ok;
 extern int nProc;
 extern int nPaso;
@@ -66,14 +67,18 @@ void Callback_ISR(){
 		case 2:
 			if(digitalRead(START) >= HIGH && !Nuevo_estado_ok)
 			{
+				send_Strmsj("page Proceso");
 				Reiniciar_proceso();
 				state = 1;
 
 			}else if(digitalRead(START) >= HIGH && Nuevo_estado_ok)
 			{	
+				
+				if(nProc == 7 || nProc == 8) Intrr_2 = true;
+				else Intrr = true;
+				
 				start = true;
 				Nuevo_estado_ok = false;
-				Intrr = true;
 				interrupt = false;
 				state = 1;
 			}	

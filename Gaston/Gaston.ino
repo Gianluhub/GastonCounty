@@ -33,7 +33,7 @@ int suav = false;             // Flag para indicar que se realizara suavizado
 int lav_red = false;          // Flag para indicar Lavado reductivo
 int nProc = 0;                 // Variable que almacena el codigo del teñido que se esta ejecutando
 int nPaso = 0;                // Varable que almacena el estado o paso del proceso. 
-int Estado_anterior = 0;      // Almacena el estado anterior para regresar a el luego de que se haya realizado el suavizado o el lavado reductivo
+//int Estado_anterior = 0;      // Almacena el estado anterior para regresar a el luego de que se haya realizado el suavizado o el lavado reductivo
 
 // Variables de interrupcion usadas en Valvulas.cpp
 // Funciones encargadas de la interrupcion del sistema.
@@ -41,7 +41,7 @@ int Estado_anterior = 0;      // Almacena el estado anterior para regresar a el 
 volatile int interrupt = false;     // Activa la interrupcion y para el proceso
 volatile int start = false;        // Este flag espera a que el operador presione el boton de start para comenzar el proceso
 int Intrr = false;                  // Produce un cambio de proceso mediante interrupcion
-
+int Intrr_2 = false;                // Este es usado en caso de que la interrupcion ocurra dentro de lavado reductivo o suavizado
 
 // Declaracion de objeto que representa los botones del Nextion
 
@@ -184,8 +184,6 @@ void bCambiarEstadoCallback(void*ptr){
   // i = Tomar_Dato(i,'$',buffer,Dato);
   Nuevo_estado = nPaso;
   Nuevo_estado_ok = true;
-  nPaso = 0;
-  nProc = 0;
   Serial.println("Nuevo estado");
   Serial.println(Nuevo_estado);
 
@@ -506,7 +504,7 @@ void loop(){
 void Test(){
 
   static int estado = 0;   // Esta variable recorrera los estados del switch segun lo contenido en el array trama
-  
+  static int Estado_anterior = 0;
   //nexLoop(nex_listen_list); // Verifica si se reciben datos del HMI
   int temp_ok = 0;  
   int pi_ok = 0;
@@ -592,6 +590,7 @@ void Test(){
         break;
 
         case 11:
+          Estado_anterior = 11;
           estado = Tomar_muestra(estado);
 
         break;
@@ -730,8 +729,8 @@ int Next(){
   static int state = LOW;
   
   if(digitalRead(NEXT)!=state){
-
-
+    
+    Reset();
     if(digitalRead(NEXT) >= HIGH)
     {
       state=HIGH;
@@ -752,8 +751,8 @@ int Next2(){
   static int state = LOW;
   
   if(digitalRead(NEXT2)!=state){
-
-
+    
+    Reset();
     if(digitalRead(NEXT2) >= HIGH)
     {
       state=HIGH;

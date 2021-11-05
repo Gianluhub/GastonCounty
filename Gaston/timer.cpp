@@ -294,7 +294,7 @@ void Reset(){
   timer1(false);
   timer2(false);
   timer3(false);
-  timer4(false);
+  Act_tiempo(false); // timer4
   timer5(false);
   timer6(false);
   timer7(false);

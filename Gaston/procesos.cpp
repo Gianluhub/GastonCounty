@@ -422,7 +422,7 @@ int Calentamiento(int temp, float grad){
                 digitalWrite(FV202,LOW);
                 digitalWrite(FV208,LOW);
                 digitalWrite(FV209,LOW);
-                Mostrar = true;
+                //Mostrar = true;
                 return true;    
             }
             else flag = true;
@@ -645,12 +645,25 @@ void Handler_motores(int state){
 
     if(state)
     {
-        if(digitalRead(pump) <= LOW || digitalRead(plegador_1) <= LOW || digitalRead(jet_1) <= LOW)
-        {      
-            digitalWrite(pump,HIGH);
-            digitalWrite(plegador_1,HIGH);
-            digitalWrite(jet_1,HIGH);
+            
+        if(digitalRead(LC100) >=HIGH || digitalRead(LC101) >= HIGH || true){
+
+            if(digitalRead(pump) <= LOW || digitalRead(plegador_1) <= LOW || digitalRead(jet_1) <= LOW)
+            {      
+                digitalWrite(pump,HIGH);
+                digitalWrite(plegador_1,HIGH);
+                digitalWrite(jet_1,HIGH);
+            }
+        }else
+        {
+            if(digitalRead(pump) >= HIGH || digitalRead(plegador_1) >= HIGH || digitalRead(jet_1) >= HIGH)
+            {      
+                digitalWrite(pump,LOW);
+                digitalWrite(plegador_1,LOW);
+                digitalWrite(jet_1,LOW);
+            }
         }
+
     }else
     {
         digitalWrite(pump,LOW);
