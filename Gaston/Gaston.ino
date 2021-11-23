@@ -124,17 +124,6 @@ void bNextCallback(void*ptr){
 // Funcion usada en Tomar_muestra, se usa para seleccionar un subproceso que se quiera repetir.
 void bSelecCallback(void*ptr){
   
-  // int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
-  // int i = 0;
-  // nProc = 0;
-  // nPaso = 0;
-  // memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
-  // bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
-  // // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
-  // i = Tomar_Dato(i,'-',buffer,Dato);
-  // i = Tomar_Dato(i,'$',buffer,Dato);
-  // nProc = Dato[0];
-  // nPaso = Dato[1];
   Seleccion_proceso(nProc,nPaso);
   //Serial.println(buffer); 
   Serial.println(nProc);
@@ -143,13 +132,6 @@ void bSelecCallback(void*ptr){
 
 void bRightCallback(void*ptr){
 
-  // int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
-  // int i = 0;
-  // memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
-  // bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
-  // // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
-  // i = Tomar_Dato(i,'-',buffer,Dato);
-  // i = Tomar_Dato(i,'$',buffer,Dato);
   nPaso++;
   Seleccion_proceso(nProc,nPaso);
   Serial.println(buffer); 
@@ -159,13 +141,6 @@ void bRightCallback(void*ptr){
 
 void bLeftCallback(void*ptr){
   
-  // int Dato[2] = {0}; // La posicion 0 almacena el codigo del proceso y la posicion 1 el estado
-  // int i = 0;
-  // memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
-  // bSelec.getText(buffer,sizeof(buffer)); // Recibe los datos y se almacenan en el buffer
-  // // En este caso llegan son 2 bytes de datos, el primero es el codigo del proceso y el segundo el estado donde se encuentra
-  // i = Tomar_Dato(i,'-',buffer,Dato);
-  // i = Tomar_Dato(i,'$',buffer,Dato);
   nPaso--;
   Seleccion_proceso(nProc,nPaso);
   Serial.println(buffer); 
@@ -177,11 +152,6 @@ void bLeftCallback(void*ptr){
 // Funcion usada en Tomar_muestra, confirma que hay un cambio de estado.
 void bCambiarEstadoCallback(void*ptr){
 
-  // int Dato[2] = {0};
-  // int i = 0;
-  // memset(buffer, 0, sizeof(buffer));    // Limpia el buffer para recibir la data
-  // bOk.getText(buffer,sizeof(buffer));   // Recibe los datos y se almacenan en el buffer
-  // i = Tomar_Dato(i,'$',buffer,Dato);
   Nuevo_estado = nPaso;
   Nuevo_estado_ok = true;
   Serial.println("Nuevo estado");
@@ -314,7 +284,7 @@ void loop(){
 
 	static int estado = 0;           // Esta variable recorrera los estados del switch segun lo contenido en el array trama
   static int print_code = true;    // Imprime en pantalla el codigo del proceso que se esta ejecutando solo una vez por proceso
-  int testing = false;
+  
   // Verifica si se reciben datos de la pantalla
   nexLoop(nex_listen_list); 
   Handler();
@@ -331,7 +301,7 @@ void loop(){
   }
   
 
-  if(start && !testing)
+  if(start)
   {
 
     switch (trama[estado]) {
@@ -478,6 +448,7 @@ void loop(){
       case 'X':
 
         Fin_proceso();
+        Detener_proceso();
         send_msj("nProc.val=",0);
         nProc = 0;
         send_Strmsj("page Repetir");
@@ -488,282 +459,10 @@ void loop(){
         memset(trama, 0, sizeof(trama));      
         memset(temperatura, 0, sizeof(temperatura));  
         memset(tiempo, 0, sizeof(tiempo));
+        reiniciar_contadores();
 
       break;
     }
   }
-
-}
-
-
-/*===========================================================================================================================*/
-/*===========================================================================================================================*/
-/*===========================================================================================================================*/
-/*===========================================================================================================================*/
-//                      FUNCIONES DE PRUEBA
-void Test(){
-
-  static int estado = 0;   // Esta variable recorrera los estados del switch segun lo contenido en el array trama
-  static int Estado_anterior = 0;
-  //nexLoop(nex_listen_list); // Verifica si se reciben datos del HMI
-  int temp_ok = 0;  
-  int pi_ok = 0;
-
-  if(Intrr)
-  {
-    Intrr = false;
-    estado = Nuevo_estado;
-  }
-
-  static int check_state = 1;     // Se uitiliza para actualizar en la pantalla el paso del proceso
-  if (check_state != estado)
-  {
-    send_msj("Proceso.nPaso.val=",estado);    // Muestra en pantalla el paso del proceso
-    send_msj("Proceso.nProc.val=",9);
-    nProc = 9;
-    //Serial.println(estado);
-    check_state = estado;
-    nPaso = estado;
-    Serial.println("Estado"+String(estado));
-    if(estado == 0) Serial.println("Inicio");
-  }
-
-  if(Next()) estado++;
-  
-  switch (estado) {
-
-        case 0:          
-          if(digitalRead(START)>=HIGH)
-          { 
-           estado=1;  
-          } 
-        break;
-
-        case 1:
-          if(Llenado(1)) estado=2;
-        break;
-
-        case 2:
-          if(Llenado(2)) estado=3;
-        break;
-
-        case 3:
-          if(Llamado_op()) estado=4;
-        break;
-
-        case 4:
-          if(Adicion_rapida(2)) estado=5;
-        break;
-
-        case 5:
-          
-            if(Adicion_lenta(2,1,2)) estado=6;
-        break;
-
-        case 7:
-            if(Lavado_rebose(1)) estado=8;
-        break;
-
-        case 6:
-         
-          if(Circulacion(1)) estado=7;
-        break;
-
-        case 8:
-          if(Vaciado()) estado=11;
-        break;
-
-        case 9:
-          temp_ok = Calentamiento(130,2);
-          pi_ok = Presurizado();
-          Serial.println(Temp_actual());
-          //if(Temp_actual() >= 150 && temp_ok && pi_ok) estado++;
-          if(digitalRead(Op_ok)>= HIGH) estado++;
-        break;
-
-        case 10:
-          Serial.println(Temp_actual());
-          temp_ok = Enfriamiento(60,2);
-          pi_ok = Despresurizado();
-          //if(Temp_actual() <= 60 && temp_ok && pi_ok) estado++;
-          if(digitalRead(Op_ok)>= HIGH) estado++;
-        break;
-
-        case 11:
-          Estado_anterior = 11;
-          estado = Tomar_muestra(estado);
-
-        break;
-
-        case 12:
-          Fin_proceso();
-          //send_msj("nProc.val=",0);
-          //send_Strmsj("page Repetir");
-          estado = 0;
-          Reset();
-          memset(trama, 0, sizeof(trama));
-          memset(temperatura, 0, sizeof(temperatura));
-          memset(tiempo, 0, sizeof(tiempo));
-        break;
-
-          // 100. Suavizado
-      case 100:
-        if(Suavizado()) estado = Estado_anterior;
-      break;
-  
-      // 101. Lavado reductivo
-      case 101:
-        if(Lavado_reductivo(80,30)) estado = Estado_anterior;
-      break;
-    }
-}
-
-
-void bActCallback(void*ptr){
-
- Statechange(FV200,!digitalRead(FV200),"FV200.val=");
- Statechange(FV201,!digitalRead(FV201),"FV201.val=");
- Statechange(FV202,!digitalRead(FV202),"FV202.val=");
- Statechange(FV203,!digitalRead(FV203),"FV203.val=");
- Statechange(FV204,!digitalRead(FV204),"FV204.val=");
- Statechange(FV205,!digitalRead(FV205),"FV205.val=");
- Statechange(FV206,!digitalRead(FV206),"FV206.val=");
- Statechange(FV207,!digitalRead(FV207),"FV207.val=");
- Statechange(FV208,!digitalRead(FV208),"FV208.val=");
- Statechange(FV209,!digitalRead(FV209),"FV209.val=");
- Statechange(FV210,!digitalRead(FV210),"FV210.val=");
- Statechange(FV211,!digitalRead(FV211),"FV211.val=");
- Statechange(FV212,!digitalRead(FV212),"FV212.val=");
- Statechange(FV213,!digitalRead(FV213),"FV213.val=");
- Statechange(FV214,!digitalRead(FV214),"FV214.val=");
- Statechange(pump,!digitalRead(pump),"Pump.val=");
- Statechange(jet_1,!digitalRead(jet_1),"Jet.val=");
- Statechange(plegador_1,!digitalRead(plegador_1),"Plegador.val=");
- Statechange(TC100,!digitalRead(TC100),"TC100.val=");
- Statechange(LC100,!digitalRead(LC100),"LC100.val=");
- Statechange(LC101,!digitalRead(LC101),"LC101.val=");
- Statechange(PCH100,!digitalRead(PCH100),"PCH100.val=");
- Statechange(PCL100,!digitalRead(PCL100),"PCL100.val=");
-
-
-}
-
-void Handler(){
-
- static int state_FV200 = digitalRead(FV200);
- static int state_FV201 = digitalRead(FV201);
- static int state_FV202 = digitalRead(FV202);
- static int state_FV203 = digitalRead(FV203);
- static int state_FV204 = digitalRead(FV204);
- static int state_FV205 = digitalRead(FV205);
- static int state_FV206 = digitalRead(FV206);
- static int state_FV207 = digitalRead(FV207);
- static int state_FV208 = digitalRead(FV208);
- static int state_FV209 = digitalRead(FV209);
- static int state_FV210 = digitalRead(FV210);
- static int state_FV211 = digitalRead(FV211);
- static int state_FV212 = digitalRead(FV212);
- static int state_FV213 = digitalRead(FV213);
- static int state_FV214 = digitalRead(FV214);
- static int state_pump = digitalRead(pump);
- static int state_jet_1 = digitalRead(jet_1);
- static int state_plegador_1 = digitalRead(plegador_1);
- static int state_TC100 = digitalRead(TC100);
- static int state_LC100 = digitalRead(LC100);
- static int state_LC101 = digitalRead(LC101);
- static int state_PCH100 = digitalRead(PCH100);
- static int state_PCL100 = digitalRead(PCL100);
- 
- state_FV200 = Statechange(FV200,state_FV200,"FV200.val=");
- state_FV201 = Statechange(FV201,state_FV201,"FV201.val=");
- state_FV202 = Statechange(FV202,state_FV202,"FV202.val=");
- state_FV203 = Statechange(FV203,state_FV203,"FV203.val=");
- state_FV204 = Statechange(FV204,state_FV204,"FV204.val=");
- state_FV205 = Statechange(FV205,state_FV205,"FV205.val=");
- state_FV206 = Statechange(FV206,state_FV206,"FV206.val=");
- state_FV207 = Statechange(FV207,state_FV207,"FV207.val=");
- state_FV208 = Statechange(FV208,state_FV208,"FV208.val=");
- state_FV209 = Statechange(FV209,state_FV209,"FV209.val=");
- state_FV210 = Statechange(FV210,state_FV210,"FV210.val=");
- state_FV211 = Statechange(FV211,state_FV211,"FV211.val=");
- state_FV212 = Statechange(FV212,state_FV212,"FV212.val=");
- state_FV213 = Statechange(FV213,state_FV213,"FV213.val=");
- state_FV214 = Statechange(FV214,state_FV214,"FV214.val=");
- state_pump = Statechange(pump,state_pump,"Pump.val=");
- state_jet_1 = Statechange(jet_1,state_jet_1,"Jet.val=");
- state_plegador_1 = Statechange(plegador_1,state_plegador_1,"Plegador.val=");
- state_TC100 = Statechange(TC100,state_TC100,"TC100.val=");
- state_LC100 = Statechange(LC100,state_LC100,"LC100.val=");
- state_LC101 = Statechange(LC101,state_LC101,"LC101.val=");
- state_PCH100 = Statechange(PCH100,state_PCH100,"PCH100.val=");
- state_PCL100 = Statechange(PCL100,state_PCL100,"PCL100.val=");
-
-}
-
-
-int Statechange(int pin, int state, char msj[]){
-
-  
-  if(digitalRead(pin)!=state){
-
-
-    if(digitalRead(pin) >= HIGH)
-    {
-      send_msj(msj,1);
-      state=HIGH;
-    }
-    else
-    {
-     send_msj(msj,0);
-     state=LOW;
-    }
-  }
-  return state;
-  
-
-}
-
-extern int Mostrar;
-int Next(){
-
-  static int state = LOW;
-  
-  if(digitalRead(NEXT)!=state){
-    
-    Reset();
-    if(digitalRead(NEXT) >= HIGH)
-    {
-      state=HIGH;
-      Mostrar = true;
-      return true;
-    }
-    else
-    {
-     state=LOW;
-    }
-  }
-  return false;
-
-}
-
-int Next2(){
-
-  static int state = LOW;
-  
-  if(digitalRead(NEXT2)!=state){
-    
-    Reset();
-    if(digitalRead(NEXT2) >= HIGH)
-    {
-      state=HIGH;
-      Mostrar = true;
-      return true;
-    }
-    else
-    {
-     state=LOW;
-    }
-  }
-  return false;
 
 }

@@ -4,7 +4,6 @@
 
 int Mostrar = true;     // Muestra en pantalla una sola vez por proceso, esto se hace para no causar problemas de comunicacion por puerto serial
 
-
 /* 
 Llenado de tanque
 Llena el tanque dependiendo del nivel deseado 
@@ -36,6 +35,7 @@ int Llenado(int Nivel){
                digitalWrite(plegador_1,HIGH);
                digitalWrite(jet_1,HIGH);
                //digitalWrite(plegador_2,HIGH);
+               contador_llenado();
                Mostrar = true;
                return true;
             }
@@ -57,6 +57,7 @@ int Llenado(int Nivel){
                 digitalWrite(jet_1,HIGH);
                 //digitalWrite(plegador_2,HIGH);
                 Mostrar = true;
+                contador_llenado();
                 return true;
             }
             else
@@ -87,7 +88,6 @@ int Llamado_op(){
         Mostrar = false;
         
     } 
-
 
     // Asegura que la valvula de reflujo esta abierta
     digitalWrite(FV204,HIGH);
@@ -185,6 +185,7 @@ int Adicion_lenta(int tiempo, int t_cerrado, int t_abierto ){
             {
                 // Abre la valvula de dosificacion de aditivos
                digitalWrite(FV206,HIGH);
+               Serial.println("Abierto");
             }
             else flag = false;
 
@@ -193,6 +194,7 @@ int Adicion_lenta(int tiempo, int t_cerrado, int t_abierto ){
         {
             // Cierra las valvulas durante un tiempo t_cerrado
             digitalWrite(FV206,LOW);
+            Serial.println("Cerrado");
                  
         }
         else flag = true;
@@ -205,6 +207,7 @@ int Adicion_lenta(int tiempo, int t_cerrado, int t_abierto ){
         Mostrar = true;
         timer8(false);
         Serial.println("Adicion lenta true");
+        contador_Adicion_lenta();
         return true;
     }
     return false;
@@ -306,6 +309,7 @@ int Lavado_rebose(int tiempo){
         Act_tiempo(false);       // Reiniciamos contador
         Mostrar = true;
         Serial.println("Rebose true");
+        contador_rebose();
         return true;
     }
 }
@@ -346,6 +350,7 @@ int Vaciado(){
             Serial.println("Cierra vaciado");
             digitalWrite(FV211,LOW);
             Mostrar = true;
+            contador_vaciado();
             return true;
 
         }else return false;

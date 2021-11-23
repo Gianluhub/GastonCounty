@@ -8,7 +8,7 @@ void Llenado_print(int Nivel){
     // Comunicacion por serial
     Serial.println("Llenado a nivel " + String(Nivel));
     send_Strmsj("tProceso.txt=\"Llenado de tanque\"");
-    Nextion_display(42,0,0,0,0,0,Nivel);
+    Nextion_display(42,0,0,0,0,Nivel,0);
 
 }
 

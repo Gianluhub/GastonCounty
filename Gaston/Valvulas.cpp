@@ -36,13 +36,12 @@ void Interrupt() {
 }
 
 void Detener_proceso(){
-
-	Serial.println("Entra");
+  Serial.println(nProc);
   master.guardar_estado();  // Guarda el estado de las valvulas si estan abiertas o cerradas
   master.cerrar_valvulas(); // Cierra todas las valvulas por seguridad
   Reset();									// Reinicia todos los temporizadores
   Mostrar = true;
-  Serial.println("Entra");
+
 }
 
 void Reiniciar_proceso(){
@@ -128,5 +127,4 @@ void Control_Valvulas::cerrar_valvulas(){
   digitalWrite(plegador_1,LOW);
   digitalWrite(jet_1,LOW);
   Serial.println("Apaga motores");
-  Serial.println(digitalRead(pump));
 }

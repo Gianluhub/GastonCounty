@@ -47,7 +47,6 @@ int timer1(unsigned long interval){
   if (currentTime - previousTime >= interval)
   {
     start = 1;
-    Serial.println("Timer1 True");
     return true;
   }
   else return false;

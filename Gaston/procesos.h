@@ -64,9 +64,7 @@ void send_Strmsj(char msj[]);
 void Nextion_display(int Temp, int TempA, int Grad, int Tiempo, int Paso, int Aper, int Cierre);
 void Seleccion_proceso(int codigo, int estado);
 void Act_tiempo(int tiempo);
-int Next();
-int Next2();
-void bActCallback(void*ptr);
+
 
 // Desentramado.cpp
 int desentramado(char trama[],int temperatura[], int tiempo[]);
@@ -111,6 +109,20 @@ void Detener_proceso();
 void Reiniciar_proceso();
 void Callback_ISR();
 
-
+// Pruebas.cpp
+void Test();
+void Handler();
+int Statechange(int pin, int state, char msj[],bool cont);
+int Next();
+int Next2();
+void bActCallback(void*ptr);
+void contador_llenado();
+void contador_Adicion_lenta();
+void contador_rebose();
+void contador_vaciado();
+void contador_Calentamiento();
+void contador_Enfriamiento();
+void reiniciar_contadores();
+void Incrementar_contador(int pin);
 
 #endif

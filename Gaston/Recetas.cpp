@@ -993,7 +993,7 @@ int Directo(int temperatura, int tiempo){
 		send_msj("nProc.val=",6);			// Muestra en pantalla el codigo del proceso
 		check_state = estado;
 		nPaso = estado;
-		nProc = 7;
+		nProc = 6;
 	}
 
 	
