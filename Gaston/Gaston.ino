@@ -9,6 +9,7 @@
 #include "procesos.h"
 
 
+
 /*
   Variables utilizadas para almacenar data proveniente del Nextion
   * buffer: Recibe la data proveniente del Nextion.
@@ -49,7 +50,7 @@ int Intrr_2 = false;                // Este es usado en caso de que la interrupc
 NexButton bNext=NexButton(9,3,"bNext");          // Page confirmacion
 NexButton bSelec=NexButton(11,5,"bSelec");       // Page Preguntar
 NexButton bBack=NexButton(11,8,"bBack");         // Page Preguntar
-NexButton bRight=NexButton(8,21,"bRight");       // Page TomaMuestra 
+NexButton bRight=NexButton(8,20,"bRight");       // Page TomaMuestra 
 NexButton bLeft=NexButton(8,22,"bLeft");         // Page TomaMuestra 
 NexButton bOk=NexButton(14,3,"bOk");             // Page TomaMuestra 
 NexButton bSuavSi=NexButton(12,2,"bSuavSi");     // Page Suavizado
@@ -442,6 +443,24 @@ void loop(){
           estado++;
         }
 
+      break;
+
+      // Prueba
+      case 'H':
+        // Imprime solo una vez
+        if(print_code)
+        {
+          Serial.println("Prueba");
+          send_msj("nProc.val=",9);
+          nProc = 9;
+          print_code = false;
+        }
+        if(Prueba(50,5))
+        {
+          print_code = true;
+          estado++;
+        }
+        
       break;
 
       // Fin del proceso

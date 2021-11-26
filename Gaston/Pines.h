@@ -16,7 +16,7 @@
 // Valvulas
 #define FV200 2  // D0 Valvula de agua 
 #define FV201 3 // D1 Valvula de agua intercambiador de calor
-#define FV202 4 // D2 Valvula de vapor
+//#define FV202 4 // D2 Valvula de vapor
 #define FV203 5 // D3 Valvula de retorno de enfriamiento
 #define FV204 6 // D4 Valvula de reflujo
 #define FV205 7  // D5 Valvula de flujo interno al tanque de aditivos
@@ -51,5 +51,7 @@
 #define OVERCURRENT 18	     // Interrupcion por sobre corriente del jet
 #define NEXT CONTROLLINO_A8 // Interruptor usado para pasar al siguiente proceso. Solamente para pruebas
 #define NEXT2 CONTROLLINO_A9	// Otro interruptor de prueba
+
+#define FV202 33 // D2 Valvula de vapor
 
 #endif

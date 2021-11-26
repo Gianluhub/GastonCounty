@@ -2,6 +2,7 @@
 #include "Pines.h"
 #include "procesos.h"
 
+
 int Mostrar = true;     // Muestra en pantalla una sola vez por proceso, esto se hace para no causar problemas de comunicacion por puerto serial
 
 /* 
@@ -332,7 +333,7 @@ int Vaciado(){
         Mostrar = false; 
     }
 
-    const unsigned long tiempo_vaciado = 60000;  // Falta poner el tiempo
+    const unsigned long tiempo_vaciado = 300000;  // Falta poner el tiempo
 
     // Se abre la valvula de vaciado y se apaga la bomba y el plegador
     digitalWrite(pump,LOW);
@@ -370,9 +371,7 @@ int Vaciado(){
     a la hora de cambiar de estado
 */
 
-// NO ESTA CLARO AUN SI LAS VALVULAS DE TRAMPA Y PURGA DEBEN ESTAR CERRADAS DURANTE PRESURIZACION
-
-int Calentamiento(int temp, float grad){
+int Calentamiento(int temp, float grad,int mode){
 
     Handler_motores(true);
 
@@ -388,57 +387,19 @@ int Calentamiento(int temp, float grad){
     if(timer7(100)) send_msj("nTempA.val=",Temp_actual());
 
     // Variables de utilidad
-    unsigned long t_abierto = 2000;
-    unsigned long t_cerrado = 3000;
-    static int flag = true;
+    //unsigned long t_abierto = 2000;
+    //unsigned long t_cerrado = 3000;
+    //static int flag = true;
+    int pid_ok;
+
+    if(temp > 100) Presurizado();
 
 
-   //FALTA IMPLEMENTAR EL MAPEO DE TEMPERATURA
+    pid_ok = State_PID(mode,temp);
 
-    if (Temp_actual() < temp)
+    if(pid_ok)
     {   
-        // Si no se requiere gradiente deja las valvulas abiertas siempre
-        // No esta claro si en este caso tambien hay que dejar SIEMPRE abiertas
-        // las valvulas de purga y de la trampa
-        if (grad == 0)
-        {
-            digitalWrite(FV202,HIGH);
-            digitalWrite(FV208,HIGH);
-            digitalWrite(FV209,HIGH);
-        }
-        else
-        {
-            // AQUI FALTA IMPLEMENTAR LOS TIEMPOS CON EL GRADIENTE
-            if (flag)
-            {
-                if(!timer2(t_abierto))
-                {
-                    // Abre las valvulas de vapor, purga y trampa por un tiempo t_abierto
-                    digitalWrite(FV202,HIGH);
-                    digitalWrite(FV208,HIGH);
-                    digitalWrite(FV209,HIGH);
-                }
-                else flag = false;
-
-            }
-            else if (!timer2(t_cerrado))
-            {
-                // Cierra las valvulas durante un tiempo t_cerrado
-                digitalWrite(FV202,LOW);
-                digitalWrite(FV208,LOW);
-                digitalWrite(FV209,LOW);
-                //Mostrar = true;
-                return true;    
-            }
-            else flag = true;
-        }
-    }
-    else 
-    {
-        // Asegura que las valvulas estan cerradas
-        digitalWrite(FV202,LOW);
-        digitalWrite(FV208,LOW);
-        digitalWrite(FV209,LOW);
+        if(digitalRead(FV213) >= HIGH) digitalWrite(FV212,LOW);
         Mostrar = true;
         return true;
     }
@@ -474,10 +435,11 @@ int Enfriamiento(int temp, float grad){
     if(timer7(100)) send_msj("nTempA.val=",Temp_actual());
 
     // Variables de utilidad
-    unsigned long t_abierto = 2000;
-    unsigned long t_cerrado = 3000;
-    static int flag = true;
-    
+    //unsigned long t_abierto = 2000;
+    //unsigned long t_cerrado = 3000;
+    //static int flag = true;
+    int pid_ok;
+
     // Asegura que las valvulas de calentamiento estan cerradas
     if (digitalRead(FV202) >= HIGH)
     {
@@ -487,44 +449,15 @@ int Enfriamiento(int temp, float grad){
         digitalWrite(FV212,LOW);
     }
 
-    if (Temp_actual() > temp)
-    {   
-        // Si no se requiere gradiente deja las valvulas abiertas siempre
-    
-        if (grad == 0)
-        {
-            digitalWrite(FV201,HIGH);
-            digitalWrite(FV203,HIGH);
-        
-        }
-        else
-        {
-            // AQUI FALTA IMPLEMENTAR LOS TIEMPOS CON EL GRADIENTE
-            if (flag)
-            {   
-                if(!timer3(t_abierto))
-                {
-                    // Abre las valvulas de Agua y retorno de enfriamiento por un tiempo t_abierto
-                    digitalWrite(FV201,HIGH);
-                    digitalWrite(FV203,HIGH);
-                }
-                else flag = false;
-            }
+    pid_ok = State_PID(RAMP_DOWN,60);
 
-            else if (!timer3(t_cerrado))
-            {   
-                // Cierra las valvulas
-                digitalWrite(FV201,LOW);
-                digitalWrite(FV203,LOW);
-            }
-            else flag = true;
+    if(pid_ok)
+    {   
+        if(digitalRead(FV213) >= HIGH)
+        {
+            digitalWrite(FV213,LOW);  // Cierra la valvula de despresurizado
+            digitalWrite(FV204,HIGH); // Se abre la valvula de reflujo
         }
-    }
-    else
-    {
-        // Asegurar que las valvulas estan cerradas
-        digitalWrite(FV201,LOW);
-        digitalWrite(FV203,LOW);
         Mostrar = true;
         return true;
     }
@@ -616,9 +549,9 @@ int Despresurizado(){
 
 // Toma lectura del sensor de temperatura y lo traduce a 
 // El valor maximo recibido por el transmisor es de 10V que por serial es 350
-int Temp_actual(){
+float Temp_actual_Pot(){
 
-    int Temp_actual;
+    float Temp_actual;
     Temp_actual = map(analogRead(TC100),0,350,0,400);
     return Temp_actual;
 }

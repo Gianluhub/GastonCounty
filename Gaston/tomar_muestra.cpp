@@ -887,76 +887,6 @@ void Lista_Suavizado(int estado){
     }
 }
 
-void prueba(int estado, int temperatura, int tiempo){
-
-	Serial.println("Prueba");
-    send_msj("nPasoM.val=",estado);
-    send_msj("nProc.val=",9);
-	if(estado<1)
-    { 
-        estado = 12;
-        nPaso = 12;
-        send_msj("nPasoM.val=",estado);
-    }
-	else if (estado>12)
-    {
-        estado= 1;
-        nPaso = 1;
-        send_msj("nPasoM.val=",estado);
-    } 
-
-    switch (estado) {
-
-        case 1:
-	    	Llenado_print(1);
-        break;
-        
-        case 2:
-        	Llenado_print(2);
-        break;
-
-        case 3:
-   			Llamado_op_print();
-        break;
-
-        case 4:
-          	Adicion_rapida_print(2);
-        break;
-
-        case 5:
-          	Adicion_lenta_print(1,2,2);
-        break;
-
-        case 6:
-          	Circulacion_print(1);
-        break;
-
-        case 7:
-          	Lavado_rebose_print(1);
-        break;
-
-        case 8:
-          	Vaciado_print();
-        break;
-
-        case 9:
-	        Calentamiento_print(130,2);
-        break;
-
-        case 10:
-          	Enfriamiento_print(60,2);
-        break;
-
-        case 11:
-            Tomar_muestra_print();
-        break;
-
-        case 12:
-            Fin_proceso();
-        break;
-    }
-
-}
 
 void Lista_Lavado_Maquina(int estado){
 
@@ -1033,3 +963,134 @@ void Lista_Lavado_Maquina(int estado){
     }
 
 }
+
+
+void prueba(int estado, int temperatura, int tiempo){
+
+    Serial.println("Prueba");
+    send_msj("nPasoM.val=",estado);
+    send_msj("nProc.val=",9);
+    if(estado<1)
+    { 
+        estado = 9;
+        nPaso = 9;
+        send_msj("nPasoM.val=",estado);
+    }
+    else if (estado>9)
+    {
+        estado= 1;
+        nPaso = 1;
+        send_msj("nPasoM.val=",estado);
+    } 
+
+    switch (estado) {
+
+        case 1:
+            Llenado_print(2);
+        break;
+
+        case 2:
+            Llamado_op_print();
+        break;
+
+        case 3:
+            Calentamiento_print(temperatura,2);
+        break;
+
+        case 4:
+            Circulacion_print(tiempo);
+        break;
+
+        case 5:
+            Enfriamiento_print(60,2);
+        break;
+
+        case 6:
+            Tomar_muestra_print();
+        break;
+
+        case 7:
+            Lavado_rebose_print(10);
+        break;
+
+        case 8:
+            Vaciado_print();
+        break;
+
+        case 9:
+            Fin_proceso();
+        break;
+    }
+
+}
+
+// void prueba(int estado, int temperatura, int tiempo){
+
+//     Serial.println("Prueba");
+//     send_msj("nPasoM.val=",estado);
+//     send_msj("nProc.val=",9);
+//     if(estado<1)
+//     { 
+//         estado = 12;
+//         nPaso = 12;
+//         send_msj("nPasoM.val=",estado);
+//     }
+//     else if (estado>12)
+//     {
+//         estado= 1;
+//         nPaso = 1;
+//         send_msj("nPasoM.val=",estado);
+//     } 
+
+//     switch (estado) {
+
+//         case 1:
+//             Llenado_print(1);
+//         break;
+        
+//         case 2:
+//             Llenado_print(2);
+//         break;
+
+//         case 3:
+//             Llamado_op_print();
+//         break;
+
+//         case 4:
+//             Adicion_rapida_print(2);
+//         break;
+
+//         case 5:
+//             Adicion_lenta_print(1,2,2);
+//         break;
+
+//         case 6:
+//             Circulacion_print(1);
+//         break;
+
+//         case 7:
+//             Lavado_rebose_print(1);
+//         break;
+
+//         case 8:
+//             Vaciado_print();
+//         break;
+
+//         case 9:
+//             Calentamiento_print(130,2);
+//         break;
+
+//         case 10:
+//             Enfriamiento_print(60,2);
+//         break;
+
+//         case 11:
+//             Tomar_muestra_print();
+//         break;
+
+//         case 12:
+//             Fin_proceso();
+//         break;
+//     }
+
+// }

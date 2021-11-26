@@ -3,6 +3,7 @@
 #include "Pines.h"
 #include "procesos.h"
 
+
 extern int Nuevo_estado;
 extern int Intrr;
 extern int Intrr_2;
@@ -14,9 +15,7 @@ extern int nProc;
 // Cierra las valvulas de calentamiento y presurizado
 void cerrar_vapor(){
 
-	digitalWrite(FV202,LOW);
-	digitalWrite(FV208,LOW);
-	digitalWrite(FV209,LOW);
+	End_Soak();
 	digitalWrite(FV212,LOW);
 }
 
@@ -87,27 +86,21 @@ int Poliester(int temperatura, int tiempo){
 
 		// 8. Subir temperatura
 		case 8:
-			// Si la temperatura es 130 primero suber a 90° a 2°/min
-			// Luego sube a 130° a 1.5°/min
-			if (temperatura == 130)
-			{
-				if (Temp_actual() < 90) temp_ok = Calentamiento(90,2);
-				else if ( Temp_actual() >= 90) temp_ok = Calentamiento(130,1.5);	
-			}
-			else temp_ok = Calentamiento(temperatura,2);
+			
+			temp_ok = Calentamiento(temperatura,2,RAMP_UP);
 			press_ok =  Presurizado();
 
-			if ( Temp_actual() >= temperatura - 1 && temp_ok && press_ok) estado = 9;
+			if (temp_ok){cerrar_vapor(); estado = 9;}
 			
 		break;
 
 		// 9. Circulacion por 1 hora y se asegura de mantener la temperatura deseada
 		case 9:
 
-			Calentamiento(temperatura,2);
+			Calentamiento(temperatura,2,SOAK);
 			Presurizado();	
 			if (Circulacion(tiempo))
-			{
+			{	
 				cerrar_vapor();
 				estado = 10;
 			}	
@@ -117,7 +110,7 @@ int Poliester(int temperatura, int tiempo){
 		case 10:
 			temp_ok = Enfriamiento(60,2);
 			press_ok = Despresurizado();
-			if (Temp_actual() <= 60 && temp_ok && press_ok) estado = 11;	
+			if (temp_ok) estado = 11;	
 		break;
 		
 		// 11. Toma de muestra
@@ -243,19 +236,22 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		// 7. Subir temperatura (puede ser a 60 o 80) no presuriza
 		case 7:
-			temp_ok = Calentamiento(temperatura,1.5);
-			if (Temp_actual() >= temperatura && temp_ok) estado = 8;
+			temp_ok = Calentamiento(temperatura,1.5,RAMP_UP);
+			//if(temperatura > 100 ) Presurizado();
+			if (temp_ok) estado = 8;
 		break;
 
 		// 8. Circulacion
 		case 8:
-			Calentamiento(temperatura,2);
+			Calentamiento(temperatura,2,SOAK);
+			//if(temperatura > 100) Presurizado();
 			if(Circulacion(tiempoC)) estado = 9;		
 		break;
 
 		// 9. Llamado a operador y mantener temperatura
 		case 9:
-			Calentamiento(temperatura,2);
+			Calentamiento(temperatura,2,SOAK);
+			//if(temperatura > 100) Presurizado();
 			if(Llamado_op()) 
 			{
 				cerrar_vapor();
@@ -280,7 +276,8 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		// 13. Circulacion por 1 hora y manterner temperatura
 		case 13:
-			Calentamiento(temperatura,1.5);
+			Calentamiento(temperatura,1.5,SOAK);
+			//if(temperatura > 100) Presurizado();
 			if (Circulacion(tiempoF)) 
 			{	
 				cerrar_vapor();
@@ -322,13 +319,13 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		// 20. Subir temperatura a 60°
 		case 20:
-			temp_ok = Calentamiento(60,2);
-			if (Temp_actual() >= 60 && temp_ok) estado = 21;
+			temp_ok = Calentamiento(60,2,RAMP_UP);
+			if (temp_ok) estado = 21;
 		break;
 
 		// 21. Circulacion por 10 min
 		case 21:
-			Calentamiento(60,2);
+			Calentamiento(60,2,SOAK);
 			if(Circulacion(10))
 			{
 				cerrar_vapor();
@@ -364,15 +361,15 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 		// Enjabonado en caliente
 		// 27. Subir temperatura a 90° a 2°/min
 		case 27:
-			temp_ok = Calentamiento(90,2);
-			Presurizado();
-			if (Temp_actual() >= 90 && temp_ok) estado = 28;
+			temp_ok = Calentamiento(90,2,RAMP_UP);
+			//Presurizado();
+			if (temp_ok) estado = 28;
 		break;
 
 		// 28. Circulacion por 20 min
 		case 28:
-			Calentamiento(90,2);
-			Presurizado();
+			Calentamiento(90,2,SOAK);
+			//Presurizado();
 			if(Circulacion(20))
 			{
 				cerrar_vapor();
@@ -383,8 +380,8 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 		// 29. Enfriamiento a 60° a 2°/min
 		case 29:
 			temp_ok = Enfriamiento(60,2);
-			press_ok = Despresurizado();
-			if (Temp_actual() <= 60 && temp_ok && press_ok) estado = 30;
+			//press_ok = Despresurizado();
+			if (temp_ok) estado = 30;
 		break;
 
 		// 30. Vaciado de tanque
@@ -399,13 +396,13 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		// 32. Subir temperatura a 65°
 		case 32:
-			temp_ok = Calentamiento(65,2);
-			if ( Temp_actual() >= 65 && temp_ok) estado = 33;
+			temp_ok = Calentamiento(65,2,RAMP_UP);
+			if (temp_ok) estado = 33;
 		break;
 
 		// 33. Circulacion por 10 min
 		case 33:
-			Calentamiento(65,2);
+			Calentamiento(65,2,SOAK);
 			if(Circulacion(10))
 			{
 			cerrar_vapor();
@@ -564,15 +561,15 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 
 		// 5. Subir temperatura a 98°
 		case 5:
-			temp_ok = Calentamiento(temperatura,2);
-			press_ok = Presurizado();
-			if ( Temp_actual() >= 98) estado = 6;
+			temp_ok = Calentamiento(temperatura,2,RAMP_UP);
+			if(temperatura > 100) Presurizado();
+			if ( temp_ok) estado = 6;
 		break;
 
 		// 6. Circulacion por 30 min
 		case 6:
-			Calentamiento(temperatura,2);
-			Presurizado();
+			Calentamiento(temperatura,2,SOAK);
+			if(temperatura > 100) Presurizado();
 			if(Circulacion(tiempo))
 			{ 
 				cerrar_vapor();
@@ -583,8 +580,8 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 		// 7. Enfriamiento a 60°
 		case 7:
 			temp_ok = Enfriamiento(60,2);
-			press_ok = Despresurizado();
-			if (Temp_actual() <= 60 && temp_ok && press_ok) estado = 8;
+			if(temperatura > 100) Despresurizado();
+			if (temp_ok) estado = 8;
 		break;
 
 		// 8. Toma de muestra
@@ -719,15 +716,15 @@ int Preblanqueo_jabon(int temperatura, int tiempo){
 
 		// 5. Subir temperatura a 98°
 		case 5:
-			temp_ok = Calentamiento(temperatura,2);
-			press_ok = Presurizado();
-			if ( Temp_actual() >= 98 && temp_ok && press_ok) estado = 6;
+			temp_ok = Calentamiento(temperatura,2,RAMP_UP);
+			if(temperatura > 100) Presurizado();
+			if (temp_ok) estado = 6;
 		break;
 
 		// 6. Circulacion por 30 min
 		case 6:
-			Calentamiento(temperatura,2);
-			Presurizado();
+			Calentamiento(temperatura,2,SOAK);
+			if(temperatura > 100) Presurizado();
 			if(Circulacion(tiempo))
 			{	
 				cerrar_vapor();
@@ -739,8 +736,8 @@ int Preblanqueo_jabon(int temperatura, int tiempo){
 		// 7. Enfriamiento a 60°
 		case 7:
 			temp_ok = Enfriamiento(60,2);
-			press_ok = Despresurizado();
-			if (Temp_actual() <= 60 && temp_ok && press_ok) estado = 8;
+			if(temperatura > 100) Despresurizado();
+			if (temp_ok) estado = 8;
 		break;
 
 		// 8. Toma de muestra
@@ -858,15 +855,15 @@ int Saponizado(int temperatura, int tiempo){
 
 		// 7. Subir temperatura a 105° a 1.5gr/min
 		case 7:
-			temp_ok = Calentamiento(temperatura,1.5);
-			press_ok = Presurizado();
-			if (Temp_actual() >= temperatura && temp_ok && press_ok) estado = 8;
+			temp_ok = Calentamiento(temperatura,1.5,RAMP_UP);
+			if(temperatura > 100) Presurizado();
+			if (temp_ok) estado = 8;
 		break;
 
 		// 8. Circulacion 40 min
 		case 8:
-			Calentamiento(temperatura,1.5);
-			Presurizado();
+			Calentamiento(temperatura,1.5,SOAK);
+			if(temperatura > 100) Presurizado();
 			if(Circulacion(tiempo)) 
 			{	
 				cerrar_vapor();
@@ -877,8 +874,8 @@ int Saponizado(int temperatura, int tiempo){
 		// 9. Enfriamiento a 50°
 		case 9:
 			temp_ok = Enfriamiento(50,1.5);
-			press_ok = Despresurizado();
-			if (Temp_actual() <= 50 && temp_ok && press_ok) estado = 10;
+			if(temperatura > 100) Despresurizado();
+			if (temp_ok) estado = 10;
 		break;
 
 		// 10. Llamado de operador (Toma de muestra)
@@ -935,13 +932,13 @@ int Saponizado(int temperatura, int tiempo){
 
 		// 20. Subir temperatura a 60°
 		case 20:
-			temp_ok = Calentamiento(60,2);
-			if (Temp_actual() >= 60 && temp_ok) estado = 21;
+			temp_ok = Calentamiento(60,2,RAMP_UP);
+			if (temp_ok) estado = 21;
 		break;
 
 		// 21. Circulacion 10 min
 		case 21:
-			Calentamiento(60,2);
+			Calentamiento(60,2,SOAK);
 			if(Circulacion(10)) 
 			{	
 				cerrar_vapor();
@@ -1043,14 +1040,15 @@ int Directo(int temperatura, int tiempo){
 
 		// 8. Subir temperatura
 		case 8:
-			temp_ok = Calentamiento(temperatura,2);
-			press_ok = Presurizado();
-			if (Temp_actual() >= temperatura && temp_ok && press_ok) estado = 9;
+			temp_ok = Calentamiento(temperatura,2,RAMP_UP);
+			if(temperatura > 100) Presurizado();
+			if (temp_ok) estado = 9;
 		break;
 
 		// 9. Circulacion 
 		case 9:
-			Calentamiento(temperatura,2);
+			Calentamiento(temperatura,2,SOAK);
+			if(temperatura > 100) Presurizado();
 			if(Circulacion(tiempo)) 
 			{	
 				cerrar_vapor();
@@ -1061,8 +1059,8 @@ int Directo(int temperatura, int tiempo){
 		// 10. Enfriamiento a 60 
 		case 10:
 			temp_ok = Enfriamiento(60,2);
-			press_ok = Despresurizado();
-			if (Temp_actual() <= 60 && temp_ok && press_ok) estado = 11;
+			if(temperatura > 100) Despresurizado();
+			if (temp_ok) estado = 11;
 		break;
 
 		// 11. Toma de muestra
@@ -1233,14 +1231,14 @@ int Lavado_Maquina(){
 		// 4. Subir temperatura a 130
 		case 4:
 
-			temp_ok = Calentamiento(130,0);
+			temp_ok = Calentamiento(130,0,RAMP_UP);
 			press_ok = Presurizado();
-			if (Temp_actual() >= 130 && temp_ok && press_ok) estado = 5;
+			if (temp_ok) estado = 5;
 		break;
 
 		// 5. Circulacion por 60 min
 		case 5:
-			Calentamiento(130,0);
+			Calentamiento(130,0,SOAK);
 			Presurizado();
 			if(Circulacion(60))
 			{
@@ -1347,14 +1345,15 @@ int Lavado_reductivo(int temperatura, int tiempo){
 
 		// 4. Subir temperatura 
 		case 4:
-			temp_ok = Calentamiento(temperatura,2);
-			Presurizado();
-			if (Temp_actual() >= temperatura && temp_ok) estado = 5;
+			temp_ok = Calentamiento(temperatura,2,RAMP_UP);
+			if(temperatura > 100) Presurizado();
+			if (temp_ok) estado = 5;
 		break;
 
 		// 5. Circulacion 
 		case 5:
-			Calentamiento(temperatura,2);
+			Calentamiento(temperatura,2,SOAK);
+			if(temperatura > 100) Presurizado();
 			if(Circulacion(tiempo))
 			{
 				cerrar_vapor();
@@ -1365,7 +1364,7 @@ int Lavado_reductivo(int temperatura, int tiempo){
 		// 6. Enfriamiento a 60
 		case 6:
 			temp_ok = Enfriamiento(60,2);
-			press_ok = Despresurizado();
+			if(temperatura > 100) Despresurizado();
 			if (Temp_actual() <= 60 && temp_ok) estado = 7;
 		break;
 
@@ -1417,4 +1416,107 @@ int Lavado_reductivo(int temperatura, int tiempo){
 
 	return false;
 
+}
+
+
+int Prueba(int temperatura, int tiempo){
+
+	static int estado = 1;				// Variable encargada de pasar de un proceso a otro
+	static int Estado_anterior = 0;		// Almacena el estado del proceso en toma de muestra antes de hacer suavizado o lavado reductivo		
+	int temp_ok = false;				// Verifica si se llego a la temperatura deseada
+	int press_ok = false;				// Verifica si se llego a la presion deseada
+
+	if(Next()) estado++;
+	
+	static int check_state = 0;			// Se uitiliza para actualizar en la pantalla el paso del proceso
+	if (check_state != estado)
+	{
+		send_msj("nPaso.val=",estado);		// Muestra en pantalla el paso del proceso
+		send_msj("nProc.val=",9);			// Muestra en pantalla el codigo del proceso
+		check_state = estado;
+		nPaso = estado;
+		nProc = 9;
+	}
+
+	if(Intrr)
+  	{
+    Intrr = false;
+    estado = Nuevo_estado;
+  	}
+
+  	switch(estado)
+  	{
+  		// Llenado a nivel 2
+  		case 1:
+  			if(Llenado(2)) estado++;
+  		break;
+
+  		// preparaciond de tanque
+  		case 2:
+  			if(Llamado_op()) estado++;
+  		break;
+
+		// 3. Subir temperatura
+		case 3:
+			
+			temp_ok = Calentamiento(temperatura,2,RAMP_UP);
+			if(temperatura > 100) Presurizado();
+
+			if (temp_ok){cerrar_vapor(); estado = 4;}
+			
+		break;
+
+		// 4. Circulacion por 1 hora y se asegura de mantener la temperatura deseada
+		case 4:
+
+			Calentamiento(temperatura,2,SOAK);
+			if(temperatura > 100) Presurizado();	
+			if (Circulacion(tiempo))
+			{	
+				cerrar_vapor();
+				estado = 5;
+			}	
+		break;
+
+		// 5. Enfriamiento
+		case 5:
+			temp_ok = Enfriamiento(60,2);
+			if(temperatura > 100) Despresurizado();
+			if (temp_ok) estado = 6;	
+		break;
+		
+		// 6. Toma de muestra
+		case 6:
+			Estado_anterior = 6;
+			estado = Tomar_muestra(estado);
+		break;
+
+		// 7. Lavado por rebose de 15 min
+		case 7:
+			if (Lavado_rebose(10)) estado = 8;
+		break;
+
+		// 8. Vaciado de tanque
+		case 8:
+			if (Vaciado()) estado = 9;
+		break;
+
+		// 9. Fin
+		case 9:
+			Fin_proceso();
+			estado = 1;
+			return true;
+		break;	
+
+		// 100. Suavizado
+		case 100:
+			if(Suavizado())	estado = Estado_anterior;
+		break;
+
+		// 101. Lavado reductivo
+		case 101:
+			if(Lavado_reductivo(80,30)) estado = Estado_anterior;
+		break;
+  	}
+  	return false;
 }

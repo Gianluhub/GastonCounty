@@ -299,4 +299,5 @@ void Reset(){
   timer7(false);
   timer8(false);
   timer9(false);
+  Reset_PID();
 }
