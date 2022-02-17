@@ -19,7 +19,7 @@ int Enfriamiento(int temp, float grad);
 int Presurizado();
 int Despresurizado();
 void Cerrar_presurizado();
-void Handler_motores(int state);
+int Handler_motores(int state);
 
 // timer.cpp
 unsigned long To_millis(int tiempo);
@@ -32,6 +32,9 @@ int timer6(unsigned long interval);
 int timer7(unsigned long interval);
 int timer8(unsigned long interval);
 int timer9(unsigned long interval);
+int timer10(unsigned long interval);
+int timer11(unsigned long interval);
+int timer12(unsigned long interval);
 void Reset();
 
 

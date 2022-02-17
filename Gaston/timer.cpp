@@ -277,6 +277,89 @@ int timer9(unsigned long interval){
 
 }
 
+// Usado para sensor de nivel 1
+int timer10(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
+
+// Usado para sensor de nivel 2
+int timer11(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
+
+// Usado para apagado de bomba
+int timer12(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
 
 // Funciones auxiliares
 
@@ -299,5 +382,7 @@ void Reset(){
   timer7(false);
   timer8(false);
   timer9(false);
+  timer10(false);
+  timer11(false);
   Reset_PID();
 }

@@ -36,10 +36,10 @@ void setup()
 //  Motores
     pinMode(pump,OUTPUT);
     pinMode(jet_1,OUTPUT);
-    pinMode(jet_2,OUTPUT);
-    pinMode(jet_3,OUTPUT);
+    //pinMode(jet_2,OUTPUT);
+    //pinMode(jet_3,OUTPUT);
     pinMode(plegador_1,OUTPUT);
-    pinMode(plegador_2,OUTPUT);
+    //pinMode(plegador_2,OUTPUT);
 
 //  Valvulas
     pinMode(FV200,OUTPUT);
@@ -62,14 +62,19 @@ void setup()
     pinMode(LLAMADO_OP,OUTPUT);
     pinMode(TOMA_MUESTRA,OUTPUT);
     pinMode(PRESURIZADO,OUTPUT);
+    pinMode(DESPRESURIZADO,OUTPUT);
+    pinMode(CALENTAMIENTO,OUTPUT);
+    pinMode(ENFRIAMIENTO,OUTPUT);
 
 // Interrupciones y entradas externas
     pinMode(Op_ok, INPUT);
     pinMode(START,INPUT);
     pinMode(STOP,INPUT);
-    pinMode(NEXT,INPUT);
-    pinMode(NEXT2,INPUT);
-    attachInterrupt(digitalPinToInterrupt(STOP), Interrupt, RISING);
+    pinMode(OVERCURRENT,INPUT);
+    //pinMode(NEXT,INPUT);
+    //pinMode(NEXT2,INPUT);
+    attachInterrupt(digitalPinToInterrupt(STOP), Interrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(OVERCURRENT), Interrupt, RISING);
 
 //  Inicio de parametros del Nextion   
     nexInit();

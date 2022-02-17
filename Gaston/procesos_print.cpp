@@ -60,8 +60,8 @@ void Vaciado_print(){
 
 void Calentamiento_print(int temp, float grad){
 
-	Serial.println("Calentamiento");
-    send_Strmsj("tProceso.txt=\"Subir temperatura\"");
+	//Serial.println("Calentamiento");
+    send_Strmsj("tProceso.txt=\"Calentamiento\"");
     Nextion_display(1,temp,Temp_actual(),grad,0,0,0);
 }
 

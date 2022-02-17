@@ -12,9 +12,10 @@
 double Setpoint, Input, Output;
 double Kp = 10, Ki = 5, Kd = 0;
 int Hist; // Histeresis de marcha, indica cuando arrancar o no el controlador
-int salida = 0;
+double salida = 0;
 int state = RAMP_UP;  // Maquina de estados 
 PID myPID(&Input,&Output,&Setpoint,Kp,Ki,Kd,DIRECT);
+PID myPID2(&Input,&Output,&Setpoint,Kp,Ki,Kd,REVERSE);
 
 
 // =========================================//
@@ -50,17 +51,17 @@ int minTemp;
 // =============================================================================================================//
 
 
+
 void Serial_msj();
 void CoolGrad_2();
 void HeatGrad_1_5();
-
 
 int State_PID(int Mode, int Temp) {
   //static int mode = RAMP_UP;
 
   if(timerPID(100))
    {
-    Serial.print("t");
+    Serial.print("@");
     Serial.print("/");
     Serial.print(float(millis()-init_Time)/60000);
     Serial.print("/");
@@ -86,9 +87,9 @@ int State_PID(int Mode, int Temp) {
 
         case 2:
 
-          if(maxTemp > 40)
+          if(maxTemp >= 98 )
           { 
-            if(Temp_actual() >= 40)
+            if(Temp_actual() >= 90)
             {
               Serial_msj();
               HeatGrad_1_5();
@@ -149,15 +150,16 @@ int State_PID(int Mode, int Temp) {
         case 1:
 
           minTemp = Temp;
-          //time = Time;
-          if (maxTemp < 100) {CoolGrad_2(); State_RampD=3;}
-          else {Setup_RAMP_DOWN(); State_RampD = 2;} 
-
+          maxTemp = Temp_actual();
+          CoolGrad_2(); 
+          State_RampD=3;
+          //if (maxTemp < 100) {CoolGrad_2(); State_RampD=3;}
+          //else {Setup_RAMP_DOWN(); State_RampD = 2;} 
         break;
 
         case 2:
 
-          if(maxTemp > 100)
+          if(maxTemp >= 98)
           {
             if(Temp_actual() <= 80)
             { 
@@ -176,8 +178,7 @@ int State_PID(int Mode, int Temp) {
           {
             State_RampD = 1; 
             Step_Ok = true;
-            Serial_msj();
-            Reset_PID();            
+            Serial_msj();           
           }
 
         break;
@@ -214,7 +215,7 @@ void PID_ON(){
   static unsigned long Start_time = millis();     // Tiempo inicial desde que se inicia el calentamiento
   //static int state = 0;
   static int Prev_state= state;
-  uint8_t soak = 0;
+  //uint8_t soak = 0;
   double t;                                       // tiempo de cambio de setpoint
   
   switch(state)
@@ -227,14 +228,17 @@ void PID_ON(){
       Input = Temp_actual();
       Setpoint = (grad*t) + init_Temp; 
       myPID.Compute();
+      salida = Output;
       Prev_state = RAMP_UP;    
       state=RELAY;
       // Imprimir por serial
+      Serial.println("============= Calentamiento ==============");
+      Serial.println("STATE: "+String(state));
       Serial.println("Setpoint: "+String(Setpoint));
       Serial.println("Input: "+String(Input));
       Serial.println("Tiempo: "+String(t));
       Serial.println("Grad: "+String(grad*t)); 
-      Serial.println("Salida "+String(Output));
+      Serial.println("Salida "+String(salida));
     break;
 
     case SOAK:
@@ -242,30 +246,38 @@ void PID_ON(){
       Setpoint = maxTemp;
       Input = Temp_actual();
       myPID.Compute();
+      salida = Output;
       Prev_state = SOAK;
       state = RELAY;
 
       // Serial
       //Serial.println("Setpoint: "+String(Setpoint));
+      Serial.println("============= SOAK ==============");
+      Serial.println("STATE: "+String(state));
       Serial.println("Input: "+String(Input));
-      Serial.println("Salida "+String(Output));
+      Serial.println("Salida "+String(salida));
     break;
 
     case RAMP_DOWN:
       
         // Por cada iteracion cambiara el setpoin que representa una variacion pequeña de temperatura
+      t = float(millis() - init_Time)/60000;  // Tiempo a variar en minutos
+      if (inicio){t=t+1;inicio=false;}
       Input = Temp_actual();
       Setpoint = maxTemp - (grad*t);   
-      myPID.Compute();
+      myPID2.Compute();
+      salida = Output;
       Prev_state = RAMP_DOWN;    
       state=RELAY2;
 
       // Imprimir por serial
+      Serial.println("============= Enfriamiento ==============");
+      Serial.println("STATE: "+String(state));
       Serial.println("Setpoint: "+String(Setpoint));
       Serial.println("Input: "+String(Input));
       Serial.println("Tiempo: "+String(float(millis() - init_Time)/60000));
       Serial.println("Grad: "+String(grad*t)); 
-      Serial.println("Salida "+String(Output));
+      Serial.println("Salida "+String(salida));
 
 
     break;
@@ -273,7 +285,8 @@ void PID_ON(){
     case RELAY:
 
       //Serial.println(millis() - Start_time);
-      if(Output > millis() - Start_time)
+      if(salida < 2000) salida += 2000;
+      if(salida > millis() - Start_time)
       {
         digitalWrite(FV202,HIGH);
         digitalWrite(FV208,HIGH);
@@ -296,7 +309,8 @@ void PID_ON(){
     case RELAY2:
 
       //Serial.println(millis() - Start_time);
-      if(Output > millis() - Start_time)
+      if(salida < 2000) salida += 2000;
+      if(salida > millis() - Start_time)
       {
         digitalWrite(FV201,HIGH);
         digitalWrite(FV203,HIGH);
@@ -359,16 +373,12 @@ void Setup_RAMP_UP(){
   myPID.SetOutputLimits(0,WindowSize);  // Rango de la salida del PID
   myPID.SetControllerDirection(DIRECT);
   myPID.SetMode(AUTOMATIC);
-  //start_PID = true
   inicio = true;
-  //Compute_on = true;
 
   // Calculo de parametros iniciales
   init_Temp = Temp_actual();
-  //init_Temp2 = Temp_actual();
   init_Time = millis();
- // init_Time2 = millis();
-  Tiempo_deseado = float(40 - init_Temp)/grad;
+  Tiempo_deseado = float(maxTemp - init_Temp)/grad;
 
   Serial.println("RAMP UP");
 
@@ -383,7 +393,6 @@ void Setup_SOAK()
   //grad = 2;
   WindowSize = 10000;
   state = SOAK;
-  //Compute_on = true;
   //Input = Temp_actual();
   //myPID.SetTunings(Kp,Ki,Kd);
   myPID.SetControllerDirection(DIRECT);
@@ -407,15 +416,13 @@ void HeatGrad_1_5(){
   Input = Temp_actual();
   myPID.SetTunings(Kp,Ki,Kd);
   myPID.SetOutputLimits(0,WindowSize);  // Rango de la salida del PID
-  myPID.SetControllerDirection(DIRECT);
+  //myPID.SetControllerDirection(DIRECT);
   myPID.SetMode(AUTOMATIC);
-  //Compute_on = true;
+  inicio = true;
 
   // Calculo de parametros iniciales
   init_Temp = Temp_actual();
-  //init_Temp2 = Temp_actual();
   init_Time = millis();
-  //init_Time2 = millis();
   Tiempo_deseado = float(maxTemp - init_Temp)/grad;
 
   Serial.println("RAMP UP");
@@ -436,18 +443,16 @@ void Setup_RAMP_DOWN(){
   WindowSize = 10000;
   state = RAMP_DOWN;
   Input = Temp_actual();
-  myPID.SetTunings(Kp,Ki,Kd);
-  myPID.SetOutputLimits(0,WindowSize);  // Rango de la salida del PID
-  myPID.SetControllerDirection(REVERSE);
-  myPID.SetMode(AUTOMATIC);
-//  Compute_on = true;
+  myPID2.SetTunings(Kp,Ki,Kd);
+  myPID2.SetOutputLimits(0,WindowSize);  // Rango de la salida del PID
+  //myPID.SetControllerDirection(REVERSE);
+  myPID2.SetMode(AUTOMATIC);
+  inicio = true;
   
   // Calculo de parametros iniciales
   init_Temp = Temp_actual();
-//  init_Temp2 = Temp_actual();
   init_Time = millis();
-  //init_Time2 = millis();
-  Tiempo_deseado = float(maxTemp - init_Temp)/grad;
+  Tiempo_deseado = float(init_Temp - minTemp)/grad;
 
   Serial.println("RAMP DOWN");
 
@@ -464,19 +469,17 @@ void CoolGrad_2(){
   Kd = 0;
   grad = 2;
   WindowSize = 10000;
+  state = RAMP_DOWN;
   Input = Temp_actual();
-  myPID.SetTunings(Kp,Ki,Kd);
-  myPID.SetOutputLimits(0,WindowSize);  // Rango de la salida del PID
-  myPID.SetControllerDirection(REVERSE);
-  myPID.SetMode(AUTOMATIC);
- // Compute_on = true;
+  myPID2.SetTunings(Kp,Ki,Kd);
+  myPID2.SetOutputLimits(0,WindowSize);  // Rango de la salida del PID
+  myPID2.SetMode(AUTOMATIC);
+  inicio = true;
 
   // Calculo de parametros iniciales
   init_Temp = Temp_actual();
-//  init_Temp2 = Temp_actual();
   init_Time = millis();
- // init_Time2 = millis();
-  Tiempo_deseado = float(maxTemp - init_Temp)/grad;
+  Tiempo_deseado = float(init_Temp - minTemp)/grad;
 
   Serial.println("RAMP DOWN");
   Serial.println("GRAD 2");

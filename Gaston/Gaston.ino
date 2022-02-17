@@ -50,8 +50,8 @@ int Intrr_2 = false;                // Este es usado en caso de que la interrupc
 NexButton bNext=NexButton(9,3,"bNext");          // Page confirmacion
 NexButton bSelec=NexButton(11,5,"bSelec");       // Page Preguntar
 NexButton bBack=NexButton(11,8,"bBack");         // Page Preguntar
-NexButton bRight=NexButton(8,20,"bRight");       // Page TomaMuestra 
-NexButton bLeft=NexButton(8,22,"bLeft");         // Page TomaMuestra 
+NexButton bRight=NexButton(8,19,"bRight");       // Page TomaMuestra 
+NexButton bLeft=NexButton(8,20,"bLeft");         // Page TomaMuestra 
 NexButton bOk=NexButton(14,3,"bOk");             // Page TomaMuestra 
 NexButton bSuavSi=NexButton(12,2,"bSuavSi");     // Page Suavizado
 NexButton bLavRedSi=NexButton(13,2,"bLavRedSi"); // Page LavReductivo
@@ -183,6 +183,7 @@ void send_msj(char msj[],int dato){
   Serial2.write(0xff);  // Indica fin de la trama
   Serial2.write(0xff);
   Serial2.write(0xff);
+
 }
 
 // Envia un String de datos a la pantalla
@@ -192,6 +193,7 @@ void send_Strmsj(char msj[]){
   Serial2.write(0xff);  // Indica fin de la trama
   Serial2.write(0xff);
   Serial2.write(0xff);
+
 }
 
 
@@ -223,6 +225,8 @@ void Act_tiempo(int tiempo){
     send_msj("nTempA.val=",Temp_actual());
   }
 
+  // Actualiza la temperatura cada 100ms
+  if(timer7(100)) send_msj("nTempA.val=",Temp_actual());
   // Reinicia el contador
   if(tiempo == false)
   {
@@ -433,7 +437,7 @@ void loop(){
         if(print_code)
         {
           Serial.println("Lavado de maquina");
-          send_msj("nProc.val=",7);
+          send_msj("nProc.val=",10);
           nProc = 10;
           print_code = false;
         }
@@ -455,7 +459,7 @@ void loop(){
           nProc = 9;
           print_code = false;
         }
-        if(Prueba(50,5))
+        if(Prueba(130,5))
         {
           print_code = true;
           estado++;

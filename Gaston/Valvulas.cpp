@@ -38,9 +38,9 @@ void Interrupt() {
 void Detener_proceso(){
   Serial.println(nProc);
   master.guardar_estado();  // Guarda el estado de las valvulas si estan abiertas o cerradas
-  master.cerrar_valvulas(); // Cierra todas las valvulas por seguridad
-  Reset();									// Reinicia todos los temporizadores
-  Mostrar = true;
+	master.cerrar_valvulas() // Cierra todas las valvulas por seguridad
+	Reset();									// Reinicia todos los temporizadores
+	Mostrar = true;
 
 }
 
@@ -57,10 +57,9 @@ void Callback_ISR(){
 	switch(state)
 	{
 		case 1:
-			Detener_proceso();
 			send_Strmsj("page TomaMuestra");
 			Seleccion_proceso(nProc,nPaso);
-			state=2;
+			if(Detener_proceso()) state=2;
 		break;
 
 		case 2:
