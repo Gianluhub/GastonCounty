@@ -361,6 +361,99 @@ int timer12(unsigned long interval){
 
 }
 
+// Lectura de sensor para saber si esta encendido
+int Sensor_on(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+  static bool is_on = false;
+
+  if (interval == false)
+  {
+    start = 1;
+    is_on = false;
+    return false;
+  }
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if(is_on) return true;
+
+  else if (currentTime - previousTime >= interval)
+  {
+    is_on = true;
+    return true;
+  }
+  
+  return false;
+
+}
+
+// Lectura de sensor para saber si esta apagado
+int Sensor_off(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+  static bool is_off = false;
+
+  if (interval == false)
+  {
+    start = 1;
+    is_off = false;
+    return false;
+  }
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if(is_off) return true;
+
+  else if (currentTime - previousTime >= interval)
+  {
+    is_off = true;
+    return true;
+  }
+  
+  return false;
+
+}
+
+// Usado para cerrado de valvul FV209
+int timer13(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
 // Funciones auxiliares
 
 //Convierte el tiempo de MINUTOS a milisegundos
@@ -369,6 +462,7 @@ unsigned long To_millis(int tiempo){
     unsigned long time = tiempo;
     return time*60*1000;
 }
+
 
 // Reinicia todos los timers
 void Reset(){
@@ -384,5 +478,9 @@ void Reset(){
   timer9(false);
   timer10(false);
   timer11(false);
+  timer12(false);
+  timer13(false);
+  Sensor_on(false);
+  Sensor_off(false);
   Reset_PID();
 }

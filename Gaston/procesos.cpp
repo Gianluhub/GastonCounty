@@ -4,6 +4,7 @@
 
 
 int Mostrar = true;     // Muestra en pantalla una sola vez por proceso, esto se hace para no causar problemas de comunicacion por puerto serial
+bool Press_on = false;  // Desactiva la valvuvla FV209 cuando comienza a presurizar la maquina
 
 int Sensor_nivel(int nivel){
 
@@ -60,6 +61,7 @@ int Llenado(int Nivel){
                digitalWrite(FV200,LOW);
                digitalWrite(pump,HIGH); 
                digitalWrite(plegador_1,HIGH);
+               delay(3000);
                digitalWrite(jet_1,HIGH);
                //digitalWrite(plegador_2,HIGH);
                contador_llenado();
@@ -82,6 +84,7 @@ int Llenado(int Nivel){
                 digitalWrite(FV200,LOW);
                 digitalWrite(pump,HIGH);
                 digitalWrite(plegador_1,HIGH);
+                delay(3000);
                 digitalWrite(jet_1,HIGH);
                 //digitalWrite(plegador_2,HIGH);
                 Mostrar = true;
@@ -360,6 +363,10 @@ int Vaciado(){
     { 
         Vaciado_print();
         Mostrar = false; 
+        digitalWrite(plegador_1,LOW);
+        digitalWrite(jet_1,LOW);
+        delay(5000);
+        digitalWrite(pump,LOW); 
     }
 
     const unsigned long tiempo_vaciado = 300000;  // 5 min de vaciado
@@ -371,7 +378,7 @@ int Vaciado(){
     //digitalWrite(plegador_2,LOW);
     digitalWrite(FV211,HIGH);
 
-    Implementacion de vaciado medianti tiempo
+    //Implementacion de vaciado medianti tiempo
     if(digitalRead(LC100) <= LOW)
     {
         // Espera el tiempo necesario donde se sabe que el tanque esta vacio
@@ -527,7 +534,7 @@ int Presurizado(){
    // const int presion = 150; // Presion maxima, aun no se sabe cuanto vale
 
     // Si la temperatura es mayor a 85 y no se tiene el maximo de presion empieza a presurizar
-    if (Temp_actual() >= 85 && digitalRead(PCH100) >= HIGH)
+    if (Temp_actual() >= 85 && Sensor_state_on(PCH100))
     {   
         //Serial.println("Comienza presurizado");
         digitalWrite(PRESURIZADO,HIGH);
@@ -554,13 +561,13 @@ int Presurizado(){
         Cerrar_presurizado(); // Cierra todas las valvulas salvo las que se encarguen de la temperatura y presurizacion
         digitalWrite(FV212,HIGH); // Se abre valvula de presurizado (entrada de aire)
     }
-    else if(digitalRead(PCH100) <= LOW)
+    else if(Sensor_state_off(PCH100))
     {
         // Si se llega a la max presion se cierra la valvula de aire
         digitalWrite(FV212,LOW);
         return true;
     }
-    else if(Temp_actual() <= 82) digitalWrite(FV212,LOW);
+    else if(Temp_actual() <= 80) digitalWrite(FV212,LOW);
 
     return false;
 }
@@ -571,7 +578,7 @@ int Despresurizado(){
     static int flag = true;
     // Si la temperatura es menor a 80 y se tiene baja presion
     // Comienza el despresurizado
-    if (Temp_actual() <= 80 && digitalRead(PCL100) <= LOW)
+    if (Temp_actual() <= 80 && Sensor_state_off(PCL100))
     {   
         //Serial.println("Comienza despresurizado");
         digitalWrite(PRESURIZADO,LOW);
@@ -588,11 +595,12 @@ int Despresurizado(){
         }
         else flag = true;
     }
-    if (digitalRead(PCL100) >= HIGH)
+    if (Sensor_state_on(PCL100))
     {
         digitalWrite(FV213,LOW);  // Cierra la valvula de despresurizado
         digitalWrite(FV204,HIGH); // Se abre la valvula de reflujo
         digitalWrite(DESPRESURIZADO,LOW);
+        Press_on = false;
         return true;
     }
 
@@ -602,12 +610,23 @@ int Despresurizado(){
 
 // Toma lectura del sensor de temperatura y lo traduce a 
 // El valor maximo recibido por el transmisor es de 10V que por serial es 350
-float Temp_actual_Pot(){
+// float Temp_actual_Pot(){
 
-    float Temp_actual;
-    Temp_actual = map(analogRead(TC100),0,350,0,400);
-    return Temp_actual;
-}
+//     float Temp_actual = 0;
+//     float Temp_prom = 0;
+//     float i = 0;
+//     float t_ini = millis();
+//     for(i = 0; i < 100000; i++)
+//     {
+//         Temp_actual = map(analogRead(TC100),0,350,0,400);
+//         Temp_prom += Temp_actual;
+//     }
+//     Temp_prom = Temp_prom/100000;
+//     //memset(Temp_actual, 0, sizeof(Temp_actual));
+//     Serial.println("Tiempo de muestra (ms): "+String(millis()-t_ini));
+
+//     return Temp_prom;
+// }
 
 
 
@@ -624,8 +643,12 @@ void Cerrar_presurizado(){
     digitalWrite(FV210,LOW);
     digitalWrite(FV211,LOW);
     digitalWrite(FV213,LOW);
-    digitalWrite(FV214,LOW);             
+    digitalWrite(FV214,LOW); 
+    digitalWrite(FV209,LOW);
+    Press_on = true;
+                 
 }
+
 
 // Chequea que las valvulas y los motores esten en su estado que corresponda
 // Esta funcion se usa para evitar que algunas valvulas o que los motores queden apagados
@@ -646,6 +669,7 @@ int Handler_motores(int state){
             {      
                 digitalWrite(pump,HIGH);
                 digitalWrite(plegador_1,HIGH);
+                delay(3000);
                 digitalWrite(jet_1,HIGH);
                 return true;
             }
@@ -654,19 +678,64 @@ int Handler_motores(int state){
         {
             if(digitalRead(pump) >= HIGH || digitalRead(plegador_1) >= HIGH || digitalRead(jet_1) >= HIGH)
             {      
-                digitalWrite(pump,LOW);
+                
                 digitalWrite(plegador_1,LOW);
                 digitalWrite(jet_1,LOW);
+                delay(3000);
+                digitalWrite(pump,LOW);
             }
         }
 
      
     }else
-    {
+    {   
+        digitalWrite(jet_1,LOW);
+        delay(5000);
         digitalWrite(pump,LOW);
         digitalWrite(plegador_1,LOW);
-        digitalWrite(jet_1,LOW);
+        
     }
 
+    return false;
+}
+
+// Activa la valvula de alivio cada 20 ciclos de calentamiento
+void FV209_on(){
+
+  static int contador = 1;
+
+  if(contador >= 10 && !Press_on)
+  {
+    if(!timer13(5000))
+    {
+        digitalWrite(FV209,HIGH);
+       
+    }else 
+    {
+        digitalWrite(FV209,LOW);
+        contador = 1;
+    }
+  }
+  else if(timer13(10000)) contador++;
+}
+
+bool Sensor_state_on(int pin){
+
+    if(digitalRead(pin) >= HIGH && Sensor_on(1000))
+    {
+        Sensor_off(false);
+        return true;
+
+    }//else Sensor_on(false);
+    return false;
+}
+
+bool Sensor_state_off(int pin){
+
+    if(digitalRead(pin) <= LOW && Sensor_off(1000))
+    {
+        Sensor_on(false);
+        return true;
+    }//else Sensor_off(false);
     return false;
 }

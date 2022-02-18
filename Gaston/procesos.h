@@ -20,6 +20,9 @@ int Presurizado();
 int Despresurizado();
 void Cerrar_presurizado();
 int Handler_motores(int state);
+void FV209_on();
+bool  Sensor_state_off(int pin);
+bool  Sensor_state_on(int pin);
 
 // timer.cpp
 unsigned long To_millis(int tiempo);
@@ -35,6 +38,9 @@ int timer9(unsigned long interval);
 int timer10(unsigned long interval);
 int timer11(unsigned long interval);
 int timer12(unsigned long interval);
+int timer13(unsigned long interval);
+int Sensor_on(unsigned long interval);
+int Sensor_off(unsigned long interval);
 void Reset();
 
 

@@ -29,6 +29,7 @@ extern int Nuevo_estado_ok;
 extern int nProc;
 extern int nPaso;
 extern int Mostrar;						// Se utiliza para volver a enviar los datos del proceso en pantalla en caso de que ocurra una interrupcion
+extern bool Press_on;
 
 void Interrupt() {
 	interrupt = true;
@@ -38,7 +39,8 @@ void Interrupt() {
 void Detener_proceso(){
   Serial.println(nProc);
   master.guardar_estado();  // Guarda el estado de las valvulas si estan abiertas o cerradas
-	master.cerrar_valvulas() // Cierra todas las valvulas por seguridad
+	master.cerrar_valvulas(); // Cierra todas las valvulas por seguridad
+	Press_on = false;
 	Reset();									// Reinicia todos los temporizadores
 	Mostrar = true;
 
@@ -57,9 +59,10 @@ void Callback_ISR(){
 	switch(state)
 	{
 		case 1:
-			send_Strmsj("page TomaMuestra");
-			Seleccion_proceso(nProc,nPaso);
-			if(Detener_proceso()) state=2;
+			Detener_proceso(); 
+      send_Strmsj("page TomaMuestra");
+      Seleccion_proceso(nProc,nPaso);
+			state=2;
 		break;
 
 		case 2:
@@ -122,8 +125,9 @@ void Control_Valvulas::cerrar_valvulas(){
 	}
 	Serial.println("Entra");
 	// Apaga la bomba y el plegador
-  digitalWrite(pump,LOW); 	
   digitalWrite(plegador_1,LOW);
   digitalWrite(jet_1,LOW);
+  delay(5000);
+  digitalWrite(pump,LOW); 	
   Serial.println("Apaga motores");
 }

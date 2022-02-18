@@ -274,7 +274,7 @@ void Seleccion_proceso(int codigo, int estado){
         break;
 
         case 9:
-          prueba(estado,130,60);
+          prueba(estado,80,60);
         break;
 
         case 10:

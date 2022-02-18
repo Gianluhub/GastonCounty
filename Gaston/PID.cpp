@@ -18,6 +18,7 @@ PID myPID(&Input,&Output,&Setpoint,Kp,Ki,Kd,DIRECT);
 PID myPID2(&Input,&Output,&Setpoint,Kp,Ki,Kd,REVERSE);
 
 
+
 // =========================================//
 /* Parametros para el control de gradiente */
 
@@ -55,6 +56,7 @@ int minTemp;
 void Serial_msj();
 void CoolGrad_2();
 void HeatGrad_1_5();
+
 
 int State_PID(int Mode, int Temp) {
   //static int mode = RAMP_UP;
@@ -204,11 +206,31 @@ int State_PID(int Mode, int Temp) {
 }   
 
 
+// float Temp_actual(){
+
+//     float Temp = map(analogRead(TC100),129,664,-1778,14889);
+//     return Temp/100;
+// }
+
 float Temp_actual(){
 
-    float Temp = map(analogRead(TC100),129,664,-1778,14889);
-    return Temp/100;
+    float Temp = 0;
+    float Temp_prom = 0;
+    float i = 0;
+    float t_ini = millis();
+    for(i = 0; i < 500; i++)
+    {
+        Temp = map(analogRead(TC100),129,664,-1778,14889)/100;
+        Temp_prom += Temp;
+    }
+    Temp_prom = Temp_prom/500;
+    //memset(Temp_actual, 0, sizeof(Temp_actual));
+    //Serial.println("Tiempo de muestra (ms):");
+    //Serial.println(millis()- t_ini);
+
+    return Temp_prom;
 }
+
 
 void PID_ON(){
 
@@ -227,6 +249,7 @@ void PID_ON(){
       if (inicio){t=t+1;inicio=false;}
       Input = Temp_actual();
       Setpoint = (grad*t) + init_Temp; 
+      //if(Setpoint >= maxTemp) Setpoint = maxTemp;
       myPID.Compute();
       salida = Output;
       Prev_state = RAMP_UP;    
@@ -290,7 +313,7 @@ void PID_ON(){
       {
         digitalWrite(FV202,HIGH);
         digitalWrite(FV208,HIGH);
-        digitalWrite(FV209,HIGH);
+        FV209_on();    
       }
       else if(millis() - Start_time < WindowSize)
       {
@@ -362,7 +385,7 @@ int timerPID(unsigned long interval){
 void Setup_RAMP_UP(){
 
   //  Seteo de parametros inicialmente para 2°/min                      
-  Kp = 2500;
+  Kp = 3500;
   Ki = 0.5;
   Kd = 0;
   grad = 2;
@@ -464,7 +487,10 @@ void Setup_RAMP_DOWN(){
 void CoolGrad_2(){
 
   //  Seteo de parametros iniciales del PID                      
-  Kp = 2500;
+  // Kp = 2500;
+  // Ki = 0.5;
+  // Kd = 0;
+  Kp = 3000;
   Ki = 0.5;
   Kd = 0;
   grad = 2;
@@ -518,3 +544,5 @@ void Reset_PID(){
   State_RampD = 1;
 
 }
+
+

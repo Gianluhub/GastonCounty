@@ -1448,53 +1448,61 @@ int Prueba(int temperatura, int tiempo){
   			if(Llamado_op()) estado++;
   		break;
 
-		// 3. Subir temperatura
-		case 3:
+  		case 3:
+  			if(Adicion_rapida(3)) estado++;
+  		break;
+
+  		case 4:
+  			if(Adicion_lenta(5,10,3)) estado++;
+  		break;
+
+		// 5. Subir temperatura
+		case 5:
 			
 			temp_ok = Calentamiento(temperatura,2,RAMP_UP);
 			if(temperatura >= 98) Presurizado();
 
-			if (temp_ok){cerrar_vapor(); estado = 4;}
+			if (temp_ok){cerrar_vapor(); estado++;}
 			
 		break;
 
-		// 4. Circulacion por 5 min y se asegura de mantener la temperatura deseada
-		case 4:
+		// 6. Circulacion por 5 min y se asegura de mantener la temperatura deseada
+		case 6:
 
 			Calentamiento(temperatura,2,SOAK);
 			if(temperatura >= 98) Presurizado();	
 			if (Circulacion(tiempo))
 			{	
 				cerrar_vapor();
-				estado = 5;
+				estado++;
 			}	
 		break;
 
-		// 5. Enfriamiento
-		case 5:
+		// 7. Enfriamiento
+		case 7:
 			temp_ok = Enfriamiento(60,2);
 			if(temperatura > 90) Despresurizado();
-			if (temp_ok) estado = 6;	
+			if (temp_ok) estado++;	
 		break;
 		
-		// 6. Toma de muestra
-		case 6:
-			Estado_anterior = 6;
+		// 8. Toma de muestra
+		case 8:
+			Estado_anterior = 8;
 			estado = Tomar_muestra(estado);
 		break;
 
-		// 7. Lavado por rebose de 15 min
-		case 7:
-			if (Lavado_rebose(10)) estado = 8;
-		break;
-
-		// 8. Vaciado de tanque
-		case 8:
-			if (Vaciado()) estado = 9;
-		break;
-
-		// 9. Fin
+		// 9. Lavado por rebose de 15 min
 		case 9:
+			if (Lavado_rebose(10)) estado++;
+		break;
+
+		// 10. Vaciado de tanque
+		case 10:
+			if (Vaciado()) estado++;
+		break;
+
+		// 11. Fin
+		case 11:
 			Fin_proceso();
 			estado = 1;
 			return true;
