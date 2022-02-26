@@ -117,6 +117,7 @@ void prueba(int estado, int temperatura, int tiempo);
 void Detener_proceso();
 void Reiniciar_proceso();
 void Callback_ISR();
+void Interrupt();
 
 // PID.cpp
 #define RAMP_UP 1
@@ -124,6 +125,7 @@ void Callback_ISR();
 #define RAMP_DOWN 3
 #define RELAY 4
 #define RELAY2 5
+#define RELAY_130 6
 // Funciones
 float Temp_actual();
 void PID_ON();

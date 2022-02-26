@@ -294,6 +294,7 @@ void loop(){
   nexLoop(nex_listen_list); 
   Handler();
   
+  if(digitalRead(STOP) <= LOW) Interrupt();
   // Interrupcion del proceso
   if(interrupt) Callback_ISR();
   
@@ -459,7 +460,7 @@ void loop(){
           nProc = 9;
           print_code = false;
         }
-        if(Prueba(130,5))
+        if(Prueba(130,15))
         {
           print_code = true;
           estado++;

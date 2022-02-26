@@ -27,7 +27,8 @@ float grad;              // Tasa de subida en °/min
 double init_Temp;        // Temperatura inicial
 double Tiempo_deseado;   // Tiempo en el que quiero que se llegue a maxTemp 
 uint16_t WindowSize;     // Intervalo de tiempo en el que se se dejara en on/off la salida
-unsigned long init_Time; 
+unsigned long init_Time;
+unsigned long init_Time2; 
 int inicio = true;
 bool end_soak = false;
 int State_RampU = 1;
@@ -61,15 +62,15 @@ void HeatGrad_1_5();
 int State_PID(int Mode, int Temp) {
   //static int mode = RAMP_UP;
 
-  if(timerPID(100))
-   {
-    Serial.print("@");
-    Serial.print("/");
-    Serial.print(float(millis()-init_Time)/60000);
-    Serial.print("/");
-    Serial.println(Temp_actual());
-    //Serial.println(30);
-   }
+  // if(timerPID(100))
+  //  {
+  //   Serial.print("@");
+  //   Serial.print("/");
+  //   Serial.print(float(millis()-init_Time2)/60000);
+  //   Serial.print("/");
+  //   Serial.println(Temp_actual());
+  //   //Serial.println(30);
+  //  }
 
 
    switch(Mode)
@@ -89,12 +90,13 @@ int State_PID(int Mode, int Temp) {
 
         case 2:
 
-          if(maxTemp >= 98 )
+          if(maxTemp > 90 )
           { 
-            if(Temp_actual() >= 90)
+            if(Temp_actual() > 90)
             {
-              Serial_msj();
+              //Serial_msj();
               HeatGrad_1_5();
+              //timerPID(false);
               State_RampU = 3; 
             }
           }else State_RampU = 3;
@@ -103,10 +105,10 @@ int State_PID(int Mode, int Temp) {
 
           case 3:
 
-            if(Temp_actual() >= maxTemp)
+            if((Temp_actual() >= maxTemp) || digitalRead(PIROMETRO) <= LOW)
             { 
-              Serial_msj();
-              digitalWrite(OUTPUT,LOW);
+              //Serial_msj();
+              //timerPID(false);
               state = SOAK;
               Step_Ok = true;
               //mode = SOAK;
@@ -135,6 +137,7 @@ int State_PID(int Mode, int Temp) {
           { 
             State_Soak = 1;
             Step_Ok = true;
+            state = RAMP_DOWN;
             end_soak = false;
           }
 
@@ -163,10 +166,11 @@ int State_PID(int Mode, int Temp) {
 
           if(maxTemp >= 98)
           {
-            if(Temp_actual() <= 80)
+            if(Temp_actual() <= 80 )
             { 
               Serial_msj();
               CoolGrad_2();
+              //timerPID(false);
               State_RampD = 3;
             }
 
@@ -180,7 +184,8 @@ int State_PID(int Mode, int Temp) {
           {
             State_RampD = 1; 
             Step_Ok = true;
-            Serial_msj();           
+            //timerPID(false);
+            //Serial_msj();           
           }
 
         break;
@@ -215,17 +220,21 @@ int State_PID(int Mode, int Temp) {
 float Temp_actual(){
 
     float Temp = 0;
+    float Temp2 = 0;
     float Temp_prom = 0;
     float i = 0;
     float t_ini = millis();
     for(i = 0; i < 500; i++)
     {
-        Temp = map(analogRead(TC100),129,664,-1778,14889)/100;
+        //Temp = map(analogRead(TC100),129,664,-1778,14889)/100;
+        Temp = map(analogRead(TC100),33,164,-1778,14889)/100;
+        //Temp = map(analogRead(TC100),133,667,-50,150);
+        //Temp = map(analogRead(TC100),33,164,-50,150);
         Temp_prom += Temp;
     }
     Temp_prom = Temp_prom/500;
     //memset(Temp_actual, 0, sizeof(Temp_actual));
-    //Serial.println("Tiempo de muestra (ms):");
+    //Serial.println(analogRead(TC100));
     //Serial.println(millis()- t_ini);
 
     return Temp_prom;
@@ -256,22 +265,26 @@ void PID_ON(){
       state=RELAY;
       // Imprimir por serial
       Serial.println("============= Calentamiento ==============");
-      Serial.println("STATE: "+String(state));
+      //Serial.println("STATE: "+String(state));
       Serial.println("Setpoint: "+String(Setpoint));
       Serial.println("Input: "+String(Input));
       Serial.println("Tiempo: "+String(t));
       Serial.println("Grad: "+String(grad*t)); 
       Serial.println("Salida "+String(salida));
+      Serial.println(analogRead(TC100));
+      //Serial.println(float(analogRead(TC100)*20/685));
+      //Serial.println(analogRead(LC100));
+    
     break;
 
     case SOAK:
 
-      Setpoint = maxTemp;
       Input = Temp_actual();
       myPID.Compute();
       salida = Output;
       Prev_state = SOAK;
-      state = RELAY;
+      if(maxTemp == 130) state = RELAY_130;
+      else state = RELAY;
 
       // Serial
       //Serial.println("Setpoint: "+String(Setpoint));
@@ -301,22 +314,27 @@ void PID_ON(){
       Serial.println("Tiempo: "+String(float(millis() - init_Time)/60000));
       Serial.println("Grad: "+String(grad*t)); 
       Serial.println("Salida "+String(salida));
+      Serial.println(analogRead(TC100));
+      //Serial.println(analogRead(LC100));
 
 
     break;
 
     case RELAY:
 
+
       //Serial.println(millis() - Start_time);
-      if(salida < 2000) salida += 2000;
+      if(salida < 3000) salida += 3000;
       if(salida > millis() - Start_time)
       {
+        digitalWrite(CALENTAMIENTO,HIGH);
         digitalWrite(FV202,HIGH);
         digitalWrite(FV208,HIGH);
         FV209_on();    
       }
       else if(millis() - Start_time < WindowSize)
       {
+        digitalWrite(CALENTAMIENTO,LOW);
         digitalWrite(FV202,LOW);
         digitalWrite(FV208,LOW);
         digitalWrite(FV209,LOW);        
@@ -332,14 +350,16 @@ void PID_ON(){
     case RELAY2:
 
       //Serial.println(millis() - Start_time);
-      if(salida < 2000) salida += 2000;
+      if(salida < 3000) salida += 3000;
       if(salida > millis() - Start_time)
       {
+        digitalWrite(ENFRIAMIENTO,HIGH);
         digitalWrite(FV201,HIGH);
         digitalWrite(FV203,HIGH);
       }
       else if(millis() - Start_time < WindowSize)
       {
+        digitalWrite(ENFRIAMIENTO,LOW);
         digitalWrite(FV201,LOW);
         digitalWrite(FV203,LOW);    
       } 
@@ -350,20 +370,42 @@ void PID_ON(){
         state = RAMP_DOWN;
       }  
     break;
+
+    case RELAY_130:
+
+      if(digitalRead(PIROMETRO) >= HIGH)
+      {
+        digitalWrite(CALENTAMIENTO,HIGH);
+        digitalWrite(FV202,HIGH);
+        digitalWrite(FV208,HIGH);
+        FV209_on();
+      }else
+      {
+        digitalWrite(CALENTAMIENTO,LOW);
+        digitalWrite(FV202,LOW);
+        digitalWrite(FV208,LOW);
+        digitalWrite(FV209,LOW); 
+        //timerPID(false);
+      }
+
+    break;
   }
  
 }
  
 
+// Se usa para filtrar picos de temperatura
 int timerPID(unsigned long interval){
 
   unsigned long currentTime = millis();
   static unsigned long previousTime = millis();
   static int start = 0;
+  static bool is_on = false;
 
   if (interval == false)
   {
     start = 1;
+    is_on = false;
     return false;
   }
 
@@ -373,20 +415,23 @@ int timerPID(unsigned long interval){
     start = 0;
   }
 
-  if (currentTime - previousTime >= interval)
+  if(is_on) return true;
+
+  else if (currentTime - previousTime >= interval)
   {
-    start = 1;
+    is_on = true;
     return true;
   }
-  else return false;
+  
+  return false;
 
 }
 
 void Setup_RAMP_UP(){
 
   //  Seteo de parametros inicialmente para 2°/min                      
-  Kp = 3500;
-  Ki = 0.5;
+  Kp = 3000;
+  Ki = 0.6;
   Kd = 0;
   grad = 2;
   WindowSize = 10000;
@@ -416,7 +461,8 @@ void Setup_SOAK()
   //grad = 2;
   WindowSize = 10000;
   state = SOAK;
-  //Input = Temp_actual();
+  Setpoint = maxTemp;
+  Input = Temp_actual();
   //myPID.SetTunings(Kp,Ki,Kd);
   myPID.SetControllerDirection(DIRECT);
   myPID.SetOutputLimits(0,WindowSize);  // Rango de la salida del PID
@@ -431,7 +477,7 @@ void Setup_SOAK()
 void HeatGrad_1_5(){
 
   //  Seteo de parametros iniciales del PID                      
-  Kp = 2600;
+  Kp = 3000;
   Ki = 0.3;
   Kd = 0;
   grad = 1.5;
@@ -441,12 +487,13 @@ void HeatGrad_1_5(){
   myPID.SetOutputLimits(0,WindowSize);  // Rango de la salida del PID
   //myPID.SetControllerDirection(DIRECT);
   myPID.SetMode(AUTOMATIC);
-  inicio = true;
+  //inicio = true;
 
   // Calculo de parametros iniciales
-  init_Temp = Temp_actual();
-  init_Time = millis();
-  Tiempo_deseado = float(maxTemp - init_Temp)/grad;
+  //init_Temp = Temp_actual();
+  //init_Time = millis();
+  //init_Time2 = millis();
+  Tiempo_deseado = float(maxTemp - Temp_actual())/grad;
 
   Serial.println("RAMP UP");
   Serial.println("GRAD 1.5");
@@ -475,6 +522,7 @@ void Setup_RAMP_DOWN(){
   // Calculo de parametros iniciales
   init_Temp = Temp_actual();
   init_Time = millis();
+  init_Time2 = millis();
   Tiempo_deseado = float(init_Temp - minTemp)/grad;
 
   Serial.println("RAMP DOWN");
@@ -491,7 +539,7 @@ void CoolGrad_2(){
   // Ki = 0.5;
   // Kd = 0;
   Kp = 3000;
-  Ki = 0.5;
+  Ki = 0.4;
   Kd = 0;
   grad = 2;
   WindowSize = 10000;
@@ -505,6 +553,7 @@ void CoolGrad_2(){
   // Calculo de parametros iniciales
   init_Temp = Temp_actual();
   init_Time = millis();
+  init_Time2 = millis();
   Tiempo_deseado = float(init_Temp - minTemp)/grad;
 
   Serial.println("RAMP DOWN");
@@ -542,7 +591,6 @@ void Reset_PID(){
   State_RampU = 1;
   State_Soak = 1; 
   State_RampD = 1;
+  timerPID(false);
 
 }
-
-

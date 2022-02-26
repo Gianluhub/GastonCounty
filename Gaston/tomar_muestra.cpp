@@ -174,11 +174,11 @@ void Lista_Algodon(int estado, int temperatura, int tiempoC, int tiempoF){
     send_msj("nProc.val=",5);
     if(estado<1)
     { 
-        estado = 49;
-        nPaso = 49;
+        estado = 50;
+        nPaso = 50;
         send_msj("nPasoM.val=",estado);
     }
-    else if (estado>49)
+    else if (estado>50)
     {
         estado= 1;
         nPaso = 1;
@@ -212,7 +212,8 @@ void Lista_Algodon(int estado, int temperatura, int tiempoC, int tiempoF){
         break;
 
         case 7:
-            Calentamiento_print(temperatura,2);
+            if(temperatura >= 98) Calentamiento_print(80,2);
+            else Calentamiento_print(temperatura,2);
         break;
 
         case 8:
@@ -236,150 +237,154 @@ void Lista_Algodon(int estado, int temperatura, int tiempoC, int tiempoF){
         break;
 
         case 13:
-            Circulacion_print(tiempoF);
+            Calentamiento_print(temperatura,2);
         break;
 
         case 14:
-            Enfriamiento_print(60,2);
+            Circulacion_print(tiempoF);
         break;
 
         case 15:
-            Tomar_muestra_print();
-        break;
-
-        case 16:
-            Lavado_rebose_print(10);
-        break;
-
-        case 17:
-            Vaciado_print();
-        break;
-
-        case 18:
-            Llenado_print(2);
-        break;
-
-        case 19:
-            Llamado_op_print();
-        break;
-
-        case 20:
-            Adicion_rapida_print(3);
-        break;
-
-        case 21:
-            Calentamiento_print(60,2);
-        break;
-
-        case 22:
-            Circulacion_print(10);
-        break;
-
-        case 23:
-            Vaciado_print();
-        break;
-
-        case 24:
-            Llenado_print(2);
-        break;
-
-        case 25:
-            Llamado_op_print();
-        break;
-
-        case 26:
-            Adicion_rapida_print(3);
-        break;
-
-        case 27:
-            Circulacion_print(5);
-        break;
-
-        case 28:
-            Calentamiento_print(90,2);
-        break;
-
-        case 29:
-            Circulacion_print(20);
-        break;
-
-        case 30:
             Enfriamiento_print(60,2);
         break;
 
-        case 31:
-            Vaciado_print();
-        break;
-
-        case 32:
-            Llenado_print(2);
-        break;
-
-        case 33:
-            Calentamiento_print(65,2);
-        break;
-
-        case 34:
-            Circulacion_print(10);
-        break;
-
-        case 35:
-            Vaciado_print();
-        break;
-
-        case 36:
-            Llenado_print(2);
-        break;
-
-        case 37:
+        case 16:
             Tomar_muestra_print();
         break;
 
-        case 38:
-            Circulacion_print(10);
+        case 17:
+            Lavado_rebose_print(10);
         break;
 
-        case 39:
+        case 18:
             Vaciado_print();
         break;
 
-        case 40:
+        case 19:
             Llenado_print(2);
         break;
 
-        case 41:
-            Lavado_rebose_print(15);
-        break;
-
-        case 42:
-            Vaciado_print();
-        break;
-
-        case 43:
-            Llenado_print(2);
-        break;
-
-        case 44:
+        case 20:
             Llamado_op_print();
         break;
 
-        case 45:
+        case 21:
             Adicion_rapida_print(3);
         break;
 
-        case 46:
-            Circulacion_print(20);
+        case 22:
+            Calentamiento_print(60,2);
         break;
 
-        case 47:
-            Tomar_muestra_print();
+        case 23:
+            Circulacion_print(10);
         break;
 
-        case 48:
+        case 24:
             Vaciado_print();
         break;
 
+        case 25:
+            Llenado_print(2);
+        break;
+
+        case 26:
+            Llamado_op_print();
+        break;
+
+        case 27:
+            Adicion_rapida_print(3);
+        break;
+
+        case 28:
+            Circulacion_print(5);
+        break;
+
+        case 29:
+            Calentamiento_print(90,2);
+        break;
+
+        case 30:
+            Circulacion_print(20);
+        break;
+
+        case 31:
+            Enfriamiento_print(60,2);
+        break;
+
+        case 32:
+            Vaciado_print();
+        break;
+
+        case 33:
+            Llenado_print(2);
+        break;
+
+        case 34:
+            Calentamiento_print(65,2);
+        break;
+
+        case 35:
+            Circulacion_print(10);
+        break;
+
+        case 36:
+            Vaciado_print();
+        break;
+
+        case 37:
+            Llenado_print(2);
+        break;
+
+        case 38:
+            Tomar_muestra_print();
+        break;
+
+        case 39:
+            Circulacion_print(10);
+        break;
+
+        case 40:
+            Vaciado_print();
+        break;
+
+        case 41:
+            Llenado_print(2);
+        break;
+
+        case 42:
+            Lavado_rebose_print(15);
+        break;
+
+        case 43:
+            Vaciado_print();
+        break;
+
+        case 44:
+            Llenado_print(2);
+        break;
+
+        case 45:
+            Llamado_op_print();
+        break;
+
+        case 46:
+            Adicion_rapida_print(3);
+        break;
+
+        case 47:
+            Circulacion_print(20);
+        break;
+
+        case 48:
+            Tomar_muestra_print();
+        break;
+
         case 49:
+            Vaciado_print();
+        break;
+
+        case 50:
             // Fin
             Fin_proceso();
         break;

@@ -1413,7 +1413,7 @@ int Lavado_reductivo(int temperatura, int tiempo){
 
 int Prueba(int temperatura, int tiempo){
 
-	static int estado = 1;				// Variable encargada de pasar de un proceso a otro
+	static int estado = 5;				// Variable encargada de pasar de un proceso a otro
 	static int Estado_anterior = 0;		// Almacena el estado del proceso en toma de muestra antes de hacer suavizado o lavado reductivo		
 	int temp_ok = false;				// Verifica si se llego a la temperatura deseada
 	int press_ok = false;				// Verifica si se llego a la presion deseada
@@ -1445,7 +1445,7 @@ int Prueba(int temperatura, int tiempo){
 
   		// preparacion de tanque
   		case 2:
-  			if(Llamado_op()) estado++;
+  			if(Llamado_op()) estado=5;
   		break;
 
   		case 3:
@@ -1582,29 +1582,28 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		// 7. Subir temperatura 
 		case 7:
-			temp_ok = Calentamiento(temperatura,1.5,RAMP_UP);
-			Presurizado();
+			if(temperatura >= 98)temp_ok = Calentamiento(80,1.5,RAMP_UP); 
+			else temp_ok = Calentamiento(temperatura,1.5,RAMP_UP);
 			if (temp_ok) estado = 8;
 		break;
 
 		// 8. Circulacion
 		case 8:
-			Calentamiento(temperatura,2,SOAK);
-			if(temperatura >= 98) Presurizado();
+			if(temperatura >= 98)temp_ok = Calentamiento(80,1.5,RAMP_UP); 
+			else temp_ok = Calentamiento(temperatura,1.5,RAMP_UP);
 			if(Circulacion(tiempoC)) estado = 9;		
 			
 		break;
 
 		// 9. Llamado a operador y mantener temperatura
 		case 9:
-			Calentamiento(temperatura,2,SOAK);
-			if(temperatura >= 98) Presurizado();
+			//Calentamiento(temperatura,2,SOAK);
+			//if(temperatura >= 98) Presurizado();
 			if(Llamado_op()) 
 			{
 				cerrar_vapor();
 				estado = 10;
-			}
-				
+			}		
 		break;
 
 		// 10. Adicion lenta (Alkali) de 5 min cada 10 seg por 2 seg
@@ -1619,233 +1618,240 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		// 12. Adicion lenta (Alkali) 15 min cada 15 seg por 3 seg
 		case 12:
-			if(Adicion_lenta(15,15,3)) estado = 13;
+			if(Adicion_lenta(15,15,3))estado = 13;
 		break;
 
-		// 13. Circulacion por 1 hora y manterner temperatura
+		// 13. Calentamiento si es a 98
 		case 13:
+			temp_ok = Calentamiento(temperatura,1.5,RAMP_UP);
+			if (temp_ok) estado = 14; 
+
+		break;
+
+		// 14. Circulacion por 1 hora y manterner temperatura
+		case 14:
 			Calentamiento(temperatura,1.5,SOAK);
 			if (Circulacion(tiempoF)) 
 			{	
 				cerrar_vapor();
-				if(temperatura >= 90) estado = 14;
-				else estado = 15;
-			}
-			
+				if(temperatura >= 80) estado = 15;
+				else estado = 16;
+			}	
 		break;
 
-		case 14:
+		// 15. Enfiamiento
+		case 15:
 			temp_ok = Enfriamiento(60,2);
 			press_ok = Despresurizado();
-			if (temp_ok) estado = 15;	
+			if (temp_ok) estado = 16;	
 		break;
 
-		// 15. Llamado a operador (Tomar muestra)
-		case 15:
-			Estado_anterior = 15;
+		// 16. Llamado a operador (Tomar muestra)
+		case 16:
+			Estado_anterior = 16;
 			estado = Tomar_muestra(estado);
 		break;
 
-		// 16. Lavado por rebose de 10 min
-		case 16:
-			if(Lavado_rebose(10)) estado = 17;
-		break;
-
-		// 17. Vaciado de tanque
+		// 17. Lavado por rebose de 10 min
 		case 17:
-			if(Vaciado()) estado = 18;
+			if(Lavado_rebose(10)) estado = 18;
 		break;
 
-		//18. Llenado a nivel 2
+		// 18. Vaciado de tanque
 		case 18:
-			if(Llenado(2)) estado = 19;
+			if(Vaciado()) estado = 19;
 		break;
 
-		// 19. Llamado a operador
+		//19. Llenado a nivel 2
 		case 19:
-			if(Llamado_op()) estado = 20;
+			if(Llenado(2)) estado = 20;
 		break;
 
-		// 20. Adicion rapida de 3 min. Acido
+		// 20. Llamado a operador
 		case 20:
-			if(Adicion_rapida(3)) estado = 21;
+			if(Llamado_op()) estado = 21;
 		break;
 
-
-		// 21. Subir temperatura a 60°
+		// 21. Adicion rapida de 3 min. Acido
 		case 21:
-			temp_ok = Calentamiento(60,2,RAMP_UP);
-			if (temp_ok) estado = 22;
+			if(Adicion_rapida(3)) estado = 22;
 		break;
 
-		// 22. Circulacion por 10 min
+
+		// 22. Subir temperatura a 60°
 		case 22:
+			temp_ok = Calentamiento(60,2,RAMP_UP);
+			if (temp_ok) estado = 23;
+		break;
+
+		// 23. Circulacion por 10 min
+		case 23:
 			Calentamiento(60,2,SOAK);
 			if(Circulacion(10))
 			{
 				cerrar_vapor();
-				estado = 23;
+				estado = 24;
 			}
 			
 		break;
 
-		// 23. Vaciado de tanque
-		case 23:
-			if(Vaciado()) estado = 24;
-		break;
-
-		//24. Llenado a nivel 2
+		// 24. Vaciado de tanque
 		case 24:
-			if(Llenado(2)) estado = 25;
+			if(Vaciado()) estado = 25;
 		break;
 
-		// 25. Llamado a operador
+		//25. Llenado a nivel 2
 		case 25:
-			if(Llamado_op()) estado = 26;
+			if(Llenado(2)) estado = 26;
 		break;
 
-		// 26. Adicion rapida de 3 min. Detergente
+		// 26. Llamado a operador
 		case 26:
-			if(Adicion_rapida(3)) estado = 27;
+			if(Llamado_op()) estado = 27;
 		break;
 
-		// 27. Circulacion por 5 min
+		// 27. Adicion rapida de 3 min. Detergente
 		case 27:
-			if(Circulacion(5)) estado = 28;
+			if(Adicion_rapida(3)) estado = 28;
+		break;
+
+		// 28. Circulacion por 5 min
+		case 28:
+			if(Circulacion(5)) estado = 29;
 		break;
 
 		// Enjabonado en caliente
-		// 28. Subir temperatura a 90° a 2°/min
-		case 28:
+		// 29. Subir temperatura a 90° a 2°/min
+		case 29:
 			temp_ok = Calentamiento(90,2,RAMP_UP);
 			//Presurizado();
-			if (temp_ok) estado = 29;
+			if (temp_ok) estado = 30;
 		break;
 
-		// 29. Circulacion por 20 min
-		case 29:
+		// 30. Circulacion por 20 min
+		case 30:
 			Calentamiento(90,2,SOAK);
 			//Presurizado();
 			if(Circulacion(20))
 			{
 				cerrar_vapor();
-				estado = 30;
+				estado = 31;
 			}
 			
 		break;
 
-		// 30. Enfriamiento a 60° a 2°/min
-		case 30:
+		// 31. Enfriamiento a 60° a 2°/min
+		case 31:
 			temp_ok = Enfriamiento(60,2);
 			//press_ok = Despresurizado();
-			if (temp_ok) estado = 31;
+			if (temp_ok) estado = 32;
 		break;
 
-		// 31. Vaciado de tanque
-		case 31:
-			if(Vaciado()) estado = 32;
-		break;
-
-		// 32. Llenado a nivel 2
+		// 32. Vaciado de tanque
 		case 32:
-			if(Llenado(2)) estado = 33;
+			if(Vaciado()) estado = 33;
 		break;
 
-		// 33. Subir temperatura a 65°
+		// 33. Llenado a nivel 2
 		case 33:
-			temp_ok = Calentamiento(65,2,RAMP_UP);
-			if (temp_ok) estado = 34;
+			if(Llenado(2)) estado = 34;
 		break;
 
-		// 34. Circulacion por 10 min
+		// 34. Subir temperatura a 65°
 		case 34:
+			temp_ok = Calentamiento(65,2,RAMP_UP);
+			if (temp_ok) estado = 35;
+		break;
+
+		// 35. Circulacion por 10 min
+		case 35:
 			Calentamiento(65,2,SOAK);
 			if(Circulacion(10))
 			{
 			cerrar_vapor();
-			estado = 35;
+			estado = 36;
 			}
 			
 		break;
 
-		// 35. Vaciado de tanque
-		case 35:
-			if(Vaciado()) estado = 36;
+		// 36. Vaciado de tanque
+		case 36:
+			if(Vaciado()) estado = 37;
 		break;
 
-		//  36. Llenado a nivel 2
-		case 36:
-			if(Llenado(2)) estado = 37;
+		//  37. Llenado a nivel 2
+		case 37:
+			if(Llenado(2)) estado = 38;
 		break; 
 
-		// 37. Toma de muestra
-		case 37:
-			Estado_anterior = 37;
+		// 38. Toma de muestra
+		case 38:
+			Estado_anterior = 38;
 			estado = Tomar_muestra(estado);
 		break;
 
 		/// PARTE OPCIONAL PARA EL OPERADOR 
 
-		// 38. Circulacion por 10 min
-		case 38:
-			if(Circulacion(10)) estado = 39;
-		break;
-
-		// 39. Vaciado de tanque
+		// 39. Circulacion por 10 min
 		case 39:
-			if(Vaciado()) estado = 40;
+			if(Circulacion(10)) estado = 40;
 		break;
 
-		// 40. Llenado a nivel 2
+		// 40. Vaciado de tanque
 		case 40:
-			if(Llenado(2)) estado = 41;
+			if(Vaciado()) estado = 41;
 		break;
 
-		// 41. Lavado por rebose de 15 min
+		// 41. Llenado a nivel 2
 		case 41:
-			if(Lavado_rebose(15)) estado = 42;
+			if(Llenado(2)) estado = 42;
+		break;
+
+		// 42. Lavado por rebose de 15 min
+		case 42:
+			if(Lavado_rebose(15)) estado = 43;
 		break; 
 
-		// 42. Vaciado de tanque
-		case 42:
-			if(Vaciado()) estado = 43;
+		// 43. Vaciado de tanque
+		case 43:
+			if(Vaciado()) estado = 44;
 		break;
 
-		// 43. Llenado a nivel 2
-		case 43:
-			if(Llenado(2)) estado = 44;
+		// 44. Llenado a nivel 2
+		case 44:
+			if(Llenado(2)) estado = 45;
 		break;
 
 		/// FIN DE PROCESO OPCIONAL
 
-		// 44. Llamado a operador
-		case 44:
-			if(Llamado_op()) estado = 45;
+		// 45. Llamado a operador
+		case 45:
+			if(Llamado_op()) estado = 46;
 		break;	
 
-		// 45. Adicion rapida. Fijador
-		case 45:
-			if(Adicion_rapida(5)) estado = 46;
+		// 46. Adicion rapida. Fijador
+		case 46:
+			if(Adicion_rapida(5)) estado = 47;
 		break;
 
-		// 46. Circulacion por 20 min
-		case 46:
-			if(Circulacion(20)) estado = 47;
+		// 47. Circulacion por 20 min
+		case 47:
+			if(Circulacion(20)) estado = 48;
 		break; 
 
-		// 47. Toma de muestra
-		case 47:
-			Estado_anterior = 47;
+		// 48. Toma de muestra
+		case 48:
+			Estado_anterior = 48;
 			estado = Tomar_muestra(estado);
 		break;
 
-		// 48. Vaciado de tanque
-		case 48:
-			if(Vaciado()) estado = 49;
+		// 49. Vaciado de tanque
+		case 49:
+			if(Vaciado()) estado = 50;
 		break;
 
-		// 49. Fin
-		case 49:
+		// 50. Fin
+		case 50:
 			Fin_proceso();
 			estado = 1;
 			return true;

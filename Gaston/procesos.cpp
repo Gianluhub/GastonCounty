@@ -47,7 +47,7 @@ int Llenado(int Nivel){
     } 
     
     // Asegura que la valvula de reflujo esta abierta
-    digitalWrite(FV204,HIGH);
+    if(Temp_actual() < 90) digitalWrite(FV204,HIGH);
 
     // Cuando llegue al nivel deseado, cierra la valvula, enciende el motor y el plegador
     switch(Nivel)
@@ -78,7 +78,7 @@ int Llenado(int Nivel){
         // Llenado a nivel 2
         case 2:
             //if (digitalRead(LC101) >= HIGH)
-            if(Sensor_nivel(2))
+            if(Sensor_nivel(2) && digitalRead(LC100) >= HIGH)
             {   
                 // Cierra valvula de agua y enciende la bomba y el plegador
                 digitalWrite(FV200,LOW);
@@ -122,13 +122,18 @@ int Llamado_op(){
 
     // Asegura que la valvula de reflujo esta abierta
     digitalWrite(FV204,HIGH);
-
     // Enciende la alarma para avisar al operador
-    // Y espera a que este responda
     digitalWrite(LLAMADO_OP,HIGH);
+   
+    // Accionamiento manual de la valvula de adicion
+    if(digitalRead(FV206_OPEN) >= HIGH) digitalWrite(FV206,HIGH);
+    else digitalWrite(FV206,LOW);
+
+    // Espera respuesta del operador
     if (digitalRead(Op_ok) >= HIGH)
     {
         digitalWrite(LLAMADO_OP,LOW);
+        digitalWrite(FV206,LOW);
         Mostrar = true;
         return true;
     }
@@ -164,12 +169,16 @@ int Adicion_rapida(int tiempo){
     // Pasa el tiempo de minutos a milisegundos 
     unsigned long tiempo_ms = To_millis(tiempo);
      
-    
+        // Accionamiento manual de la valvula de adicion
+    if(digitalRead(FV206_OPEN) >= HIGH) digitalWrite(FV206,HIGH);
+    else digitalWrite(FV206,LOW);
+
     // Espera a que acabe el proceso
     if (timer1(tiempo_ms))
     {   
         Act_tiempo(false);  // Reiniciamos el contador
         Mostrar = true;    // Reiniciamos el flag para que la siguiente llamada de la funcion muestre en pantalla
+        digitalWrite(FV206,LOW);
         //Serial.println("Adicion rapida true");
         return true;
     }
@@ -288,7 +297,7 @@ int Circulacion(int interval){
 */
 
 
-int Lavado_rebose(int tiempo){
+int Lavado_rebose_DESCONTINUADO(int tiempo){
 
 
 
@@ -346,6 +355,70 @@ int Lavado_rebose(int tiempo){
     }
     return false;
 }
+
+
+int Lavado_rebose(int tiempo){
+
+
+
+    // Comunicacion con Nextion
+    // El flag se usa para mostrar en pantalla solo una vez por proceso
+    // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
+    if (Mostrar)
+    { 
+        Lavado_rebose_print(tiempo);
+        Handler_motores(true); 
+        Mostrar = false; 
+    }
+    Act_tiempo(tiempo);
+
+
+ 
+    // Pasamos el tiempo de minutos a milisegundos
+    unsigned long tiempo_ms = To_millis(tiempo);
+    static int flag = true;
+
+
+   // Mientras que no haya pasado el tiempo se seguiran abriendo la valvulas  
+    if(!timer1(tiempo_ms))
+    {
+         if (flag)
+        {
+            if(!timer8(20000))
+            {
+                // Abre la valvula de dosificacion de aditivos
+               digitalWrite(FV210,HIGH);
+               digitalWrite(FV200,LOW);
+               //Serial.println("Abierto");
+            }
+            else flag = false;
+
+        }
+        else if (!timer8(20000))
+        {
+            // Cierra las valvulas durante un tiempo t_cerrado
+            digitalWrite(FV210,LOW);
+            digitalWrite(FV200,HIGH);
+            //Serial.println("Cerrado");
+                 
+        }
+        else flag = true;
+
+    } else
+    {
+    // Al finalizar el tiempo se asegura que las valvulas esten cerradas
+        digitalWrite(FV210,LOW);
+        digitalWrite(FV200,LOW);
+        Act_tiempo(false);       // Reiniciamos contador
+        Mostrar = true;
+        timer8(false);
+        //Serial.println("Rebose true");
+        //contador_rebose();
+        return true;
+    }
+    return false;
+}
+
 
 
 
@@ -421,12 +494,11 @@ int Vaciado(){
 int Calentamiento(int temp, float grad,int mode){
 
     Handler_motores(true);
-    digitalWrite(CALENTAMIENTO,HIGH);
+    //digitalWrite(CALENTAMIENTO,HIGH);
 
     // Comunicacion con Nextion
     // El flag se usa para mostrar en pantalla solo una vez por proceso
     // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
-    //if(Mostrar) Mostrar2 = true; // Parche para solucionar problema de pantalla
     if (Mostrar && mode != SOAK )
     { 
         Calentamiento_print(temp,grad);
@@ -434,10 +506,7 @@ int Calentamiento(int temp, float grad,int mode){
     }
     // Actualiza la temperatura cada 100ms
     if(timer7(100)) send_msj("nTempA.val=",Temp_actual());
-    // Variables de utilidad
-    //unsigned long t_abierto = 2000;
-    //unsigned long t_cerrado = 3000;
-    //static int flag = true;
+
     int pid_ok;
 
     if(temp > 90) Presurizado();
@@ -466,13 +535,11 @@ int Calentamiento(int temp, float grad,int mode){
     es decir con las valvulas siempre abiertas.
 */
 
-// NO ESTA CLARO AUN SI LAS VALVULAS DE TRAMPA Y PURGA DEBEN ESTAR CERRADAS DURANTE PRESURIZACION
-
 int Enfriamiento(int temp, float grad){
 
     Handler_motores(true);
     digitalWrite(CALENTAMIENTO,LOW);
-    digitalWrite(ENFRIAMIENTO,HIGH);
+    //digitalWrite(ENFRIAMIENTO,HIGH);
 
     // Comunicacion con Nextion
     // El flag se usa para mostrar en pantalla solo una vez por proceso
@@ -523,7 +590,6 @@ int Enfriamiento(int temp, float grad){
 
 
 
-
 /*
  Presurizacion
 */
@@ -538,24 +604,6 @@ int Presurizado(){
     {   
         //Serial.println("Comienza presurizado");
         digitalWrite(PRESURIZADO,HIGH);
-
-        // if(flag)
-        // {
-        //     if(!timer5(1500))
-        //     {
-        //         // Comienza el presurizado
-        //         Cerrar_presurizado(); // Cierra todas las valvulas salvo las que se encarguen de la temperatura y presurizacion
-        //         digitalWrite(FV212,HIGH); // Se abre valvula de presurizado (entrada de aire)
-        //     }
-        //     else flag = false;
-        // }
-        //     //delay(1500); // tiempo que permanece abierta la valvula de aire, aun a determinar
-
-        // else if(!timer5(3000)) 
-        // {
-        // digitalWrite(FV212,LOW); // Mantiene la valvula de aire cerrada por un tiempo
-        // }
-        // else flag = true;
     
         //Comienza el presurizado
         Cerrar_presurizado(); // Cierra todas las valvulas salvo las que se encarguen de la temperatura y presurizacion
@@ -573,12 +621,13 @@ int Presurizado(){
 }
 
 
+
 int Despresurizado(){
 
     static int flag = true;
     // Si la temperatura es menor a 80 y se tiene baja presion
     // Comienza el despresurizado
-    if (Temp_actual() <= 80 && Sensor_state_off(PCL100))
+    if (Temp_actual() <= 80 && digitalRead(PCL100) <= LOW)
     {   
         //Serial.println("Comienza despresurizado");
         digitalWrite(PRESURIZADO,LOW);
@@ -595,11 +644,12 @@ int Despresurizado(){
         }
         else flag = true;
     }
-    if (Sensor_state_on(PCL100))
+    else if (digitalRead(PCL100) >= HIGH)
     {
         digitalWrite(FV213,LOW);  // Cierra la valvula de despresurizado
-        digitalWrite(FV204,HIGH); // Se abre la valvula de reflujo
+        //digitalWrite(FV204,HIGH); // Se abre la valvula de reflujo
         digitalWrite(DESPRESURIZADO,LOW);
+        //Serial.println("Despresurizado listo");
         Press_on = false;
         return true;
     }
@@ -644,8 +694,8 @@ void Cerrar_presurizado(){
     digitalWrite(FV211,LOW);
     digitalWrite(FV213,LOW);
     digitalWrite(FV214,LOW); 
-    digitalWrite(FV209,LOW);
-    Press_on = true;
+    //digitalWrite(FV209,LOW);
+    //Press_on = true;
                  
 }
 
@@ -662,7 +712,7 @@ int Handler_motores(int state){
             
         
         //if(Sensor_nivel(1) || Sensor_nivel(2))
-        if(digitalRead(LC100) >=HIGH || digitalRead(LC101) >= HIGH)
+        if(digitalRead(LC100) >=HIGH || (digitalRead(LC101) >= HIGH && digitalRead(LC100) >=HIGH))
         {
 
             if(digitalRead(pump) <= LOW || digitalRead(plegador_1) <= LOW || digitalRead(jet_1) <= LOW)
@@ -699,12 +749,12 @@ int Handler_motores(int state){
     return false;
 }
 
-// Activa la valvula de alivio cada 20 ciclos de calentamiento
+// Activa la valvula de alivio cada 10 ciclos de calentamiento
 void FV209_on(){
 
   static int contador = 1;
 
-  if(contador >= 10 && !Press_on)
+  if(contador >= 10)
   {
     if(!timer13(5000))
     {

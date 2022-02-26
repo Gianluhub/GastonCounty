@@ -38,9 +38,10 @@
 #define PCL100 CONTROLLINO_A4 // Sensor de presion bajo
 #define LC102 CONTROLLINO_A7  // Sensor de vaciado (No implementado)
 
+
 // Alarmas
-#define LLAMADO_OP 25   // R3 Llamado de operador A1 
-#define TOMA_MUESTRA 25 // R3 Tomar muestra A1
+#define LLAMADO_OP 45   // D15 Llamado de operador A1 
+#define TOMA_MUESTRA 45 // D15 Tomar muestra A1
 #define PRESURIZADO 26  // R4 Aviso de inicio de presurizacion A2
 #define DESPRESURIZADO 27 // R5 Aviso de incio de despresurizado A3
 #define CALENTAMIENTO 28 // R6 Aviso de inicio de calentamiento A4
@@ -49,8 +50,12 @@
 // Interrupciones y entradas externas
 #define Op_ok CONTROLLINO_A5 // Interruptor de llamado de operador
 #define START CONTROLLINO_A6 // Interruptor de inicio de proceso
-#define STOP  18			 // IN0 Interrupcion para stop del proceso
+#define STOP  CONTROLLINO_A11 // Interrupcion para stop del proceso
 #define OVERCURRENT 19	     // IN1 Interrupcion por sobre corriente del jet
+#define FV206_OPEN CONTROLLINO_A8 // Interruptor manual de apertura de valvula de adicion de quimicos
+#define PIROMETRO CONTROLLINO_A10 // Aviso del pirometro de que se llego a 130°C
+
+//#define FV205_OPEN CONTROLLINO_A9 // Interruptor manual de apertura de valvula de adicion de agua.
 //#define NEXT CONTROLLINO_A8 // Interruptor usado para pasar al siguiente proceso. Solamente para pruebas
 //#define NEXT2 CONTROLLINO_A9	// Otro interruptor de prueba
 

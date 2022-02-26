@@ -62,6 +62,7 @@ void Callback_ISR(){
 			Detener_proceso(); 
       send_Strmsj("page TomaMuestra");
       Seleccion_proceso(nProc,nPaso);
+      digitalWrite(LLAMADO_OP,HIGH);
 			state=2;
 		break;
 
@@ -70,6 +71,7 @@ void Callback_ISR(){
 			{
 				send_Strmsj("page Proceso");
 				Reiniciar_proceso();
+				digitalWrite(LLAMADO_OP,LOW);
 				state = 1;
 
 			}else if(digitalRead(START) >= HIGH && Nuevo_estado_ok)
@@ -77,7 +79,7 @@ void Callback_ISR(){
 				
 				if(nProc == 7 || nProc == 8) Intrr_2 = true;
 				else Intrr = true;
-				
+				digitalWrite(LLAMADO_OP,LOW);
 				start = true;
 				Nuevo_estado_ok = false;
 				interrupt = false;
@@ -110,9 +112,13 @@ void Control_Valvulas::regresar_estado(){
 		digitalWrite(pins[i], valvulas[i]);
 	}
 
-	digitalWrite(pump,motores[0]); 	
-  digitalWrite(plegador_1,motores[1]);
-  digitalWrite(jet_1,motores[2]);
+	Serial.println("Entra");
+	// Apaga la bomba y el plegador
+  digitalWrite(plegador_1,LOW);
+  digitalWrite(jet_1,LOW);
+  delay(5000);
+  digitalWrite(pump,LOW); 	
+  Serial.println("Apaga motores");
 
 
 }
@@ -124,10 +130,14 @@ void Control_Valvulas::cerrar_valvulas(){
 		digitalWrite(pins[i],LOW);
 	}
 	Serial.println("Entra");
-	// Apaga la bomba y el plegador
-  digitalWrite(plegador_1,LOW);
-  digitalWrite(jet_1,LOW);
-  delay(5000);
-  digitalWrite(pump,LOW); 	
-  Serial.println("Apaga motores");
+	
+	if(digitalRead(pump) >= HIGH || digitalRead(plegador_1) >= HIGH || digitalRead(jet_1) >= HIGH)
+	{
+		// Apaga la bomba y el plegador
+	  digitalWrite(plegador_1,LOW);
+	  digitalWrite(jet_1,LOW);
+	  delay(5000);
+	  digitalWrite(pump,LOW); 	
+	  Serial.println("Apaga motores");
+	}
 }

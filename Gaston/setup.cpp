@@ -71,10 +71,10 @@ void setup()
     pinMode(START,INPUT);
     pinMode(STOP,INPUT);
     pinMode(OVERCURRENT,INPUT);
-    //pinMode(NEXT,INPUT);
+    pinMode(PIROMETRO,INPUT);
     //pinMode(NEXT2,INPUT);
-    attachInterrupt(digitalPinToInterrupt(STOP), Interrupt, FALLING);
-    attachInterrupt(digitalPinToInterrupt(OVERCURRENT), Interrupt, RISING);
+    //attachInterrupt(digitalPinToInterrupt(STOP), Interrupt, FALLING);
+    //attachInterrupt(digitalPinToInterrupt(OVERCURRENT), Interrupt, RISING);
 
 //  Inicio de parametros del Nextion   
     nexInit();
