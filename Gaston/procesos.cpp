@@ -360,7 +360,7 @@ int Lavado_rebose_DESCONTINUADO(int tiempo){
 int Lavado_rebose(int tiempo){
 
 
-
+    static bool lavado = false;
     // Comunicacion con Nextion
     // El flag se usa para mostrar en pantalla solo una vez por proceso
     // Se hace de esta forma porque al parecer se congela la pantalla si se le envian datos sin ningun delay de por medio
@@ -368,7 +368,8 @@ int Lavado_rebose(int tiempo){
     { 
         Lavado_rebose_print(tiempo);
         Handler_motores(true); 
-        Mostrar = false; 
+        Mostrar = false;
+        lavado = false; 
     }
     Act_tiempo(tiempo);
 
@@ -378,44 +379,54 @@ int Lavado_rebose(int tiempo){
     unsigned long tiempo_ms = To_millis(tiempo);
     static int flag = true;
 
-
-   // Mientras que no haya pasado el tiempo se seguiran abriendo la valvulas  
-    if(!timer1(tiempo_ms))
+    if(!lavado)
     {
-         if (flag)
+      digitalWrite(FV200,HIGH);
+      if(Sensor_nivel(2)) lavado = true;
+
+    }else
+    {
+       // Mientras que no haya pasado el tiempo se seguiran abriendo la valvulas  
+        if(!timer1(tiempo_ms))
         {
-            if(!timer8(20000))
+
+             if (flag)
             {
-                // Abre la valvula de dosificacion de aditivos
-               digitalWrite(FV210,HIGH);
-               digitalWrite(FV200,LOW);
-               //Serial.println("Abierto");
+                if(!timer8(20000))
+                {
+                    // Abre la valvula de dosificacion de aditivos
+                   digitalWrite(FV210,HIGH);
+                   digitalWrite(FV200,LOW);
+                   //Serial.println("Abierto");
+                }
+                else flag = false;
+
             }
-            else flag = false;
+            else if (!timer8(20000))
+            {
+                // Cierra las valvulas durante un tiempo t_cerrado
+                digitalWrite(FV210,LOW);
+                digitalWrite(FV200,HIGH);
+                //Serial.println("Cerrado");
+                     
+            }
+            else flag = true;
 
-        }
-        else if (!timer8(20000))
+        } else
         {
-            // Cierra las valvulas durante un tiempo t_cerrado
+        // Al finalizar el tiempo se asegura que las valvulas esten cerradas
             digitalWrite(FV210,LOW);
-            digitalWrite(FV200,HIGH);
-            //Serial.println("Cerrado");
-                 
+            digitalWrite(FV200,LOW);
+            Act_tiempo(false);       // Reiniciamos contador
+            Mostrar = true;
+            timer8(false);
+            lavado = false;
+            //Serial.println("Rebose true");
+            //contador_rebose();
+            return true;
         }
-        else flag = true;
-
-    } else
-    {
-    // Al finalizar el tiempo se asegura que las valvulas esten cerradas
-        digitalWrite(FV210,LOW);
-        digitalWrite(FV200,LOW);
-        Act_tiempo(false);       // Reiniciamos contador
-        Mostrar = true;
-        timer8(false);
-        //Serial.println("Rebose true");
-        //contador_rebose();
-        return true;
     }
+
     return false;
 }
 

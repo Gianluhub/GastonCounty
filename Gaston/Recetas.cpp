@@ -49,7 +49,7 @@ int Poliester(int temperatura, int tiempo){
 	{
 		// 1. Llenado a nivel 2
 		case 1:
-			if (Llenado(2)) estado = 2;	
+			if (Llenado(1)) estado = 2;	
 		break;
 
 		// 2. Preparaciond de tanque
@@ -131,7 +131,7 @@ int Poliester(int temperatura, int tiempo){
 
 		// 14. Llenado a nivel 2
 		case 14:
-			if(Llenado(2)) estado = 15;
+			if(Llenado(1)) estado = 15;
 		break;
 
 		// 15. Lavado por rebose de 15 min
@@ -299,7 +299,7 @@ int Algodon_DESCONTINUADO(int temperatura, int tiempoC, int tiempoF){
 
 		//17. Llenado a nivel 2
 		case 17:
-			if(Llenado(2)) estado = 18;
+			if(Llenado(1)) estado = 18;
 		break;
 
 		// 18. Llamado a operador
@@ -336,7 +336,7 @@ int Algodon_DESCONTINUADO(int temperatura, int tiempoC, int tiempoF){
 
 		//23. Llenado a nivel 2
 		case 23:
-			if(Llenado(2)) estado = 24;
+			if(Llenado(1)) estado = 24;
 		break;
 
 		// 24. Llamado a operador
@@ -535,7 +535,7 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 
 		// 1. Llenado a nivel 2
 		case 1:
-			if(Llenado(2)) estado = 2;
+			if(Llenado(1)) estado = 2;
 		break;
 
 		// 2. Llamado a operador
@@ -596,7 +596,7 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 
 		// 11. Llenado a nivel 2
 		case 11:
-			if(Llenado(2)) estado = 12;
+			if(Llenado(1)) estado = 12;
 		break;
 
 		// 12. Llamado a operador
@@ -621,7 +621,7 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 
 		// 16. Llenado a nivel 2
 		case 16:
-			if(Llenado(2)) estado = 17;
+			if(Llenado(1)) estado = 17;
 		break;
 
 		// 17. Lavado por rebose de 10 min
@@ -690,7 +690,7 @@ int Preblanqueo_jabon(int temperatura, int tiempo){
 	{
 		// 1. Llenado a nivel 2
 		case 1:
-			if(Llenado(2)) estado = 2;
+			if(Llenado(1)) estado = 2;
 		break;
 
 		// 2. Llamado a operador
@@ -752,7 +752,7 @@ int Preblanqueo_jabon(int temperatura, int tiempo){
 
 		// 11. Llenado a nivel 2
 		case 11:
-			if(Llenado(2)) estado = 12;
+			if(Llenado(1)) estado = 12;
 		break;
 
 		// 12. Lavado por rebose 5 min
@@ -819,7 +819,7 @@ int Saponizado(int temperatura, int tiempo){
 	{
 		// 1. Llenado a nivel 2
 		case 1:
-			if(Llenado(2)) estado = 2;
+			if(Llenado(1)) estado = 2;
 		break;
 
 		// 2. Llamado de operador
@@ -890,7 +890,7 @@ int Saponizado(int temperatura, int tiempo){
 
 		// 13. Llenado a nivel 2
 		case 13:
-			if(Llenado(2)) estado = 14;
+			if(Llenado(1)) estado = 14;
 		break;
 
 		// 14. Llamado de operador
@@ -915,7 +915,7 @@ int Saponizado(int temperatura, int tiempo){
 
 		// 18. Llenado a nivel 2
 		case 18:
-			if(Llenado(2)) estado = 19;
+			if(Llenado(1)) estado = 19;
 		break;
 
 		// 19. Toma de muestra
@@ -998,7 +998,7 @@ int Directo(int temperatura, int tiempo){
 	{
 		// 1. Llenado a nivel 2
 		case 1:
-			if(Llenado(2)) estado = 2;
+			if(Llenado(1)) estado = 2;
 		break;
 
 
@@ -1143,7 +1143,7 @@ int Suavizado(){
 
         // 2. Realiza el llenado a nivel 1 si hace falta
         case 2:
-            if(Llenado(2)) estado = 3;
+            if(Llenado(1)) estado = 3;
         break;
 
         // 3. Llamado a operador para preparacion de tanque
@@ -1207,7 +1207,7 @@ int Lavado_Maquina(){
 		// 1. Llenado a nivel 2
 		case 1:
 			digitalWrite(FV214,HIGH); 	// Abre valvula de ducha
-			if(Llenado(2)) estado = 2;
+			if(Llenado(1)) estado = 2;
 		break;
 
 		// 2. Llamado de operador
@@ -1254,7 +1254,7 @@ int Lavado_Maquina(){
 
 		// 8. Llenado a nivel 2
 		case 8:
-			if(Llenado(2)) estado = 9;
+			if(Llenado(1)) estado = 9;
 		break;
 
 		// 9. Preparacion de tanque
@@ -1327,7 +1327,7 @@ int Lavado_reductivo(int temperatura, int tiempo){
 
 		// 2. Llenado a nivel 2
 		case 2:
-			if(Llenado(2)) estado = 3;
+			if(Llenado(1)) estado = 3;
 		break;
 
 		// 3. Adicion rapida 10 min
@@ -1377,7 +1377,7 @@ int Lavado_reductivo(int temperatura, int tiempo){
 
 		// 10. Llenado a nivel 2
 		case 10:
-			if(Llenado(2)) estado = 11;
+			if(Llenado(1)) estado = 11;
 		break;
 
 		// 11. Preparacion de tanque
@@ -1440,7 +1440,7 @@ int Prueba(int temperatura, int tiempo){
   	{
   		// Llenado a nivel 2
   		case 1:
-  			if(Llenado(2)) estado++;
+  			if(Llenado(1)) estado++;
   		break;
 
   		// preparacion de tanque
@@ -1664,7 +1664,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		//19. Llenado a nivel 2
 		case 19:
-			if(Llenado(2)) estado = 20;
+			if(Llenado(1)) estado = 20;
 		break;
 
 		// 20. Llamado a operador
@@ -1702,7 +1702,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		//25. Llenado a nivel 2
 		case 25:
-			if(Llenado(2)) estado = 26;
+			if(Llenado(1)) estado = 26;
 		break;
 
 		// 26. Llamado a operador
@@ -1754,7 +1754,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		// 33. Llenado a nivel 2
 		case 33:
-			if(Llenado(2)) estado = 34;
+			if(Llenado(1)) estado = 34;
 		break;
 
 		// 34. Subir temperatura a 65°
@@ -1781,7 +1781,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		//  37. Llenado a nivel 2
 		case 37:
-			if(Llenado(2)) estado = 38;
+			if(Llenado(1)) estado = 38;
 		break; 
 
 		// 38. Toma de muestra
@@ -1804,7 +1804,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		// 41. Llenado a nivel 2
 		case 41:
-			if(Llenado(2)) estado = 42;
+			if(Llenado(1)) estado = 42;
 		break;
 
 		// 42. Lavado por rebose de 15 min
@@ -1819,7 +1819,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 
 		// 44. Llenado a nivel 2
 		case 44:
-			if(Llenado(2)) estado = 45;
+			if(Llenado(1)) estado = 45;
 		break;
 
 		/// FIN DE PROCESO OPCIONAL
