@@ -13,14 +13,14 @@ int Sensor_nivel(int nivel){
         case 1:
             if(digitalRead(LC100))
             {
-                if(digitalRead(LC100) && timer10(1000)) return true;
+                if(digitalRead(LC100) && timer10(500)) return true;
             }
         break;
 
         case 2:
             if(digitalRead(LC101))
             {
-                if(digitalRead(LC101) && timer11(1000)) return true;
+                if(digitalRead(LC101) && timer11(500)) return true;
             }
         break;
     }
@@ -712,7 +712,7 @@ int Handler_motores(int state){
             
         
         //if(Sensor_nivel(1) || Sensor_nivel(2))
-        if(digitalRead(LC100) >=HIGH || (digitalRead(LC101) >= HIGH && digitalRead(LC100) >=HIGH))
+        if(true || digitalRead(LC100) >=HIGH || (digitalRead(LC101) >= HIGH && digitalRead(LC100) >=HIGH))
         {
 
             if(digitalRead(pump) <= LOW || digitalRead(plegador_1) <= LOW || digitalRead(jet_1) <= LOW)
