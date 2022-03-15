@@ -387,7 +387,7 @@ int Algodon_DESCONTINUADO(int temperatura, int tiempoC, int tiempoF){
 
 		// 31. Llenado a nivel 2
 		case 31:
-			if(Llenado(2)) estado = 32;
+			if(Llenado(1)) estado = 32;
 		break;
 
 		// 32. Subir temperatura a 65°
@@ -436,7 +436,7 @@ int Algodon_DESCONTINUADO(int temperatura, int tiempoC, int tiempoF){
 
 		// 39. Llenado a nivel 2
 		case 39:
-			if(Llenado(2)) estado = 40;
+			if(Llenado(1)) estado = 40;
 		break;
 
 		// 40. Lavado por rebose de 15 min
@@ -451,7 +451,7 @@ int Algodon_DESCONTINUADO(int temperatura, int tiempoC, int tiempoF){
 
 		// 42. Llenado a nivel 2
 		case 42:
-			if(Llenado(2)) estado = 43;
+			if(Llenado(1)) estado = 43;
 		break;
 
 		/// FIN DE PROCESO OPCIONAL
@@ -1413,7 +1413,7 @@ int Lavado_reductivo(int temperatura, int tiempo){
 
 int Prueba(int temperatura, int tiempo){
 
-	static int estado = 5;				// Variable encargada de pasar de un proceso a otro
+	static int estado = 1;				// Variable encargada de pasar de un proceso a otro
 	static int Estado_anterior = 0;		// Almacena el estado del proceso en toma de muestra antes de hacer suavizado o lavado reductivo		
 	int temp_ok = false;				// Verifica si se llego a la temperatura deseada
 	int press_ok = false;				// Verifica si se llego a la presion deseada
@@ -1482,7 +1482,7 @@ int Prueba(int temperatura, int tiempo){
 		case 7:
 			temp_ok = Enfriamiento(60,2);
 			if(temperatura > 90) Despresurizado();
-			if (temp_ok) estado++;	
+			if (temp_ok) {estado++; Serial.println(temp_ok);}	
 		break;
 		
 		// 8. Toma de muestra
@@ -1642,7 +1642,7 @@ int Algodon(int temperatura, int tiempoC, int tiempoF){
 		// 15. Enfiamiento
 		case 15:
 			temp_ok = Enfriamiento(60,2);
-			press_ok = Despresurizado();
+			if(temperatura >= 98)press_ok = Despresurizado();
 			if (temp_ok) estado = 16;	
 		break;
 

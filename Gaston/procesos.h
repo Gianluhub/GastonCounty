@@ -126,6 +126,7 @@ void Interrupt();
 #define RELAY 4
 #define RELAY2 5
 #define RELAY_130 6
+#define RELAY_60 7
 // Funciones
 float Temp_actual();
 void PID_ON();

@@ -570,13 +570,13 @@ int Enfriamiento(int temp, float grad){
     int pid_ok;
 
     // Asegura que las valvulas de calentamiento estan cerradas
-    if (digitalRead(FV202) >= HIGH)
-    {
-        digitalWrite(FV202,LOW);
-        digitalWrite(FV208,LOW);
-        digitalWrite(FV209,LOW);
-        digitalWrite(FV212,LOW);
-    }
+    // if (digitalRead(FV202) >= HIGH)
+    // {
+    //     digitalWrite(FV202,LOW);
+    //     digitalWrite(FV208,LOW);
+    //     digitalWrite(FV209,LOW);
+    //     digitalWrite(FV212,LOW);
+    // }
 
     pid_ok = State_PID(RAMP_DOWN,60);
 
@@ -588,7 +588,9 @@ int Enfriamiento(int temp, float grad){
             digitalWrite(FV204,HIGH); // Se abre la valvula de reflujo
         }
 
+        Serial.println("Enfriamiento true");
         digitalWrite(ENFRIAMIENTO,LOW);
+        digitalWrite(PRESURIZADO,LOW);
         Mostrar = true;
         return true;
     }
@@ -596,8 +598,6 @@ int Enfriamiento(int temp, float grad){
     return false;
 
 }
-
-
 
 
 

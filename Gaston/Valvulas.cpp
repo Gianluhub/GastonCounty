@@ -131,6 +131,11 @@ void Control_Valvulas::cerrar_valvulas(){
 	}
 	Serial.println("Entra");
 	
+	digitalWrite(CALENTAMIENTO,LOW);
+	digitalWrite(ENFRIAMIENTO,LOW);
+	digitalWrite(PRESURIZADO,LOW);
+	digitalWrite(DESPRESURIZADO,LOW);
+
 	if(digitalRead(pump) >= HIGH || digitalRead(plegador_1) >= HIGH || digitalRead(jet_1) >= HIGH)
 	{
 		// Apaga la bomba y el plegador

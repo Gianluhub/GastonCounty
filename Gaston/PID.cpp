@@ -62,15 +62,15 @@ void HeatGrad_1_5();
 int State_PID(int Mode, int Temp) {
   //static int mode = RAMP_UP;
 
-  // if(timerPID(100))
-  //  {
-  //   Serial.print("@");
-  //   Serial.print("/");
-  //   Serial.print(float(millis()-init_Time2)/60000);
-  //   Serial.print("/");
-  //   Serial.println(Temp_actual());
-  //   //Serial.println(30);
-  //  }
+  if(timerPID(100))
+   {
+    Serial.print("@");
+    Serial.print("/");
+    Serial.print(float(millis()-init_Time2)/60000);
+    Serial.print("/");
+    Serial.println(Temp_actual());
+    //Serial.println(30);
+   }
 
 
    switch(Mode)
@@ -203,6 +203,8 @@ int State_PID(int Mode, int Temp) {
     digitalWrite(FV201,LOW);
     digitalWrite(FV203,LOW);
     Reset_PID();
+    digitalWrite(ENFRIAMIENTO,LOW);
+    digitalWrite(CALENTAMIENTO,LOW);
     Step_Ok = false;
     return true;
   }
@@ -211,8 +213,8 @@ int State_PID(int Mode, int Temp) {
 }   
 
 
-// float Temp_actual(){
 
+// float Temp_actual(){
 //     float Temp = map(analogRead(TC100),129,664,-1778,14889);
 //     return Temp/100;
 // }
@@ -255,7 +257,7 @@ void PID_ON(){
       // Por cada iteracion cambiara el setpoint
       // que representa una variacion pequeña de temperatura
       t = float(millis() - init_Time)/60000;  // Tiempo a variar en minutos
-      if (inicio){t=t+1;inicio=false;}
+      if (inicio){t=t+1;inicio=false; Start_time = millis();}
       Input = Temp_actual();
       Setpoint = (grad*t) + init_Temp; 
       //if(Setpoint >= maxTemp) Setpoint = maxTemp;
@@ -284,7 +286,9 @@ void PID_ON(){
       salida = Output;
       Prev_state = SOAK;
       if(maxTemp == 130) state = RELAY_130;
+      if(maxTemp == 60) state = RELAY_60;
       else state = RELAY;
+      if(inicio) {Start_time = millis(); inicio = false;}  
 
       // Serial
       //Serial.println("Setpoint: "+String(Setpoint));
@@ -298,7 +302,7 @@ void PID_ON(){
       
         // Por cada iteracion cambiara el setpoin que representa una variacion pequeña de temperatura
       t = float(millis() - init_Time)/60000;  // Tiempo a variar en minutos
-      if (inicio){t=t+1;inicio=false;}
+      if (inicio){t=t+1;inicio=false; Start_time = millis();}
       Input = Temp_actual();
       Setpoint = maxTemp - (grad*t);   
       myPID2.Compute();
@@ -314,7 +318,7 @@ void PID_ON(){
       Serial.println("Tiempo: "+String(float(millis() - init_Time)/60000));
       Serial.println("Grad: "+String(grad*t)); 
       Serial.println("Salida "+String(salida));
-      Serial.println(analogRead(TC100));
+      //Serial.println(analogRead(TC100));
       //Serial.println(analogRead(LC100));
 
 
@@ -349,7 +353,7 @@ void PID_ON(){
 
     case RELAY2:
 
-      //Serial.println(millis() - Start_time);
+      Serial.println("Realy 2");
       if(salida < 3000) salida += 3000;
       if(salida > millis() - Start_time)
       {
@@ -388,14 +392,58 @@ void PID_ON(){
         //timerPID(false);
       }
 
+    case RELAY_60:
+
+      if(Temp_actual() <= maxTemp - 2)
+      {
+        digitalWrite(CALENTAMIENTO,HIGH);
+        digitalWrite(FV202,HIGH);
+        digitalWrite(FV208,HIGH);
+        FV209_on();
+      }else if(Temp_actual() > maxTemp)
+      {
+        digitalWrite(CALENTAMIENTO,LOW);
+        digitalWrite(FV202,LOW);
+        digitalWrite(FV208,LOW);
+        digitalWrite(FV209,LOW); 
+        //timerPID(false);
+      }
+
     break;
   }
  
 }
  
+// Usado para circulacion
+int timerPID(unsigned long interval){
+
+  unsigned long currentTime = millis();
+  static unsigned long previousTime = millis();
+  static int start = 0;
+
+  if (interval == false)
+  {
+    start = 1;
+    return false;
+  }
+
+  if (start == 1)
+  { 
+    previousTime = millis();
+    start = 0;
+  }
+
+  if (currentTime - previousTime >= interval)
+  {
+    start = 1;
+    return true;
+  }
+  else return false;
+
+}
 
 // Se usa para filtrar picos de temperatura
-int timerPID(unsigned long interval){
+int timerPID_2(unsigned long interval){
 
   unsigned long currentTime = millis();
   static unsigned long previousTime = millis();

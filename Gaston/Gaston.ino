@@ -460,7 +460,7 @@ void loop(){
           nProc = 9;
           print_code = false;
         }
-        if(Prueba(130,15))
+        if(Prueba(80,5))
         {
           print_code = true;
           estado++;
