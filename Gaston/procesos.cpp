@@ -463,29 +463,29 @@ int Vaciado(){
     digitalWrite(FV211,HIGH);
 
     //Implementacion de vaciado medianti tiempo
-    if(digitalRead(LC100) <= LOW)
-    {
-        // Espera el tiempo necesario donde se sabe que el tanque esta vacio
-        // y luego cierra la valvula
-        if(timer1(tiempo_vaciado))
-        {
-            Serial.println("Cierra vaciado");
-            digitalWrite(FV211,LOW);
-            Mostrar = true;
-            //contador_vaciado();
-            return true;
-
-        }else return false;
-    }
-
-    // // Implementacion de vaciado mediante sensor de vaciado
-    // if(digitalRead(LC102) <= LOW)
+    // if(digitalRead(LC100) <= LOW)
     // {
+    //     // Espera el tiempo necesario donde se sabe que el tanque esta vacio
+    //     // y luego cierra la valvula
+    //     if(timer1(tiempo_vaciado))
+    //     {
     //         Serial.println("Cierra vaciado");
     //         digitalWrite(FV211,LOW);
     //         Mostrar = true;
+    //         //contador_vaciado();
     //         return true;
+
+    //     }else return false;
     // }
+
+    // Implementacion de vaciado mediante sensor de vaciado
+    if(digitalRead(LC102) <= LOW)
+    {
+            Serial.println("Cierra vaciado");
+            digitalWrite(FV211,LOW);
+            Mostrar = true;
+            return true;
+    }
 
     return false;
 }
@@ -723,7 +723,7 @@ int Handler_motores(int state){
             
         
         //if(Sensor_nivel(1) || Sensor_nivel(2))
-        if(true || digitalRead(LC100) >=HIGH || (digitalRead(LC101) >= HIGH && digitalRead(LC100) >=HIGH))
+        if(digitalRead(LC102) >= HIGH)
         {
 
             if(digitalRead(pump) <= LOW || digitalRead(plegador_1) <= LOW || digitalRead(jet_1) <= LOW)
@@ -735,7 +735,7 @@ int Handler_motores(int state){
                 return true;
             }
         }//else if(digitalRead(LC100) <= LOW && digitalRead(LC100) <= LOW)
-        else
+        else if(digitalRead(LC102) <= LOW)
         {
             if(digitalRead(pump) >= HIGH || digitalRead(plegador_1) >= HIGH || digitalRead(jet_1) >= HIGH)
             {      
