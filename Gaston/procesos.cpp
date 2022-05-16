@@ -60,9 +60,9 @@ int Llenado(int Nivel){
                // Cierra valvula de agua y enciende la bomba y el plegador
                digitalWrite(FV200,LOW);
                digitalWrite(pump,HIGH); 
-               digitalWrite(plegador_1,HIGH);
                delay(3000);
                digitalWrite(jet_1,HIGH);
+               digitalWrite(plegador_1,HIGH);
                //digitalWrite(plegador_2,HIGH);
                contador_llenado();
                Mostrar = true;
@@ -83,9 +83,9 @@ int Llenado(int Nivel){
                 // Cierra valvula de agua y enciende la bomba y el plegador
                 digitalWrite(FV200,LOW);
                 digitalWrite(pump,HIGH);
-                digitalWrite(plegador_1,HIGH);
                 delay(3000);
                 digitalWrite(jet_1,HIGH);
+                digitalWrite(plegador_1,HIGH);
                 //digitalWrite(plegador_2,HIGH);
                 Mostrar = true;
                 //contador_llenado();
@@ -729,9 +729,9 @@ int Handler_motores(int state){
             if(digitalRead(pump) <= LOW || digitalRead(plegador_1) <= LOW || digitalRead(jet_1) <= LOW)
             {      
                 digitalWrite(pump,HIGH);
-                digitalWrite(plegador_1,HIGH);
                 delay(3000);
                 digitalWrite(jet_1,HIGH);
+                digitalWrite(plegador_1,HIGH);
                 return true;
             }
         }//else if(digitalRead(LC100) <= LOW && digitalRead(LC100) <= LOW)
