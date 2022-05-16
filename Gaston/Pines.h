@@ -42,10 +42,10 @@
 // Alarmas
 #define LLAMADO_OP 45   // D15 Llamado de operador A1 
 #define TOMA_MUESTRA 45 // D15 Tomar muestra A1
-#define PRESURIZADO 26  // R4 Aviso de inicio de presurizacion A2
-#define DESPRESURIZADO 27 // R5 Aviso de incio de despresurizado A3
-#define CALENTAMIENTO 28 // R6 Aviso de inicio de calentamiento A4
-#define ENFRIAMIENTO 29  // R7 Aviso de incio de enfriamiento A5
+#define PRESURIZADO 25  // R3 Aviso de inicio de presurizacion A2
+#define DESPRESURIZADO 26 // R4 Aviso de incio de despresurizado A3
+#define CALENTAMIENTO 27 // R5 Aviso de inicio de calentamiento A4
+#define ENFRIAMIENTO 28  // R6 Aviso de incio de enfriamiento A5
 
 // Interrupciones y entradas externas
 #define Op_ok CONTROLLINO_A5 // Interruptor de llamado de operador

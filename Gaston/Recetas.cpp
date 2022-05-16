@@ -545,7 +545,7 @@ int Preblanqueo_quimico(int temperatura, int tiempo){
 
 		// 3. Adicion rapida de 10 min
 		case 3:	
-			if(Adicion_rapida(10)) estado = 4;
+			if(Adicion_rapida(3)) estado = 4;
 		break;
 
 		// 4. Circulacion de 10 min
@@ -1212,17 +1212,19 @@ int Lavado_Maquina(){
 
 		// 2. Llamado de operador
 		case 2:
+			digitalWrite(FV214,HIGH); 	// Abre valvula de ducha
 			if(Llamado_op()) estado = 3;
 		break;
 
 		// 3. Adicion rapida de 5 min
 		case 3:
+			digitalWrite(FV214,HIGH); 	// Abre valvula de ducha
 			if(Adicion_rapida(5)) estado = 4;
 		break;
 
 		// 4. Subir temperatura a 130
 		case 4:
-
+			//digitalWrite(FV214,HIGH); 	// Abre valvula de ducha
 			temp_ok = Calentamiento(130,0,RAMP_UP);
 			press_ok = Presurizado();
 			if (temp_ok) estado = 5;
@@ -1254,26 +1256,31 @@ int Lavado_Maquina(){
 
 		// 8. Llenado a nivel 2
 		case 8:
+			digitalWrite(FV214,HIGH); 	// Abre valvula de ducha
 			if(Llenado(1)) estado = 9;
 		break;
 
 		// 9. Preparacion de tanque
 		case 9:
+			digitalWrite(FV214,HIGH); 	// Abre valvula de ducha
 			if(Llamado_op()) estado = 10;
 		break;
 
 	    // 10. Adicion rapida 5 min
 		case 10:
+			digitalWrite(FV214,HIGH); 	// Abre valvula de ducha
 			if(Adicion_rapida(5)) estado = 11;
 		break;
 
 		// 11. Circulacion 15 min
 		case 11:
+			digitalWrite(FV214,HIGH); 	// Abre valvula de ducha
 			if(Circulacion(15)) estado = 12;
 		break;
 
 		// 12. Vaciado
 		case 12:
+			digitalWrite(FV214,HIGH); 	// Abre valvula de ducha
 			if(Vaciado()) estado = 13;
 		break;
 
