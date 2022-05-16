@@ -303,6 +303,10 @@ void loop(){
   // Espera a que el operador presione el boton de start para iniciar el proceso
   if(digitalRead(START) >= HIGH && !interrupt)
   {
+    //inicializa directamente en preblanqueo
+    trama[0] = 'A';
+    trama[1] = 'X';
+
     if(trama[estado] != 0) start =  true;
   }
   
@@ -324,7 +328,8 @@ void loop(){
           print_code = false;
         }
 
-        if(Preblanqueo_quimico(temperatura[0],tiempo[0])) 
+        //if(Preblanqueo_quimico(temperatura[0],tiempo[0]))
+        if(Preblanqueo_quimico(98,60))  
         {
           print_code = true;
           estado++;
